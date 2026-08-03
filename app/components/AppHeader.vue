@@ -1,75 +1,65 @@
 <template>
-  <header class="bg-white shadow-sm rounded-md flex items-center justify-between px-4 py-2">
-    <!-- Logo -->
-    <div class="flex items-center gap-2">
-      <UIcon name="i-heroicons-lightning-bolt-16-solid" class="text-purple-600" />
-      <span class="font-bold uppercase text-gray-900">ZEUS UI</span>
+  <header class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] transition-all duration-500 ease-in-out
+            backdrop-blur-xl rounded-full shadow-xl border border-white/30"
+    :class="scrolled ? 'max-w-xl px-6 py-2 bg-white/80' : 'bg-white/80 max-w-7xl px-10 py-2'">
+    <div class="flex items-center justify-between w-full gap-2">
+
+      <!-- Left: Logo (Collapses to 0 width when scrolled) -->
+      <div
+        class="flex items-center gap-2 text-[#1a1a1a] font-bold tracking-tight transition-all duration-500 ease-in-out shrink-0 overflow-hidden whitespace-nowrap"
+        :class="scrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2 text-sm'">
+        <span class="shrink-0">HAMEEM CHING TAI POCKETING & ACCESSORIES LTD.</span>
+      </div>
+
+      <!-- Center: Nav (flex-1 makes it perfectly center when sides collapse) -->
+      <nav
+        class="flex items-center justify-center gap-6 lg:gap-8 font-medium tracking-wide uppercase text-[#274257] transition-all duration-500 ease-in-out flex-1"
+        :class="scrolled ? 'text-xs' : 'text-sm'">
+        <ULink to="#" class="hover:text-[#e8b938] transition-colors">Home</ULink>
+        <ULink to="#" class="hover:text-[#e8b938] transition-colors">Why it matters</ULink>
+        <ULink to="#" class="hover:text-[#e8b938] transition-colors">The venture at a glance</ULink>
+      </nav>
+
+      <!-- Right: Search + CTA (Collapses when scrolled) -->
+      <div
+        class="flex items-center gap-3 shrink-0 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
+        :class="scrolled ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+        <!-- <button
+          class="hidden sm:flex items-center justify-center rounded-full border border-gray-200 text-[#274257] hover:text-[#e8b938] hover:border-[#e8b938] transition-colors w-10 h-10">
+          <UIcon name="i-heroicons-magnifying-glass-20-solid" />
+        </button> -->
+        <UButton label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid"
+          class="bg-[#e8b938] hover:bg-[#d4a52f] text-[#1a1a1a] font-medium rounded-full px-6 py-2.5 text-sm" />
+      </div>
+
+      <!-- Mobile Menu Hamburger (Always visible) -->
+      <button class="lg:hidden flex items-center justify-center w-10 h-10 rounded-full text-[#274257] ml-2 shrink-0"
+        @click="mobileOpen = !mobileOpen">
+        <UIcon :name="mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'" class="text-xl" />
+      </button>
     </div>
 
-    <!-- Navigation Links -->
-    <nav class="hidden lg:flex items-center gap-2">
-      <ULink href="#" class="hover:text-gray-800">About us</ULink>
-      <UPopover mode="hover" :popper="{ placement: 'bottom-start' }">
-        <template #default="{ open, toggle }">
-          <span @click="toggle" class="relative hover:text-purple-800 flex items-center gap-1 cursor-pointer">
-            Solutions
-            <UIcon name="i-heroicons-chevron-down-20-solid" :class="{ 'rotate-180': open }"
-              class="transition-transform" />
-          </span>
-        </template>
-        <template #panel>
-          <div class="bg-white rounded-2xl shadow-lg p-4 grid grid-cols-4 gap-6 w-[700px]">
-            <div>
-              <h4 class="font-bold">Product</h4>
-              <ul class="list-disc pl-3">
-                <li>Use cases</li>
-                <li>Testimonials</li>
-                <li>Features</li>
-                <li>User stories</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-bold">About</h4>
-              <ul class="list-disc pl-3">
-                <li>Company</li>
-                <li>Team</li>
-                <li>Awards</li>
-                <li>Careers</li>
-                <li>Contacts</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-bold">Resources</h4>
-              <ul class="list-disc pl-3">
-                <li>Blog</li>
-                <li>History</li>
-                <li>Cases</li>
-                <li>Articles</li>
-                <li>University</li>
-              </ul>
-            </div>
-            <div class="relative">
-              <div
-                class="bg-linear-to-br from-purple-600 to-purple-800 rounded-full p-4 flex items-center justify-between">
-                <span class="text-white">Latest arrival</span>
-                <UButton color="white" outline>Read article →</UButton>
-              </div>
-              <div class="absolute top-0 left-0 w-full h-full bg-gray-100 opacity-30 rounded-2xl"></div>
-            </div>
-          </div>
-        </template>
-      </UPopover>
-      <ULink href="#" class="hover:text-gray-800">Resources</ULink>
-      <ULink href="#" class="hover:text-gray-800">Pricing</ULink>
-      <ULink href="#" class="hover:text-gray-800">Contacts</ULink>
-    </nav>
-
-    <!-- CTA Button -->
-    <div class="hidden lg:flex">
-      <UButton color="purple" outlined>Try for free »</UButton>
+    <!-- Mobile Dropdown -->
+    <div v-if="mobileOpen"
+      class="lg:hidden mt-4 pt-4 border-t border-gray-200 flex flex-col gap-3 text-sm uppercase font-medium text-[#274257]">
+      <ULink to="#" @click="mobileOpen = false">Home</ULink>
+      <ULink to="#" @click="mobileOpen = false">Why it matters</ULink>
+      <ULink to="#" @click="mobileOpen = false">The venture at a glance</ULink>
+      <ULink to="#" @click="mobileOpen = false">The facility</ULink>
     </div>
   </header>
 </template>
 
 <script setup>
+import { useWindowScroll, useDebounceFn } from '@vueuse/core'
+
+const { y } = useWindowScroll()
+const scrolled = ref(false)
+const mobileOpen = ref(false)
+
+const updateScrolled = useDebounceFn(() => {
+  scrolled.value = y.value > 50
+}, 50)
+
+watch(y, updateScrolled)
 </script>

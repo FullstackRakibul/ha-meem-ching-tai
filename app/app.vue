@@ -9,3 +9,10 @@
     <AppFooter />
   </div>
 </template>
+
+<script setup>
+useHead({
+  title: 'Ha-Meem Ching Tai',
+  titleTemplate: '%s | Ha-Meem Ching Tai',
+})
+</script>

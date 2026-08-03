@@ -1,5 +1,5 @@
 {
-  "name": "ha-meem-ching-tai",
+  "name": "hg-ching-tai",
   "type": "module",
   "private": true,
   "scripts": {
@@ -15,6 +15,10 @@
     "nuxt": "^4.5.1",
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.40",
-    "vue-router": "^5.2.0"
+    "vue-router": "^5.2.0",
+    "vue3-carousel-nuxt": "^1.1.6"
+  },
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.3"
   }
 }

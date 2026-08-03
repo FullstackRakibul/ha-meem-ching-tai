@@ -6,8 +6,8 @@
         <!-- Company Info -->
         <div>
           <div class="flex items-center gap-2 mb-4">
-            <UIcon name="i-heroicons-lightning-bolt-16-solid" class="text-purple-500 text-xl" />
-            <span class="font-bold text-lg uppercase text-white">ZEUS UI</span>
+            <UIcon name="i-heroicons-cog-16-solid" class="text-[#e8b938] text-xl" />
+            <span class="font-bold text-lg uppercase text-white">Ha-Meem Ching Tai</span>
           </div>
           <p class="text-sm text-gray-400">
             Building modern web experiences with cutting-edge design and technology.
@@ -53,7 +53,7 @@
         <!-- Footer Bottom -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
           <p class="text-sm text-gray-400">
-            &copy; 2025 ZEUS UI. All rights reserved.
+            &copy; 2026 Ha-Meem Ching Tai. All rights reserved.
           </p>
 
           <!-- Social Links -->
