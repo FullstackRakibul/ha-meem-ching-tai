@@ -4,25 +4,64 @@
 /* ========================================= */
 /* NUXT UI / TAILWIND CUSTOM COLOR VARIABLES */
 /* ========================================= */
-:root {
-  /* Light Tones (Mixed with white) */
-  --color-navy-50:  #f3f6f9;
-  --color-navy-100: #e4ebf1;
-  --color-navy-200: #c9d5e2;
-  --color-navy-300: #a7bacc;
-  --color-navy-400: #7d96b0;
-  
-  /* Primary Base */
-  --color-navy-500: #274257;
-  
-  /* Dark Tones (Mixed with black) */
-  --color-navy-600: #1f3647;
-  --color-navy-700: #162936;
-  --color-navy-800: #0f1d26;
-  --color-navy-900: #091117;
+/* Tailwind v4 is CSS-first: colors must be declared in `@theme` (not a
+   tailwind.config.ts, which v4 ignores) for `bg-navy-500`, `text-clay-600`
+   etc. to be generated. Nuxt UI reads the same ramps via app.config.ts,
+   which maps primary -> navy and secondary -> clay. */
+@theme {
+  /* --- Navy (primary) — brand base #142e53 --- */
+  --color-navy-50:  #f2f5fa;
+  --color-navy-100: #e2e9f3;
+  --color-navy-200: #c3d1e6;
+  --color-navy-300: #97aed1;
+  --color-navy-400: #5c7cae;
+  --color-navy-500: #142e53; /* brand base */
+  --color-navy-600: #102645;
+  --color-navy-700: #0d1e36;
+  --color-navy-800: #091626;
+  --color-navy-900: #060e19;
+  --color-navy-950: #03070d;
+
+  /* --- Clay (accent) — brand accent #5D2E24 --- */
+  --color-clay-50:  #fbf6f5;
+  --color-clay-100: #f5e8e5;
+  --color-clay-200: #e8ccc6;
+  --color-clay-300: #d6a89e;
+  --color-clay-400: #b87d70;
+  --color-clay-500: #5D2E24; /* brand accent */
+  --color-clay-600: #4e261e;
+  --color-clay-700: #3e1e17;
+  --color-clay-800: #2c1511;
+  --color-clay-900: #1a0c0a;
+  --color-clay-950: #0d0605;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-/* === Custom Scrollbar Styling (Using your navy) === */
+/* REQUIRED — do not delete. Nuxt UI v4 resolves `text-primary`/`bg-primary`
+   through these --ui-* variables, NOT through app.config.ts. Remove this
+   block and those utilities fall back to Nuxt UI's built-in blue. The
+   app.config.ts `colors` map takes a palette NAME ('navy'), never a hex. */
+:root {
+  --ui-primary: var(--color-navy-500);
+  --ui-secondary: var(--color-clay-500);
+}
+
+.dark {
+  /* Step 500 is too dark to read on a dark surface — lift both ramps. */
+  --ui-primary: var(--color-navy-300);
+  --ui-secondary: var(--color-clay-300);
+}
+
+/* Text-on-brand pairings. Both #142e53 (contrast 14.3:1 on white) and
+   #5D2E24 (10.4:1) are dark enough that white text is the accessible
+   choice on either; dark text is only legible from step 200 down. */
+:root {
+  --color-on-navy: #ffffff;
+  --color-on-clay: #ffffff;
+}
+
+/* === Custom Scrollbar Styling (navy ramp, base #142e53) === */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #f5f5f0; border-radius: 10px; }
 ::-webkit-scrollbar-thumb {
@@ -55,9 +94,6 @@ html {
   -webkit-overflow-scrolling: touch; 
 }
 
-/* Guard against a horizontal scrollbar from any full-bleed section.
-   Note: prefer `width: 100%` over `100vw` on full-screen children — 100vw
-   includes the vertical scrollbar's width and overflows the viewport. */
 html,
 body {
   overflow-x: hidden;

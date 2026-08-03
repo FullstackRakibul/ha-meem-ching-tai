@@ -7,11 +7,11 @@
         <div class="lg:col-span-7 space-y-8">
           <!-- Badge -->
           <UBadge label="ABOUT US" color="neutral" variant="soft"
-            class="border border-gray-200 bg-transparent px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide" />
+            class="border text-primary border-gray-200 bg-transparent px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide" />
 
           <!-- Main Title & Subtitle -->
           <div>
-            <h2 class="text-4xl md:text-5xl font-bold text-[#1a1a1a] leading-tight mb-4">
+            <h2 class="text-4xl md:text-5xl font-bold text-[#1a1a1a] leading-tight mb-4 uppercase tracking-tight">
               A new era in garment accessories manufacturing
             </h2>
             <p class="text-gray-600 text-lg leading-relaxed">
@@ -49,19 +49,19 @@
             <h3 class="text-lg font-semibold text-[#1a1a1a] mb-4">About the factory</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="bg-white/60 p-4 rounded-xl border border-gray-200/50">
-                <div class="text-[#e8b938] font-bold text-sm mb-1">No. 01</div>
+                <div class="text-secondary font-bold text-sm mb-1">No. 01</div>
                 <h4 class="font-semibold text-[#1a1a1a] text-sm">Made locally</h4>
                 <p class="text-xs text-gray-500 mt-1 leading-relaxed">Accessories that once had to be imported are now
                   produced locally — cutting delays.</p>
               </div>
               <div class="bg-white/60 p-4 rounded-xl border border-gray-200/50">
-                <div class="text-[#e8b938] font-bold text-sm mb-1">No. 02</div>
+                <div class="text-secondary font-bold text-sm mb-1">No. 02</div>
                 <h4 class="font-semibold text-[#1a1a1a] text-sm">Advanced technology</h4>
                 <p class="text-xs text-gray-500 mt-1 leading-relaxed">Advanced Chinese technology and modern machinery
                   manufacture accessories at scale.</p>
               </div>
               <div class="bg-white/60 p-4 rounded-xl border border-gray-200/50">
-                <div class="text-[#e8b938] font-bold text-sm mb-1">No. 03</div>
+                <div class="text-secondary font-bold text-sm mb-1">No. 03</div>
                 <h4 class="font-semibold text-[#1a1a1a] text-sm">Built for export</h4>
                 <p class="text-xs text-gray-500 mt-1 leading-relaxed">Output meets Ha-Meem Group's own factories and
                   ships to international markets.</p>
@@ -72,7 +72,7 @@
           <!-- CTA & Contact Row -->
           <div class="flex flex-wrap items-center gap-6 pt-2">
             <UButton size="xl" label="EXPLORE MORE" trailing-icon="i-heroicons-arrow-right-20-solid"
-              class="bg-[#e8b938] hover:bg-[#d4a52f] text-[#1a1a1a] font-bold rounded-full px-8" />
+              class="bg-secondary hover:bg-clay-600 text-white font-bold rounded-full px-8 transition-colors" />
             <div class="flex items-center gap-3">
               <div
                 class="w-12 h-12 rounded-full border-2 border-gray-200 flex items-center justify-center text-[#1a1a1a]">
