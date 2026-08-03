@@ -51,6 +51,11 @@ const config = {
       gap: 0,
     },
   },
+  autoplay: {
+    delay: 100000,
+    pauseOnHover: true,
+  },
+  
   
 }
 

@@ -33,7 +33,7 @@ const startAutoplay = () => {
   if (interval) clearInterval(interval)
   interval = setInterval(() => {
     activeIndex.value = (activeIndex.value + 1) % items.length
-  }, 4000) // Changes every 4 seconds
+  }, 9000) // Changes every 9 seconds
 }
 
 const stopAutoplay = () => {
