@@ -32,31 +32,27 @@ const advantageItems = [
   }
 ]
 
-// Carousel Configuration.
-// gap: 0 at every breakpoint — the design is one continuous band, and any
-// gap would break it into separate cards. Separation is the 1px divider
-// drawn on each slide's left edge (see the style block).
+// Carousel Configuration. Each slide is now an independent glass card, so a
+// real gap separates them instead of the old hairline-divider band.
 const config = {
   itemsToShow: 1,
-  transition: 600,
+  transition: 5000,
   wrapAround: true, // Infinite loop
-  gap: 0,
+  gap: 24,
   breakpoints: {
     768: {
       itemsToShow: 2,
-      gap: 0,
+      gap: 24,
     },
     1024: {
       itemsToShow: 4,
-      gap: 0,
+      gap: 24,
     },
   },
   autoplay: {
-    delay: 100000,
+    delay: 5000,
     pauseOnHover: true,
   },
-  
-  
 }
 
 // Pause/resume on hover. Guarded with optional calls: the Autoplay plugin
@@ -71,106 +67,80 @@ const resumeAutoplay = () => {
 </script>
 
 <template>
-  <section class="bg-white">
-    <!-- Header sits on a tinted band; the card band below is white and runs
-         full-bleed, so the columns read as one continuous strip divided by
-         hairlines rather than as separate floating cards. -->
-    <div class="bg-navy-50 py-16 md:py-20">
-      <UContainer>
-        <div class="text-center relative">
-          <UBadge label="OUR ADVANTAGE" color="neutral" variant="soft"
-            class="border border-gray-200 bg-white px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5" />
-          <h2 class="text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight">
-            Why We Stand Out in the<br class="hidden md:block" />
-            Texora Industry
-          </h2>
-        </div>
-      </UContainer>
+  <section class="relative bg-navy-50 py-16 md:py-20 overflow-hidden">
+    <!-- Ambient glow blobs — same glass/navy/gold language as the header & footer -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-navy-200/50 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-[#e8b938]/20 rounded-full blur-3xl pointer-events-none">
     </div>
 
-    <!-- Carousel Wrapper (Handles mouse enter/leave to pause/resume autoplay) -->
-    <div class="w-full border-y border-gray-200" @mouseenter="pauseAutoplay" @mouseleave="resumeAutoplay">
-      <Carousel ref="carouselRef" v-bind="config" class="advantage-carousel">
-        <Slide v-for="item in advantageItems" :key="item.id">
-          <!-- Hairline on the left edge forms the column divider -->
-          <article class="advantage-card group h-full w-full bg-white flex flex-col text-left">
+    <UContainer class="relative">
+      <div class="text-center mb-12 lg:mb-16">
+        <UBadge label="OUR ADVANTAGE" color="primary" variant="soft"
+          class="border border-gray-200 bg-white px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5" />
+        <h2 class="text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight">
+          Why We Stand Out in the<br class="hidden md:block" />
+          Manufacturing Industry
+        </h2>
+      </div>
 
-            <div class="px-7 pt-8 pb-6 flex flex-col grow">
-              <!-- Title — held to two lines so every column aligns -->
-              <h3 class="font-bold text-xl text-primary mb-6 leading-snug min-h-14">
-                {{ item.title }}
-              </h3>
+      <!-- Carousel Wrapper (Handles mouse enter/leave to pause/resume autoplay) -->
+      <div class="w-full" @mouseenter="pauseAutoplay" @mouseleave="resumeAutoplay">
+        <Carousel ref="carouselRef" v-bind="config" class="advantage-carousel">
+          <Slide v-for="item in advantageItems" :key="item.id">
+            <article
+              class="advantage-card group h-full w-full flex flex-col text-left rounded-2xl bg-white/70 backdrop-blur-xl border border-white/80 shadow-xs transition-all duration-500 ease-in-out hover:bg-white/90 hover:border-[#e8b938]/50  hover:-translate-y-1.5">
 
-              <!-- Image with Animation -->
-              <div class="overflow-hidden rounded-lg mb-6 aspect-4/3 relative">
-                <img :src="item.image" alt="HCTPAL Manufacturing" loading="lazy"
-                  class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105" />
+              <div class="px-5 pt-8 pb-6 flex flex-col grow">
+                <!-- Title — held to two lines so every column aligns -->
+                <h3 class="font-bold text-xl text-primary mb-2 leading-snug min-h-14">
+                  {{ item.title }}
+                </h3>
+
+                <!-- Image with Animation -->
+                <div class="overflow-hidden rounded-xl mb-6 aspect-4/3 relative">
+                  <img :src="item.image" alt="HCTPAL Manufacturing" loading="lazy"
+                    class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105" />
+                </div>
+
+                <!-- Description -->
+                <p class="text-sm text-gray-500 leading-relaxed grow">
+                  {{ item.description }}
+                </p>
               </div>
 
-              <!-- Description -->
-              <p class="text-sm text-gray-500 leading-relaxed grow">
-                {{ item.description }}
-              </p>
-            </div>
-
-            <!-- Footer bar: full-width rule, icon boxed off in its own cell -->
-            <div class="flex items-stretch border-t border-gray-200 mt-auto">
-              <a href="#"
-                class="grow flex items-center gap-2 px-7 py-5 text-[11px] font-bold uppercase tracking-wider text-primary hover:text-secondary transition-colors">
-                Read More
-                <UIcon name="i-heroicons-arrow-right-20-solid" class="text-sm" />
-              </a>
-              <div class="flex items-center justify-center px-6 border-l border-gray-200 text-gray-400
-                          group-hover:text-secondary transition-colors">
-                <UIcon name="i-heroicons-square-3-stack-3d" class="text-xl" />
+              <!-- Footer bar: full-width rule, icon boxed off in its own cell -->
+              <div class="flex items-stretch border-t border-gray-200/70 mt-auto">
+                <a href="#"
+                  class="grow flex items-center gap-2 px-5 py-5 text-[11px] font-bold uppercase tracking-wider text-primary hover:text-[#e8b938] transition-colors">
+                  Read More
+                  <UIcon name="i-heroicons-arrow-right-20-solid" class="text-sm" />
+                </a>
+                <div class="flex items-center justify-center px-6 border-l border-gray-200/70 text-gray-400
+                            group-hover:text-[#e8b938] transition-colors">
+                  <UIcon name="i-heroicons-square-3-stack-3d" class="text-xl" />
+                </div>
               </div>
-            </div>
-          </article>
-        </Slide>
-      </Carousel>
-    </div>
+            </article>
+          </Slide>
+        </Carousel>
+      </div>
+    </UContainer>
   </section>
 </template>
 
 <style>
 /* Unscoped: vue3-carousel renders these internals outside our scope id.
-   The design is a single continuous band, so slides carry NO gap, radius
-   or shadow — separation comes from a 1px divider on each slide's left
-   edge, which is why `gap: 0` is set in the carousel config. */
+   Each slide now hosts an independent glass card (radius, blur, border all
+   live on .advantage-card), so the track just needs to stretch slides to
+   equal height and let the configured gap show between them. */
 .advantage-carousel .carousel__slide {
   padding: 0;
   display: flex;
   align-items: stretch;
-  height: auto; /* Stretch cards to equal height */
+  height: auto;
 }
 
 .advantage-carousel .carousel__track {
   align-items: stretch;
-}
-
-/* Column divider hairlines. Using a pseudo-element rather than
-   border-left avoids the doubled line where two slides meet and keeps
-   the divider full-bleed to the band's top and bottom edges. */
-.advantage-carousel .advantage-card {
-  position: relative;
-}
-
-.advantage-carousel .advantage-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 1px;
-  background-color: var(--color-gray-200, #e5e7eb);
-}
-
-/* Subtle lift on hover — the band stays flat, only the tint changes. */
-.advantage-carousel .advantage-card {
-  transition: background-color 0.3s ease;
-}
-
-.advantage-carousel .advantage-card:hover {
-  background-color: #fafbfd;
 }
 </style>

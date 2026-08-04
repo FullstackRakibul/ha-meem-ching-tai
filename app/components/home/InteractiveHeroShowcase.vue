@@ -57,6 +57,7 @@ onMounted(() => {
 onUnmounted(() => {
   stopAutoplay()
 })
+
 </script>
 
 <template>
@@ -80,15 +81,16 @@ onUnmounted(() => {
         class="relative group cursor-pointer flex flex-col items-center pt-[20vh] transition-colors duration-300"
         @mouseenter="handleSelect(index)" @click="handleSelect(index)">
 
-        <!-- ACTIVE State: Dark Pill Badge -->
+        <!-- ACTIVE State: Glass pill with gold underline accent -->
         <div v-if="activeIndex === index"
-          class="bg-black/60 backdrop-blur-sm rounded-full px-6 py-3 text-white text-sm font-medium uppercase tracking-widest transition-all duration-300">
+          class="relative flex flex-col items-center gap-2.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-lg px-6 py-3 text-white text-sm font-semibold uppercase tracking-widest transition-all duration-500 ease-out">
           {{ item.title }}
+          <span class="absolute -bottom-3 h-0.5 w-10 rounded-full bg-[#e8b938]"></span>
         </div>
 
-        <!-- INACTIVE State: Faded Text -->
+        <!-- INACTIVE State: Faded text that lifts and gains a glass outline on hover -->
         <div v-else
-          class="text-white/50 text-sm font-medium uppercase tracking-widest group-hover:text-white transition-colors duration-300">
+          class="rounded-full border border-transparent px-6 py-3 text-white/50 text-sm font-semibold uppercase tracking-widest transition-all duration-300 ease-out group-hover:text-white group-hover:border-white/20 group-hover:bg-white/5 group-hover:backdrop-blur-md group-hover:-translate-y-0.5">
           {{ item.title }}
         </div>
 
