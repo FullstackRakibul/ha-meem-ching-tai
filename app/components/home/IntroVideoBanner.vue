@@ -1,9 +1,5 @@
 <template>
-  <!-- Deliberately no `overflow-hidden`: it would clip the fixed child back
-       to the section box and cancel the parallax. `clip-path: inset(0)` in
-       the style block provides the containing/clipping behaviour instead. -->
   <section class="parallax-banner relative w-full h-[50vh] md:h-[70vh] flex items-center justify-center group">
-    <!-- Pinned to the viewport; the section scrolls over it. -->
     <div class="parallax-viewport">
       <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg"
         alt="Colorful thread spools in textile manufacturing"
@@ -11,8 +7,7 @@
     </div>
 
     <!-- Subtle dark gradient overlay to ensure the button remains the hero -->
-    <div class="absolute inset-0 z-1 pointer-events-none bg-linear-to-t from-black/30 via-transparent to-black/20">
-    </div>
+    <div class="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/20"></div>
 
     <!-- Floating Play Button -->
     <div class="relative z-10 cursor-pointer hover:scale-110 transition-transform duration-300 ease-out">

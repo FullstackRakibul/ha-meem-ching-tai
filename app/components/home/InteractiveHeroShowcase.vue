@@ -25,6 +25,7 @@ const items = [
   }
 ]
 
+
 const activeIndex = ref(0)
 let interval = null
 
