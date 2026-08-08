@@ -15,13 +15,14 @@ const props = defineProps({
 const emit = defineEmits(['slide-change', 'total-slides'])
 
 const images = [
-  { id: 1, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai09.jpeg', title: 'Precision Engineering', desc: 'Crafting export-quality accessories for the global apparel industry.' },
-  { id: 2, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai08.jpeg', title: 'Advanced Technology', desc: 'Leveraging modern machinery to ensure consistent, world-class quality.' },
-  { id: 3, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg', title: 'Strategic Partnership', desc: 'A joint venture between Ha-Meem Group and Ching Tai.' },
-  { id: 4, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai02.jpeg', title: 'Built for Export', desc: 'Strengthening Bangladesh\'s backward linkage industry.' },
-  { id: 5, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai04.jpeg', title: 'Integrated Supply Chain', desc: 'From raw materials to finished trims, we close the gap.' },
-  { id: 6, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg', title: 'Global Reach', desc: 'Trusted by sourcing teams across five continents.' },
-  { id: 7, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai06.jpeg', title: 'Lead Time Solved', desc: 'Reducing delays and keeping export orders on schedule.' },
+  { id: 1, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg', title: 'Precision Engineering', desc: 'Crafting export-quality accessories for the global apparel industry.' },
+  { id: 2, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai09.jpeg', title: 'Precision Engineering', desc: 'Crafting export-quality accessories for the global apparel industry.' },
+  { id: 3, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai08.jpeg', title: 'Advanced Technology', desc: 'Leveraging modern machinery to ensure consistent, world-class quality.' },
+  { id: 4, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg', title: 'Strategic Partnership', desc: 'A joint venture between Ha-Meem Group and Ching Tai.' },
+  { id: 5, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai02.jpeg', title: 'Built for Export', desc: 'Strengthening Bangladesh\'s backward linkage industry.' },
+  { id: 6, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai04.jpeg', title: 'Integrated Supply Chain', desc: 'From raw materials to finished trims, we close the gap.' },
+  { id: 7, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg', title: 'Global Reach', desc: 'Trusted by sourcing teams across five continents.' },
+  { id: 8, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai06.jpeg', title: 'Lead Time Solved', desc: 'Reducing delays and keeping export orders on schedule.' },
 ]
 
 
@@ -82,15 +83,21 @@ const config = computed(() => ({
   position: relative;
   width: 100%;
   height: 100vh;
-  overflow: hidden; /* Required for the Ken Burns zoom to stay inside */
+  overflow: hidden;
+  /* Required for the Ken Burns zoom to stay inside */
 }
 
 /* ============================================
    KEN BURNS (Zoom) ANIMATION
    ============================================ */
 @keyframes kenBurns {
-  0% { transform: scale(1.0); }
-  100% { transform: scale(1.3); }
+  0% {
+    transform: scale(1.0);
+  }
+
+  100% {
+    transform: scale(1.3);
+  }
 }
 
 .slide-image {
@@ -103,7 +110,9 @@ const config = computed(() => ({
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .slide-image { animation: none; }
+  .slide-image {
+    animation: none;
+  }
 }
 
 /* ============================================
@@ -119,7 +128,8 @@ const config = computed(() => ({
   justify-content: center;
   text-align: center;
   padding: 1rem;
-  pointer-events: none; /* Allows clicks to pass through to nav controls */
+  pointer-events: none;
+  /* Allows clicks to pass through to nav controls */
 }
 
 .overlay-title {
@@ -142,8 +152,13 @@ const config = computed(() => ({
 
 /* Responsive text sizes */
 @media (min-width: 768px) {
-  .overlay-title { font-size: 5rem; }
-  .overlay-desc { font-size: 1.25rem; }
+  .overlay-title {
+    font-size: 5rem;
+  }
+
+  .overlay-desc {
+    font-size: 1.25rem;
+  }
 }
 
 /* Top-down gradient so nav text stays legible on light photos */
@@ -152,14 +167,12 @@ const config = computed(() => ({
   inset: 0;
   pointer-events: none;
   z-index: 10;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.05) 22%,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0.1) 80%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0.05) 22%,
+      rgba(0, 0, 0, 0) 45%,
+      rgba(0, 0, 0, 0.1) 80%,
+      rgba(0, 0, 0, 0.5) 100%);
 }
 </style>
 

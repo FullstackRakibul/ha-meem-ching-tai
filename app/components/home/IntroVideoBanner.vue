@@ -10,32 +10,50 @@
     <div class="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-black/20"></div>
 
     <!-- Floating Play Button -->
-    <div class="relative z-10 cursor-pointer hover:scale-110 transition-transform duration-300 ease-out">
-      <svg viewBox="0 0 120 120" class="w-28 h-28 md:w-36 md:h-36 drop-shadow-xl">
-        <defs>
-          <!-- Path used to bend the text -->
-          <path id="circlePath" d="M 60,60 m -42,0 a 42,42 0 1,1 84,0 a 42,42 0 1,1 -84,0" fill="none" />
-        </defs>
+    <button type="button" aria-label="Play intro video"
+      class="group/btn relative z-10 flex flex-col items-center gap-3 cursor-pointer">
+      <span class="relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24">
+        <!-- Outer glass ring -->
+        <span
+          class="absolute inset-0 rounded-full bg-white/10 backdrop-blur-md border border-white/40 shadow-xl transition-all duration-300 ease-out group-hover/btn:bg-[#e8b938] group-hover/btn:border-[#e8b938] group-hover/btn:scale-110">
+        </span>
+        <!-- Pulsing ping ring -->
+        <span
+          class="absolute inset-0 rounded-full border border-white/60 animate-ping-slow motion-reduce:hidden">
+        </span>
+        <!-- Play triangle -->
+        <UIcon name="i-heroicons-play-solid"
+          class="relative w-7 h-7 md:w-8 md:h-8 text-white translate-x-0.5 transition-transform duration-300 ease-out group-hover/btn:scale-110 group-hover/btn:text-[#152F53]" />
+      </span>
 
-        <!-- Gold Background Circle -->
-        <circle cx="60" cy="60" r="50" fill="#e8b938"
-          class="transition-colors duration-300 group-hover:fill-[#d4a52f]" />
-
-        <!-- Curved Text (INTRO VIDEO) -->
-        <text class="fill-[#1a1a1a] font-bold text-[10px] md:text-[12px] uppercase tracking-[0.2em]">
-          <textPath href="#circlePath" startOffset="8%">INTRO VIDEO</textPath>
-        </text>
-
-        <!-- Play Arrow (Pointing to the right) -->
-        <polygon points="48,40 48,80 84,60" fill="#1a1a1a"
-          class="transition-colors duration-300 group-hover:fill-black" />
-      </svg>
-    </div>
+      <span
+        class="text-white text-xs md:text-sm font-semibold uppercase tracking-[0.25em] drop-shadow-md transition-colors duration-300 group-hover/btn:text-[#e8b938]">
+        Intro Video
+      </span>
+    </button>
 
   </section>
 </template>
 
 <style scoped>
+/* Ambient pulse on the play button's ring — Tailwind's built-in animate-ping
+   is too fast/twitchy for a slow ambient cue, so a dedicated slower keyframe
+   is used instead. */
+@keyframes ping-slow {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  75%, 100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
 /* ============================================
    FIXED / PARALLAX BACKGROUND
    ============================================

@@ -70,7 +70,7 @@
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
         <span class="text-sm text-gray-500">Don't hesitate. Contact us for a full breakdown of our capabilities.</span>
         <UButton label="Explore Our Milestones" trailing-icon="i-heroicons-arrow-right-20-solid"
-          class="bg-primary hover:bg-secondary text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors" />
+          class="bg-primary hover:bg-[#e8b938] text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors" />
       </div>
     </UContainer>
   </section>
