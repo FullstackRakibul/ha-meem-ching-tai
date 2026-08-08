@@ -5,7 +5,7 @@
       <!-- The one dark surface in a light footer, same treatment as the
            featured card in VentureAtAGlance: photo + gradient + navy ring. -->
       <div
-        class="relative rounded-3xl overflow-hidden shadow-xl ring-1 ring-primary/20 bg-navy-800"
+        class="relative rounded-3xl overflow-hidden shadow-xl ring-1 ring-primary/20 bg-navy-400"
       >
         <img
           src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg"
@@ -14,7 +14,7 @@
           class="absolute inset-0 w-full h-full object-cover"
         />
         <div
-          class="absolute inset-0 bg-linear-to-r from-navy-900/95 via-navy-900/85 to-navy-900/70"
+          class="absolute inset-0 bg-linear-to-r from-navy-900/5 via-navy-900/85 to-navy-900/90"
         ></div>
 
         <div
