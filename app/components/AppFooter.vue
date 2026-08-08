@@ -1,192 +1,150 @@
 <template>
-  <footer class="relative w-full overflow-hidden">
-    <!-- Background photo + navy overlay, shared by the CTA panel above the fold line -->
-    <div class="absolute inset-0 z-0">
-      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg" alt=""
-        class="w-full h-full object-cover" />
-      <div class="absolute inset-0 bg-navy-900/90"></div>
-    </div>
+  <footer class="relative w-full overflow-hidden bg-[#f5f5f0] pt-16 md:pt-24">
+    <UContainer>
+      <!-- ================= Dark CTA card ================= -->
+      <!-- The one dark surface in a light footer, same treatment as the
+           featured card in VentureAtAGlance: photo + gradient + navy ring. -->
+      <div
+        class="relative rounded-3xl overflow-hidden shadow-xl ring-1 ring-primary/20 bg-navy-800"
+      >
+        <img
+          src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg"
+          alt=""
+          loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover"
+        />
+        <div
+          class="absolute inset-0 bg-linear-to-r from-navy-900/95 via-navy-900/85 to-navy-900/70"
+        ></div>
 
-    <div class="relative z-10 max-w-7xl mx-auto px-4 md:px-8">
-      <!-- CTA + Contact Form -->
-      <div class="pt-20 md:pt-28 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-        <!-- Left: Copy -->
-        <div>
-          <UBadge label="START TODAY" color="secondary" variant="soft"
-            class="border border-white/20 bg-white/5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5 text-white" />
-          <h2 class="text-3xl md:text-5xl font-bold text-white leading-[1.15] tracking-tight mb-4">
-            Let's Build Your Next<br class="hidden md:block" />
-            Collection Together
+        <div
+          class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center p-8 md:p-12 lg:p-14"
+        >
+          <h2
+            class="text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight"
+          >
+            Tell us what you're<br class="hidden md:block" />
+            sourcing.
           </h2>
-          <p class="text-white/70 text-base leading-relaxed max-w-md">
-            Share your sourcing requirements and one of our engineers will reach out with fabric options, lead
-            times, and pricing tailored to your order.
-          </p>
+
+          <div class="lg:pl-4">
+            <p class="text-white/70 leading-relaxed mb-6">
+              Send your requirements and an engineer from the mill comes back with fabric
+              options, honest lead times, and pricing against your order volume.
+            </p>
+            <div class="flex flex-wrap items-center gap-4">
+              <UButton
+                label="Request a quote"
+                trailing-icon="i-heroicons-arrow-right-20-solid"
+                class="bg-white hover:bg-secondary text-navy-900 hover:text-white font-semibold rounded-full px-6 py-2.5 text-sm transition-colors"
+              />
+              <a
+                href="tel:+12125785758"
+                class="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
+              >
+                <UIcon name="i-heroicons-phone-20-solid" class="w-4 h-4" />
+                +1 (212) 578-5758
+              </a>
+            </div>
+          </div>
         </div>
-
-        <!-- Right: Form Card -->
-        <form class="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-6 md:p-8"
-          @submit.prevent>
-          <h3 class="text-white font-semibold text-lg mb-5">Leave a message!</h3>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="text-xs text-white/60 uppercase tracking-wide">First Name</label>
-              <input type="text" placeholder="Add Here"
-                class="mt-1.5 w-full bg-white/10 border border-white/20 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#e8b938] transition-colors" />
-            </div>
-            <div>
-              <label class="text-xs text-white/60 uppercase tracking-wide">Last Name</label>
-              <input type="text" placeholder="Add Here"
-                class="mt-1.5 w-full bg-white/10 border border-white/20 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#e8b938] transition-colors" />
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <label class="text-xs text-white/60 uppercase tracking-wide">Email</label>
-            <input type="email" placeholder="you@company.com"
-              class="mt-1.5 w-full bg-white/10 border border-white/20 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#e8b938] transition-colors" />
-          </div>
-
-          <div class="mb-4">
-            <label class="text-xs text-white/60 uppercase tracking-wide">Phone Number</label>
-            <input type="tel" placeholder="(000) 000 0000"
-              class="mt-1.5 w-full bg-white/10 border border-white/20 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#e8b938] transition-colors" />
-          </div>
-
-          <div class="mb-6">
-            <label class="text-xs text-white/60 uppercase tracking-wide">Message</label>
-            <textarea rows="3" placeholder="Add your lines here..."
-              class="mt-1.5 w-full bg-white/10 border border-white/20 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#e8b938] transition-colors resize-none"></textarea>
-          </div>
-
-          <UButton type="submit" label="Submit Inquiry" trailing-icon="i-heroicons-arrow-up-right-20-solid"
-            class="bg-[#e8b938] hover:bg-white text-navy-900 font-semibold rounded-full px-6 py-2.5 text-sm transition-colors" />
-        </form>
       </div>
 
-      <!-- Link columns -->
-      <div class="border-t border-white/10 pt-12 pb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <!-- ================= Watermark ================= -->
+      <!-- Sized with cqw (container width) rather than vw so it scales to the
+           UContainer it sits in and stays inside the gutters — vw is measured
+           against the viewport, which pushed it past both edges. -->
+      <div
+        class="relative select-none pointer-events-none -mt-2 md:-mt-6 mb-4 md:mb-8 flex justify-center overflow-hidden"
+        style="container-type: inline-size"
+      >
+        <span
+          class="block font-bold uppercase text-navy-500/4 leading-none whitespace-nowrap tracking-tight"
+          style="font-size: 9.5cqw"
+        >
+          Ha-Meem Ching Tai
+        </span>
+      </div>
+
+      <!-- ================= Link columns ================= -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-x-8 gap-y-10 pb-14">
         <!-- Brand -->
-        <div class="flex flex-col gap-4">
-          <div class="flex items-center gap-2">
-            <UIcon name="i-heroicons-cog-16-solid" class="text-[#e8b938] text-2xl" />
-            <span class="font-bold text-white text-lg tracking-tight uppercase">Ha-Meem Ching Tai</span>
+        <div class="col-span-2 sm:col-span-4 lg:col-span-3 lg:pr-8">
+          <div class="font-bold text-[#1a1a1a] text-xl tracking-tight uppercase mb-3">
+            Ha-Meem Ching Tai
           </div>
-          <p class="text-sm text-white/60 leading-relaxed">
-            A manufacturing partner, not a supplier. Strengthening Bangladesh's backward linkage industry through
-            world-class precision engineering.
+          <p class="text-[15px] text-gray-500 leading-relaxed max-w-sm">
+            Garment accessories made in Bangladesh — the ones the industry used to wait
+            months to import.
           </p>
-          <div class="flex items-center gap-3 mt-1">
-            <a href="#"
-              class="w-8 h-8 flex items-center justify-center rounded-full border border-white/20 text-white/70 hover:text-navy-900 hover:bg-[#e8b938] hover:border-[#e8b938] transition-colors duration-300">
-              <UIcon name="i-heroicons-envelope-20-solid" class="w-3.5 h-3.5" />
-            </a>
-            <a href="#"
-              class="w-8 h-8 flex items-center justify-center rounded-full border border-white/20 text-white/70 hover:text-navy-900 hover:bg-[#e8b938] hover:border-[#e8b938] transition-colors duration-300">
-              <UIcon name="i-heroicons-globe-alt-20-solid" class="w-3.5 h-3.5" />
-            </a>
-            <a href="#"
-              class="w-8 h-8 flex items-center justify-center rounded-full border border-white/20 text-white/70 hover:text-navy-900 hover:bg-[#e8b938] hover:border-[#e8b938] transition-colors duration-300">
-              <UIcon name="i-heroicons-building-office-2-20-solid" class="w-3.5 h-3.5" />
-            </a>
-          </div>
         </div>
 
-        <!-- Explore -->
-        <div>
-          <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-sm">Explore</h4>
-          <ul class="space-y-2.5 text-sm text-white/60">
-            <li>
-              <a href="#" class="hover:text-[#e8b938] transition-colors duration-300 inline-flex items-center gap-1.5">
-                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-3.5 h-3.5 text-[#e8b938]" />
-                Why It Matters
-              </a>
-            </li>
-            <li>
-              <a href="#" class="hover:text-[#e8b938] transition-colors duration-300 inline-flex items-center gap-1.5">
-                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-3.5 h-3.5 text-[#e8b938]" />
-                The Venture at a Glance
-              </a>
-            </li>
-            <li>
-              <a href="#" class="hover:text-[#e8b938] transition-colors duration-300 inline-flex items-center gap-1.5">
-                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-3.5 h-3.5 text-[#e8b938]" />
-                Our Products
-              </a>
-            </li>
-            <li>
-              <a href="#" class="hover:text-[#e8b938] transition-colors duration-300 inline-flex items-center gap-1.5">
-                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-3.5 h-3.5 text-[#e8b938]" />
-                The Facility
-              </a>
-            </li>
-            <li>
-              <a href="#" class="hover:text-[#e8b938] transition-colors duration-300 inline-flex items-center gap-1.5">
-                <UIcon name="i-heroicons-chevron-right-20-solid" class="w-3.5 h-3.5 text-[#e8b938]" />
-                Development Milestones
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Contact -->
-        <div>
-          <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-sm">Contact Us</h4>
-          <ul class="space-y-3 text-sm text-white/60">
-            <li class="flex items-center gap-2.5">
-              <UIcon name="i-heroicons-phone-solid" class="text-[#e8b938] w-4 h-4 shrink-0" />
-              <span>+1 (212) 578-5758</span>
-            </li>
-            <li class="flex items-center gap-2.5">
-              <UIcon name="i-heroicons-envelope-solid" class="text-[#e8b938] w-4 h-4 shrink-0" />
-              <span>info@hctpal.com</span>
+        <!-- 3 columns × 2 + Offices 3 + brand 3 = 12 -->
+        <div
+          v-for="column in columns"
+          :key="column.title"
+          class="sm:col-span-1 lg:col-span-2"
+        >
+          <h4 class="font-semibold text-[#1a1a1a] text-sm mb-4">{{ column.title }}</h4>
+          <ul class="space-y-3 text-[15px]">
+            <li v-for="link in column.links" :key="link">
+              <a
+                href="#"
+                class="text-gray-500 hover:text-secondary transition-colors duration-300"
+                >{{ link }}</a
+              >
             </li>
           </ul>
         </div>
 
         <!-- Offices -->
-        <div>
-          <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-sm">Our Offices</h4>
-          <div class="space-y-4 text-sm text-white/60">
-            <div>
-              <div class="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">Factory HQ</div>
-              <div class="flex items-start gap-2.5">
-                <UIcon name="i-heroicons-map-pin-solid" class="text-[#e8b938] w-4 h-4 shrink-0 mt-0.5" />
-                <span>Ghorashal, Narsingdi, Bangladesh</span>
-              </div>
-            </div>
-            <div>
-              <div class="text-xs font-semibold text-white/80 uppercase tracking-wide mb-1">Head Office</div>
-              <div class="flex items-start gap-2.5">
-                <UIcon name="i-heroicons-map-pin-solid" class="text-[#e8b938] w-4 h-4 shrink-0 mt-0.5" />
-                <span>Gulshan, Dhaka, Bangladesh</span>
-              </div>
-            </div>
+        <div class="col-span-2 sm:col-span-1 lg:col-span-3">
+          <h4 class="font-semibold text-[#1a1a1a] text-sm mb-4">Offices</h4>
+          <div class="space-y-4 text-[15px] text-gray-500">
+            <p>Factory HQ<br />Ghorashal, Narsingdi</p>
+            <p>Head office<br />Gulshan, Dhaka</p>
           </div>
         </div>
       </div>
-    </div>
+    </UContainer>
 
-    <!-- Giant watermark wordmark -->
-    <div class="relative z-10 border-t border-white/10 overflow-hidden select-none pointer-events-none">
-      <span
-        class="block text-center font-extrabold uppercase text-white/5 leading-none whitespace-nowrap"
-        style="font-size: clamp(3.5rem, 14vw, 11rem); margin-bottom: -0.12em;">
-        Ha-Meem Ching Tai
-      </span>
-    </div>
-
-    <!-- Legal bar -->
-    <div class="relative z-10 border-t border-white/10">
-      <div
-        class="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-col md:flex-row justify-between items-center gap-3 text-xs text-white/50">
-        <p>&copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai (HCTPAL). All rights reserved.</p>
-        <div class="flex gap-6 font-medium">
-          <a href="#" class="hover:text-[#e8b938] transition-colors duration-300">Privacy Policy</a>
-          <a href="#" class="hover:text-[#e8b938] transition-colors duration-300">Terms of Service</a>
+    <!-- ================= Legal bar ================= -->
+    <div class="border-t border-gray-200">
+      <UContainer>
+        <div
+          class="py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-400"
+        >
+          <p>
+            &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai (HCTPAL). All rights
+            reserved.
+          </p>
+          <div class="flex gap-6">
+            <a href="#" class="hover:text-secondary transition-colors duration-300"
+              >Privacy Policy</a
+            >
+            <a href="#" class="hover:text-secondary transition-colors duration-300"
+              >Terms of Use</a
+            >
+          </div>
         </div>
-      </div>
+      </UContainer>
     </div>
   </footer>
 </template>
+
+<script setup>
+const columns = [
+  {
+    title: "Company",
+    links: ["About", "Why It Matters", "The Facility", "Milestones"],
+  },
+  {
+    title: "Products",
+    links: ["Pocketing Fabric", "Interlinings", "Labels & Tapes", "Packaging"],
+  },
+  {
+    title: "Connect",
+    links: ["Contact", "LinkedIn", "Careers"],
+  },
+];
+</script>

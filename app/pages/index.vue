@@ -32,6 +32,9 @@ import CompanyDescription from '~/components/home/CompanyDescription.vue'
 // carousel can occupy the full viewport.
 definePageMeta({ fullBleed: true })
 
+// Keep in sync with `mouseWheel.threshold` in MouseWheelCarousel.vue.
+const WHEEL_THRESHOLD = 15
+
 const stageRef = ref(null)
 const contentRef = ref(null)
 
@@ -54,6 +57,8 @@ const isLastSlide = computed(
 const wheelEnabled = computed(() => !isDrifting.value)
 
 // Gentle, eased drift from the last slide into the content section.
+let driftTimer = null
+
 const driftToContent = () => {
   if (isDrifting.value || !contentRef.value) return
   isDrifting.value = true
@@ -61,10 +66,13 @@ const driftToContent = () => {
   const target = contentRef.value.getBoundingClientRect().top + window.scrollY
   window.scrollTo({ top: target, behavior: 'smooth' })
 
-  setTimeout(() => {
+  clearTimeout(driftTimer)
+  driftTimer = setTimeout(() => {
     isDrifting.value = false
   }, 900)
 }
+
+onBeforeUnmount(() => clearTimeout(driftTimer))
 
 const debouncedDrift = useDebounceFn(driftToContent, 60)
 
@@ -88,6 +96,12 @@ useEventListener(
       event.preventDefault()
       return
     }
+
+    // Match the carousel's own wheel threshold (mouseWheel.threshold in
+    // MouseWheelCarousel). Below it the library ignores the event entirely, so
+    // treating it as a real scroll here would drift the page on a stray
+    // trackpad twitch that never moved the carousel.
+    if (Math.abs(event.deltaY) <= WHEEL_THRESHOLD) return
 
     const scrollingDown = event.deltaY > 0
 

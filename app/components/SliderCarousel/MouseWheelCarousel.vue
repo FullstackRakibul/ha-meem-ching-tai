@@ -1,6 +1,6 @@
 <script setup>
-import { Carousel, Pagination, Navigation, Slide } from 'vue3-carousel'
-import 'vue3-carousel/carousel.css'
+import { Carousel, Pagination, Navigation, Slide } from "vue3-carousel";
+import "vue3-carousel/carousel.css";
 
 const props = defineProps({
   // The parent intercepts the wheel itself (to hand scrolling over to the page
@@ -10,41 +10,105 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-})
+});
 
-const emit = defineEmits(['slide-change', 'total-slides'])
+const emit = defineEmits(["slide-change", "total-slides"]);
 
 const images = [
-  { id: 1, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg', title: 'Precision Engineering', desc: 'Crafting export-quality accessories for the global apparel industry.' },
-  { id: 2, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai09.jpeg', title: 'Precision Engineering', desc: 'Crafting export-quality accessories for the global apparel industry.' },
-  { id: 3, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai08.jpeg', title: 'Advanced Technology', desc: 'Leveraging modern machinery to ensure consistent, world-class quality.' },
-  { id: 4, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg', title: 'Strategic Partnership', desc: 'A joint venture between Ha-Meem Group and Ching Tai.' },
-  { id: 5, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai02.jpeg', title: 'Built for Export', desc: 'Strengthening Bangladesh\'s backward linkage industry.' },
-  { id: 6, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai04.jpeg', title: 'Integrated Supply Chain', desc: 'From raw materials to finished trims, we close the gap.' },
-  { id: 7, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg', title: 'Global Reach', desc: 'Trusted by sourcing teams across five continents.' },
-  { id: 8, url: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai06.jpeg', title: 'Lead Time Solved', desc: 'Reducing delays and keeping export orders on schedule.' },
-]
+  {
+    id: 1,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai33.jpeg",
+    title: "Precision Engineering",
+    desc: "Crafting export-quality accessories for the global apparel industry.",
+  },
 
+  {
+    id: 2,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai31.jpeg",
+    title: "Precision Engineering",
+    desc: "Crafting export-quality accessories for the global apparel industry.",
+  },
 
-const currentSlide = ref(0)
+  {
+    id: 3,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai34.jpeg",
+    title: "Advanced Technology",
+    desc: "Leveraging modern machinery to ensure consistent, world-class quality.",
+  },
+
+  {
+    id: 4,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg",
+    title: "Precision Engineering",
+    desc: "Crafting export-quality accessories for the global apparel industry.",
+  },
+
+  {
+    id: 5,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai30.jpeg",
+    title: "Built for Export",
+    desc: "Strengthening Bangladesh's backward linkage industry.",
+  },
+
+  {
+    id: 6,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg",
+    title: "Strategic Partnership",
+    desc: "A joint venture between Ha-Meem Group and Ching Tai.",
+  },
+  {
+    id: 7,
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg",
+    title: "Global Reach",
+    desc: "Trusted by sourcing teams across five continents.",
+  },
+];
+
+const currentSlide = ref(0);
+const isLastSlide = computed(() => currentSlide.value >= images.length - 1);
 
 onMounted(() => {
-  emit('total-slides', images.length)
-  emit('slide-change', currentSlide.value)
-})
+  emit("total-slides", images.length);
+  emit("slide-change", currentSlide.value);
+});
 
 // v-model is the reliable source of truth in vue3-carousel v0.15 —
 // the emitted events (slide-start/slide-end) differ in payload shape.
-watch(currentSlide, (index) => emit('slide-change', index))
+watch(currentSlide, (index) => emit("slide-change", index));
 
+// vue3-carousel 0.15 config. Notes on the non-obvious values:
+//
+//   autoplay — typed `number | undefined`: it IS the delay in ms. Passing the
+//     `{ delay, pauseOnHover }` object shape from other carousel libraries
+//     leaves autoplay silently dead. `pauseOnHover` is a separate top-level
+//     prop called `pauseAutoplayOnHover`.
+//
+//   transition — also gates the wheel: the library sets `isSliding` for the
+//     full duration and `useWheel` discards every event while it's true. At
+//     2000ms that swallowed almost all wheel input, which is what made
+//     up/down navigation feel stuck. 800ms still reads cinematic.
+//
+//   wrapAround stays false — index.vue's handover logic keys off "last slide"
+//     to release the wheel to the page, and wrapping would never let it settle.
 const config = computed(() => ({
-  height: '100vh',
+  height: "100vh",
   itemsToShow: 1,
   gap: 0,
-  mouseWheel: props.wheelEnabled,
   wrapAround: false,
-  transition: 600,
-}))
+  // Cross-fade suits full-bleed photography (and the Ken Burns zoom) far
+  // better than a horizontal slide.
+  slideEffect: "fade",
+  transition: 800,
+  // With wrapAround:false, next() clamps at the last slide — so once we land
+  // there autoplay would keep firing a no-op interval forever. Dropping it to
+  // 0 stops the timer (the library treats <= 0 as "off" and re-inits on
+  // change), which is right: the last slide is where the page takes over.
+  autoplay: isLastSlide.value ? 0 : 6000,
+  pauseAutoplayOnHover: true,
+  // Object form raises the delta threshold above the default 10 so trackpad
+  // micro-scrolls don't fire a slide change, and throttles repeat events.
+  mouseWheel: props.wheelEnabled ? { threshold: 15, throttleTime: 200 } : false,
+}));
 </script>
 
 <template>
@@ -90,29 +154,15 @@ const config = computed(() => ({
 /* ============================================
    KEN BURNS (Zoom) ANIMATION
    ============================================ */
-@keyframes kenBurns {
-  0% {
-    transform: scale(1.0);
-  }
-
-  100% {
-    transform: scale(1.3);
-  }
-}
-
+/* Base state only. The zoom is applied to the ACTIVE slide (below) instead of
+   every slide at once — otherwise each hidden slide's animation is already
+   mid-cycle when it fades in, so it arrives at an arbitrary zoom level. */
 .slide-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  /* 5s loop, ease-in-out, infinite alternating zoom in/out */
-  animation: kenBurns 5s ease-in-out infinite alternate;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .slide-image {
-    animation: none;
-  }
+  transform: scale(1);
 }
 
 /* ============================================
@@ -167,12 +217,14 @@ const config = computed(() => ({
   inset: 0;
   pointer-events: none;
   z-index: 10;
-  background: linear-gradient(to bottom,
-      rgba(0, 0, 0, 0.4) 0%,
-      rgba(0, 0, 0, 0.05) 22%,
-      rgba(0, 0, 0, 0) 45%,
-      rgba(0, 0, 0, 0.1) 80%,
-      rgba(0, 0, 0, 0.5) 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.05) 22%,
+    rgba(0, 0, 0, 0) 45%,
+    rgba(0, 0, 0, 0.1) 80%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
 }
 </style>
 
@@ -216,6 +268,85 @@ const config = computed(() => ({
   padding: 0;
   margin: 0;
   flex-shrink: 0;
+}
+
+/* --- Fade effect --------------------------------------------------------
+   With slideEffect:"fade" the library stacks every slide in one grid cell
+   (.is-effect-fade) and cross-fades opacity. `flex-shrink` above is a
+   flex-only property and is inert here, but the track must not keep the
+   flex sizing, so re-assert the grid the fade layout depends on. */
+.hct-carousel.is-effect-fade .carousel__track {
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: 100%;
+  height: 100vh;
+}
+
+.hct-carousel.is-effect-fade .carousel__slide {
+  grid-area: 1 / 1;
+  height: 100vh;
+}
+
+/* Ease the fade rather than running it linear — the library only sets a
+   duration, so the timing function is ours to choose. */
+.hct-carousel.is-effect-fade .carousel__slide {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Overlay copy rises in behind the fade, title first. Keyed to --active so it
+   replays on every slide change instead of only on mount. */
+.hct-carousel .carousel__slide--active .overlay-title,
+.hct-carousel .carousel__slide--active .overlay-desc {
+  animation: hctRiseIn 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hct-carousel .carousel__slide--active .overlay-title {
+  animation-delay: 150ms;
+}
+
+.hct-carousel .carousel__slide--active .overlay-desc {
+  animation-delay: 300ms;
+}
+
+@keyframes hctRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hct-carousel .carousel__slide--active .overlay-title,
+  .hct-carousel .carousel__slide--active .overlay-desc {
+    animation: none;
+  }
+}
+
+/* Ken Burns runs only on the active slide, so the zoom starts from scale(1)
+   each time a slide comes forward. `--vc-*`/`--active` are library classes,
+   hence this lives in the unscoped block. Duration comfortably exceeds the
+   6s autoplay delay so the motion never visibly resets mid-view. */
+.hct-carousel .carousel__slide--active .slide-image {
+  animation: hctKenBurns 9s ease-out forwards;
+}
+
+@keyframes hctKenBurns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hct-carousel .carousel__slide--active .slide-image {
+    animation: none;
+  }
 }
 
 /* Modern Pagination Positioning */
