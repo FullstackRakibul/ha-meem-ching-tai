@@ -1,10 +1,16 @@
 <script setup>
-import { Carousel, Slide } from "vue3-carousel";
-import "vue3-carousel/carousel.css";
+// Scroll-driven horizontal slides.
+//
+// No carousel library here any more: the section owns a tall block of vertical
+// scroll distance, pins its contents with `position: sticky`, and maps the
+// scroll progress through that block onto a horizontal translate of the track.
+// Scrolling down walks the cards forward, scrolling up walks them back.
+//
+// The per-frame position comes from Lenis (plugins/lenis.client.js) rather than
+// a native scroll listener, so the horizontal motion is driven by the same
+// eased value as the page — they stay locked together instead of the track
+// lagging a frame behind the smooth scroll.
 
-const carouselRef = ref(null);
-
-// 4 Data items to match your screenshot
 const advantageItems = [
   {
     id: 1,
@@ -34,133 +40,275 @@ const advantageItems = [
       "Our team of skilled engineers and technicians bring decades of hands-on experience and proprietary knowledge to every order.",
     image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg",
   },
+  {
+    id: 5,
+    title: "Unmatched Quality Control",
+    description:
+      "We lead the industry with rigorous quality checks at every stage of production, ensuring zero defects for global apparel clients.",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg",
+  },
+  {
+    id: 6,
+    title: "Eco-Friendly Practices",
+    description:
+      "Committed to sustainable manufacturing with advanced waste-management, low-emission technology, and ethical local sourcing.",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg",
+  },
+  {
+    id: 7,
+    title: "Innovative Fabric Solutions",
+    description:
+      "State-of-the-art machinery allows for creative, complex textile patterns, seamless integration, and rapid scaling capabilities.",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai17.jpeg",
+  },
+  {
+    id: 8,
+    title: "Skilled Workforce Expertise",
+    description:
+      "Our team of skilled engineers and technicians bring decades of hands-on experience and proprietary knowledge to every order.",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg",
+  },
 ];
 
-// Carousel Configuration. Each slide is now an independent glass card, so a
-// real gap separates them instead of the old hairline-divider band.
-const config = {
-  itemsToShow: 1,
-  transition: 8000,
-  wrapAround: true, // Infinite loop
-  gap: 24,
-  breakpoints: {
-    768: {
-      itemsToShow: 2,
-      gap: 24,
-    },
-    1024: {
-      itemsToShow: 3,
-      gap: 24,
-    },
-  },
-  autoplay: {
-    delay: 8000,
-    pauseOnHover: true,
-  },
+const sectionRef = ref(null);
+const trackRef = ref(null);
+
+// 0 → 1 across the pinned block. Drives both the track offset and the UI.
+const progress = ref(0);
+// How far the track must travel: its full width minus one viewport.
+const scrollDistance = ref(0);
+
+const activeIndex = computed(() => {
+  const i = Math.round(progress.value * (advantageItems.length - 1));
+  return Math.min(advantageItems.length - 1, Math.max(0, i));
+});
+
+// Pinned height = one viewport (the sticky frame) plus the horizontal travel,
+// so the section releases exactly when the last card lands.
+const sectionHeight = computed(() => `calc(100vh + ${scrollDistance.value}px)`);
+
+const trackStyle = computed(() => ({
+  transform: `translate3d(${-progress.value * scrollDistance.value}px, 0, 0)`,
+}));
+
+const measure = () => {
+  if (!trackRef.value) return;
+  // scrollWidth is the full track width including the overflowing cards.
+  const overflow = trackRef.value.scrollWidth - window.innerWidth;
+  scrollDistance.value = Math.max(0, overflow);
 };
 
-// Pause/resume on hover. Guarded with optional calls: the Autoplay plugin
-// is not registered above, so these methods are absent — without the guard
-// every mouseenter would throw.
-const pauseAutoplay = () => {
-  carouselRef.value?.pauseAutoplay?.();
+const update = () => {
+  if (!sectionRef.value) return;
+
+  const rect = sectionRef.value.getBoundingClientRect();
+  const total = rect.height - window.innerHeight;
+
+  if (total <= 0) {
+    progress.value = 0;
+    return;
+  }
+
+  // -rect.top is how far into the section we've scrolled.
+  const raw = -rect.top / total;
+  progress.value = Math.min(1, Math.max(0, raw));
 };
-const resumeAutoplay = () => {
-  carouselRef.value?.playAutoplay?.();
-};
+
+let stopLenis;
+let observer;
+
+onMounted(() => {
+  measure();
+  update();
+
+  const { $lenis } = useNuxtApp();
+
+  if ($lenis) {
+    // Lenis emits per animation frame with the eased scroll value, so the
+    // track moves in lockstep with the smooth scroll.
+    stopLenis = $lenis.on("scroll", update);
+  } else {
+    // Reduced-motion, or Lenis unavailable: fall back to native scroll.
+    window.addEventListener("scroll", update, { passive: true });
+    stopLenis = () => window.removeEventListener("scroll", update);
+  }
+
+  // Card widths are viewport-relative and images load late, both of which
+  // change the travel distance.
+  observer = new ResizeObserver(() => {
+    measure();
+    update();
+  });
+  observer.observe(trackRef.value);
+});
+
+onBeforeUnmount(() => {
+  stopLenis?.();
+  observer?.disconnect();
+});
 </script>
 
 <template>
-  <section class="relative bg-navy-50 py-16 md:py-20 overflow-hidden">
-    <!-- Ambient glow blobs — same glass/navy/gold language as the header & footer -->
+  <section
+    ref="sectionRef"
+    class="advantage-section relative bg-navy-50"
+    :style="{ height: sectionHeight }"
+  >
+    <!-- Sticky frame: stays put for the whole scroll block while the track
+         inside it slides horizontally. -->
     <div
-      class="absolute -top-24 -left-24 w-96 h-96 bg-navy-200/50 rounded-full blur-3xl pointer-events-none"
-    ></div>
-    <div
-      class="absolute -bottom-24 -right-24 w-96 h-96 bg-[#e8b938]/20 rounded-full blur-3xl pointer-events-none"
-    ></div>
+      class="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center"
+    >
+      <!-- Ambient glow blobs — same glass/navy/gold language as header & footer -->
+      <div
+        class="absolute -top-24 -left-24 w-96 h-96 bg-navy-200/50 rounded-full blur-3xl pointer-events-none"
+      ></div>
+      <div
+        class="absolute -bottom-24 -right-24 w-96 h-96 bg-[#e8b938]/20 rounded-full blur-3xl pointer-events-none"
+      ></div>
 
-    <UContainer class="relative">
-      <div class="text-center mb-12 lg:mb-16">
-        <UBadge
-          label="OUR ADVANTAGE"
-          color="primary"
-          variant="soft"
-          class="border border-gray-200 bg-white px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5"
-        />
-        <h2
-          class="text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight"
-        >
-          Why We Stand Out in the<br class="hidden md:block" />
-          Manufacturing Industry
-        </h2>
-      </div>
-
-      <!-- Carousel Wrapper (Handles mouse enter/leave to pause/resume autoplay) -->
-      <div class="w-full" @mouseenter="pauseAutoplay" @mouseleave="resumeAutoplay">
-        <Carousel ref="carouselRef" v-bind="config" class="advantage-carousel">
-          <Slide v-for="item in advantageItems" :key="item.id">
-            <article
-              class="advantage-card group h-full w-full flex flex-col text-left rounded-2xl bg-white/70 backdrop-blur-xl border border-white/80 shadow-xs transition-all duration-500 ease-in-out hover:bg-white/90 hover:border-[#e8b938]/50 hover:-translate-y-1.5"
+      <UContainer class="relative w-full">
+        <div class="mb-10 lg:mb-14 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <UBadge
+              label="OUR ADVANTAGE"
+              color="primary"
+              variant="soft"
+              class="border border-gray-200 bg-white px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5"
+            />
+            <h2
+              class="text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight"
             >
-              <div class="px-5 pt-8 pb-6 flex flex-col grow">
-                <!-- Title — held to two lines so every column aligns -->
-                <h3 class="font-bold text-xl text-primary mb-2 leading-snug min-h-14">
-                  {{ item.title }}
-                </h3>
+              Why We Stand Out in the<br class="hidden md:block" />
+              Manufacturing Industry
+            </h2>
+          </div>
 
-                <!-- Image with Animation -->
-                <div class="overflow-hidden rounded-xl mb-6 aspect-4/3 relative">
-                  <img
-                    :src="item.image"
-                    alt="HCTPAL Manufacturing"
-                    loading="lazy"
-                    class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
-                  />
-                </div>
+          <!-- Progress readout: the only affordance telling the user this
+               section consumes scroll, so it earns its place. -->
+          <div class="flex items-center gap-4">
+            <span class="text-sm font-bold text-primary tabular-nums">
+              {{ String(activeIndex + 1).padStart(2, "0") }}
+              <span class="text-gray-400"
+                >/ {{ String(advantageItems.length).padStart(2, "0") }}</span
+              >
+            </span>
+            <div class="h-px w-24 md:w-40 bg-gray-300 relative overflow-hidden">
+              <div
+                class="absolute inset-y-0 left-0 bg-[#e8b938]"
+                :style="{ width: `${progress * 100}%` }"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </UContainer>
 
-                <!-- Description -->
-                <p class="text-sm text-gray-500 leading-relaxed grow">
-                  {{ item.description }}
-                </p>
-              </div>
+      <!-- The moving track. Padded to the container's gutter so the first card
+           lines up with the heading above it. -->
+      <div
+        ref="trackRef"
+        class="advantage-track flex gap-6 will-change-transform"
+        :style="trackStyle"
+      >
+        <article
+          v-for="(item, index) in advantageItems"
+          :key="item.id"
+          class="advantage-card group shrink-0 flex flex-col text-left rounded-2xl bg-white/70 backdrop-blur-xl border border-white/80 shadow-xs transition-colors duration-500 ease-in-out hover:bg-white/90 hover:border-[#e8b938]/50"
+          :class="index === activeIndex ? 'is-active' : ''"
+        >
+          <div class="px-5 pt-8 pb-6 flex flex-col grow">
+            <!-- Title — held to two lines so every column aligns -->
+            <h3 class="font-bold text-xl text-primary mb-2 leading-snug min-h-14">
+              {{ item.title }}
+            </h3>
 
-              <!-- Footer bar: full-width rule, icon boxed off in its own cell -->
-              <div class="flex items-stretch border-t border-gray-200/70 mt-auto">
-                <a
-                  href="#"
-                  class="grow flex items-center gap-2 px-5 py-5 text-[11px] font-bold uppercase tracking-wider text-primary hover:text-[#e8b938] transition-colors"
-                >
-                  Read More
-                  <UIcon name="i-heroicons-arrow-right-20-solid" class="text-sm" />
-                </a>
-                <div
-                  class="flex items-center justify-center px-6 border-l border-gray-200/70 text-gray-400 group-hover:text-[#e8b938] transition-colors"
-                >
-                  <UIcon name="i-heroicons-square-3-stack-3d" class="text-xl" />
-                </div>
-              </div>
-            </article>
-          </Slide>
-        </Carousel>
+            <div class="overflow-hidden rounded-xl mb-6 aspect-4/3 relative">
+              <img
+                :src="item.image"
+                alt="HCTPAL Manufacturing"
+                loading="lazy"
+                class="w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+              />
+            </div>
+
+            <p class="text-sm text-gray-500 leading-relaxed grow">
+              {{ item.description }}
+            </p>
+          </div>
+
+          <!-- Footer bar: full-width rule, icon boxed off in its own cell -->
+          <div class="flex items-stretch border-t border-gray-200/70 mt-auto">
+            <a
+              href="#"
+              class="grow flex items-center gap-2 px-5 py-5 text-[11px] font-bold uppercase tracking-wider text-primary hover:text-[#e8b938] transition-colors"
+            >
+              Read More
+              <UIcon name="i-heroicons-arrow-right-20-solid" class="text-sm" />
+            </a>
+            <div
+              class="flex items-center justify-center px-6 border-l border-gray-200/70 text-gray-400 group-hover:text-[#e8b938] transition-colors"
+            >
+              <UIcon name="i-heroicons-square-3-stack-3d" class="text-xl" />
+            </div>
+          </div>
+        </article>
       </div>
-    </UContainer>
+    </div>
   </section>
 </template>
 
-<style>
-/* Unscoped: vue3-carousel renders these internals outside our scope id.
-   Each slide now hosts an independent glass card (radius, blur, border all
-   live on .advantage-card), so the track just needs to stretch slides to
-   equal height and let the configured gap show between them. */
-.advantage-carousel .carousel__slide {
-  padding: 0;
-  display: flex;
-  align-items: stretch;
-  height: auto;
+<style scoped>
+/* Track gutter matches UContainer's so card 1 aligns with the heading. */
+.advantage-track {
+  padding-inline: max(1rem, calc((100vw - 80rem) / 2 + 1rem));
 }
 
-.advantage-carousel .carousel__track {
-  align-items: stretch;
+.advantage-card {
+  /* Card width drives how many are visible at once, and (via scrollWidth) how
+     much scroll distance the section claims. */
+  width: min(500vw, 22rem);
+}
+
+@media (min-width: 768px) {
+  .advantage-card {
+    width: 24rem;
+  }
+}
+
+/* The card at the centre of the viewport lifts slightly — the horizontal
+   equivalent of the old hover state, driven by scroll instead of the pointer. */
+.advantage-card.is-active {
+  box-shadow: 0 20px 40px -12px rgb(20 46 83 / 0.18);
+  transform: translateY(-6px);
+}
+
+.advantage-card {
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 500ms cubic-bezier(0.22, 1, 0.36, 1), background-color 500ms ease,
+    border-color 500ms ease;
+}
+
+/* Reduced motion: drop the pin entirely and let the cards be a normal
+   horizontally-scrollable strip, so no scroll distance is hijacked. */
+@media (prefers-reduced-motion: reduce) {
+  .advantage-section {
+    height: auto !important;
+  }
+
+  .advantage-section > div {
+    position: static;
+    height: auto;
+    padding-block: 4rem;
+  }
+
+  .advantage-track {
+    transform: none !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .advantage-card {
+    scroll-snap-align: center;
+  }
 }
 </style>
