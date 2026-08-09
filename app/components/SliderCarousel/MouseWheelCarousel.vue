@@ -1,5 +1,7 @@
 <script setup>
-import { Carousel, Pagination, Navigation, Slide } from "vue3-carousel";
+// Navigation/Pagination addons are not imported: the control bar below is
+// hand-rolled (see "Custom controls"), driven by v-model.
+import { Carousel, Slide } from "vue3-carousel";
 import "vue3-carousel/carousel.css";
 
 const props = defineProps({
@@ -83,10 +85,14 @@ watch(currentSlide, (index) => emit("slide-change", index));
 //     leaves autoplay silently dead. `pauseOnHover` is a separate top-level
 //     prop called `pauseAutoplayOnHover`.
 //
-//   transition — also gates the wheel: the library sets `isSliding` for the
-//     full duration and `useWheel` discards every event while it's true. At
-//     2000ms that swallowed almost all wheel input, which is what made
-//     up/down navigation feel stuck. 800ms still reads cinematic.
+//   transition — does double duty, and that is the tension to tune. It is both
+//     the cross-fade duration AND the wheel gate: the library holds
+//     `isSliding` for the whole transition and `useWheel` drops every event
+//     while it is true. Too long and consecutive wheel steps get eaten (the
+//     old 2000ms felt broken); too short and the fade looks abrupt. 1100ms is
+//     a long, soft cross-fade that still accepts a deliberate second scroll,
+//     because the CSS easing below front-loads the visible change — the slide
+//     looks settled well before the gate actually lifts.
 //
 //   wrapAround stays false — index.vue's handover logic keys off "last slide"
 //     to release the wheel to the page, and wrapping would never let it settle.
@@ -98,17 +104,37 @@ const config = computed(() => ({
   // Cross-fade suits full-bleed photography (and the Ken Burns zoom) far
   // better than a horizontal slide.
   slideEffect: "fade",
-  transition: 800,
+  transition: 1100,
   // With wrapAround:false, next() clamps at the last slide — so once we land
   // there autoplay would keep firing a no-op interval forever. Dropping it to
   // 0 stops the timer (the library treats <= 0 as "off" and re-inits on
   // change), which is right: the last slide is where the page takes over.
   autoplay: isLastSlide.value ? 0 : 6000,
   pauseAutoplayOnHover: true,
-  // Object form raises the delta threshold above the default 10 so trackpad
-  // micro-scrolls don't fire a slide change, and throttles repeat events.
-  mouseWheel: props.wheelEnabled ? { threshold: 15, throttleTime: 200 } : false,
+  // Raise the delta threshold above the library default of 10 so trackpad
+  // micro-scrolls don't fire a slide change.
+  //
+  // NOTE: `throttleTime` exists in vue3-carousel's WheelConfig type but is
+  // never read by useWheel() — only `threshold` is. Wheel repeat-rate is
+  // actually gated by `isSliding`, i.e. by `transition` above, so that is the
+  // knob that controls how quickly consecutive wheel steps are accepted.
+  mouseWheel: props.wheelEnabled ? { threshold: 15 } : false,
 }));
+
+// --- Custom controls ------------------------------------------------------
+// The library's <Navigation>/<Pagination> addons are styled only through
+// --vc-* variables, which isn't enough for the treatment below (labelled
+// counter, progress bar, hover-expanding arrows). We have v-model and the
+// slide count already, so driving it directly is simpler than fighting them.
+const goTo = (index) => {
+  currentSlide.value = Math.min(images.length - 1, Math.max(0, index));
+};
+
+const goPrev = () => goTo(currentSlide.value - 1);
+const goNext = () => goTo(currentSlide.value + 1);
+
+const slideLabel = computed(() => String(currentSlide.value + 1).padStart(2, "0"));
+const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 </script>
 
 <template>
@@ -130,8 +156,54 @@ const config = computed(() => ({
     </Slide>
 
     <template #addons>
-      <Navigation />
-      <Pagination />
+      <!-- Custom control bar: counter, progress ticks, arrows. Sits above the
+           scrim (z-20) and is the only interactive layer on the slide. -->
+      <div class="hct-controls">
+        <!-- Slide counter -->
+        <div class="hct-counter">
+          <span class="hct-counter__current">{{ slideLabel }}</span>
+          <span class="hct-counter__rule"></span>
+          <span class="hct-counter__total">{{ totalLabel }}</span>
+        </div>
+
+        <!-- Tick bar: one segment per slide, doubles as direct navigation -->
+        <div class="hct-ticks">
+          <button
+            v-for="(slide, index) in images"
+            :key="slide.id"
+            type="button"
+            class="hct-tick"
+            :class="{ 'is-active': index === currentSlide, 'is-past': index < currentSlide }"
+            :aria-label="`Go to slide ${index + 1}`"
+            :aria-current="index === currentSlide ? 'true' : undefined"
+            @click="goTo(index)"
+          >
+            <span class="hct-tick__fill"></span>
+          </button>
+        </div>
+
+        <!-- Arrows -->
+        <div class="hct-arrows">
+          <button
+            type="button"
+            class="hct-arrow"
+            :disabled="currentSlide === 0"
+            aria-label="Previous slide"
+            @click="goPrev"
+          >
+            <UIcon name="i-heroicons-arrow-left-20-solid" />
+          </button>
+          <button
+            type="button"
+            class="hct-arrow"
+            :disabled="isLastSlide"
+            aria-label="Next slide"
+            @click="goNext"
+          >
+            <UIcon name="i-heroicons-arrow-right-20-solid" />
+          </button>
+        </div>
+      </div>
     </template>
   </Carousel>
 </template>
@@ -229,22 +301,171 @@ const config = computed(() => ({
 </style>
 
 <style>
-/* Unscoped: vue3-carousel renders these internals outside our scope id */
-.hct-carousel {
-  /* Modern Ring Navigation */
-  --vc-nav-background: transparent;
-  --vc-nav-color: rgba(255, 255, 255, 0.8);
-  --vc-nav-border: 1.5px solid rgba(255, 255, 255, 0.6);
-  --vc-nav-border-radius: 50%;
-  --vc-nav-width: 50px;
-  --vc-nav-height: 50px;
+/* Unscoped: vue3-carousel renders these internals outside our scope id.
+   The library's nav/pagination CSS variables are gone along with the built-in
+   addons; the control bar below is ours. */
 
-  /* Sleek Pagination Dots */
-  --vc-pgn-background-color: rgba(255, 255, 255, 0.4);
-  --vc-pgn-active-color: rgba(255, 255, 255, 1);
-  --vc-pgn-width: 12px;
-  --vc-pgn-height: 12px;
-  --vc-pgn-border-radius: 50%;
+/* ============================================
+   CONTROL BAR
+   ============================================ */
+.hct-controls {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  bottom: 2.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-inline: max(1.5rem, calc((100% - 80rem) / 2 + 1rem));
+  pointer-events: none; /* re-enabled per control below */
+}
+
+/* --- Counter --- */
+.hct-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.4);
+  flex-shrink: 0;
+}
+
+.hct-counter__current {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hct-counter__rule {
+  width: 1.5rem;
+  height: 1px;
+  background: rgb(255 255 255 / 0.5);
+}
+
+.hct-counter__total {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(255 255 255 / 0.65);
+}
+
+/* --- Tick bar --- */
+/* One segment per slide. Reads as a progress bar and works as navigation,
+   which the old dots couldn't convey. */
+.hct-ticks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.hct-tick {
+  flex: 1;
+  height: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: rgb(255 255 255 / 0.25);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hct-tick:hover {
+  height: 6px;
+  background: rgb(255 255 255 / 0.4);
+}
+
+.hct-tick__fill {
+  position: absolute;
+  inset: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: #e8b938;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Past slides stay filled so the bar reads as cumulative progress. */
+.hct-tick.is-past .hct-tick__fill,
+.hct-tick.is-active .hct-tick__fill {
+  transform: scaleX(1);
+}
+
+.hct-tick.is-active {
+  height: 6px;
+}
+
+/* --- Arrows --- */
+.hct-arrows {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+.hct-arrow {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid rgb(255 255 255 / 0.4);
+  background: rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 300ms ease, border-color 300ms ease,
+    color 300ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 300ms ease;
+}
+
+.hct-arrow:hover:not(:disabled) {
+  background: #fff;
+  border-color: #fff;
+  color: #142e53;
+  transform: scale(1.08);
+}
+
+.hct-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Keyboard focus needs to survive the custom cursor rules. */
+.hct-arrow:focus-visible,
+.hct-tick:focus-visible {
+  outline: 2px solid #e8b938;
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .hct-controls {
+    gap: 1rem;
+    bottom: 1.5rem;
+  }
+
+  .hct-counter__current {
+    font-size: 1.25rem;
+  }
+
+  /* Arrows are redundant on touch — swipe already works. */
+  .hct-arrows {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hct-tick,
+  .hct-tick__fill,
+  .hct-arrow {
+    transition: none;
+  }
 }
 
 .hct-carousel .carousel__viewport {
@@ -287,10 +508,13 @@ const config = computed(() => ({
   height: 100vh;
 }
 
-/* Ease the fade rather than running it linear — the library only sets a
-   duration, so the timing function is ours to choose. */
+/* The library sets only a duration, so the curve is ours. This one is
+   deliberately front-loaded: most of the opacity change happens in the first
+   ~40% of the 1100ms, so the new slide reads as "arrived" early while the tail
+   of the transition keeps the wheel gate closed a little longer. That is what
+   makes rapid scrolling feel damped rather than stuttery. */
 .hct-carousel.is-effect-fade .carousel__slide {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Overlay copy rises in behind the fade, title first. Keyed to --active so it
@@ -300,12 +524,14 @@ const config = computed(() => ({
   animation: hctRiseIn 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Delays sit inside the 1100ms cross-fade so the copy rises as the image
+   arrives, rather than after it has already settled. */
 .hct-carousel .carousel__slide--active .overlay-title {
-  animation-delay: 150ms;
+  animation-delay: 250ms;
 }
 
 .hct-carousel .carousel__slide--active .overlay-desc {
-  animation-delay: 300ms;
+  animation-delay: 420ms;
 }
 
 @keyframes hctRiseIn {
@@ -349,30 +575,6 @@ const config = computed(() => ({
   }
 }
 
-/* Modern Pagination Positioning */
-.hct-carousel .carousel__pagination {
-  position: absolute;
-  bottom: 2.5rem;
-  width: 100%;
-  margin: 0;
-  z-index: 20;
-  gap: 10px;
-}
-
-/* Modern Arrow Hover Effects */
-.hct-carousel .carousel__prev:hover,
-.hct-carousel .carousel__next:hover {
-  --vc-nav-color: #ffffff;
-  --vc-nav-background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-/* Dot Transitions for a polished feel */
-.hct-carousel .carousel__pagination-button {
-  transition: all 0.3s ease;
-}
-
-.hct-carousel .carousel__pagination-button--active {
-  transform: scale(1.2);
-}
+/* The .carousel__pagination / __prev / __next rules that used to live here
+   were removed with the built-in addons — those elements no longer render. */
 </style>
