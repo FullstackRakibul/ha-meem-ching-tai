@@ -1,5 +1,6 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
+    <ScrollTracer />
     <AppHeader />
     <main class="grow">
       <NuxtLayout>

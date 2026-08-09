@@ -3,7 +3,11 @@
     <!-- Sticky full-screen carousel stage. This page is `fullBleed` (see
          definePageMeta), so the layout applies no width constraint or top padding
          and the slides genuinely reach the screen edges. -->
-    <div ref="stageRef" class="sticky top-0 z-0 w-full h-screen overflow-hidden">
+    <!-- data-lenis-prevent: the stage runs its own wheel arbitration below
+         (carousel navigation + handover to the page). Lenis must not consume
+         those events or preventDefault() here would have nothing to cancel. -->
+    <div ref="stageRef" data-lenis-prevent
+      class="sticky top-0 z-0 w-full h-screen overflow-hidden">
       <MouseWheelCarousel :wheel-enabled="wheelEnabled" @slide-change="onSlideChange" @total-slides="onTotalSlides" />
     </div>
     <!-- Site content: sits above the sticky carousel and slides up over it.
@@ -59,17 +63,33 @@ const wheelEnabled = computed(() => !isDrifting.value)
 // Gentle, eased drift from the last slide into the content section.
 let driftTimer = null
 
+const DRIFT_DURATION = 1.6 // seconds
+
 const driftToContent = () => {
   if (isDrifting.value || !contentRef.value) return
   isDrifting.value = true
 
   const target = contentRef.value.getBoundingClientRect().top + window.scrollY
-  window.scrollTo({ top: target, behavior: 'smooth' })
+
+  // Route the handover through Lenis. Lenis owns window.scrollY while it's
+  // running, so a native scrollTo({behavior:'smooth'}) would be fighting it
+  // frame-for-frame and visibly stutter. Falls back to native when Lenis is
+  // absent (reduced-motion, or before the plugin has initialised).
+  const { $lenis } = useNuxtApp()
+
+  if ($lenis) {
+    $lenis.scrollTo(target, {
+      duration: DRIFT_DURATION,
+      easing: (t) => 1 - Math.pow(1 - t, 3), // ease-out cubic
+    })
+  } else {
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  }
 
   clearTimeout(driftTimer)
   driftTimer = setTimeout(() => {
     isDrifting.value = false
-  }, 900)
+  }, DRIFT_DURATION * 1000 + 100)
 }
 
 onBeforeUnmount(() => clearTimeout(driftTimer))
