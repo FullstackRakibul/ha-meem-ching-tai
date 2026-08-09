@@ -38,7 +38,7 @@ const advantageItems = [
     title: "Skilled Workforce Expertise",
     description:
       "Our team of skilled engineers and technicians bring decades of hands-on experience and proprietary knowledge to every order.",
-    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg",
   },
   {
     id: 5,
@@ -63,14 +63,15 @@ const advantageItems = [
   },
   {
     id: 8,
-    title: "Skilled Workforce Expertise",
+    title: "Innovative Fabric Solutions",
     description:
-      "Our team of skilled engineers and technicians bring decades of hands-on experience and proprietary knowledge to every order.",
-    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg",
+      "State-of-the-art machinery allows for creative, complex textile patterns, seamless integration, and rapid scaling capabilities.",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg",
   },
 ];
 
 const sectionRef = ref(null);
+const frameRef = ref(null);
 const trackRef = ref(null);
 
 // 0 → 1 across the pinned block. Drives both the track offset and the UI.
@@ -83,26 +84,52 @@ const activeIndex = computed(() => {
   return Math.min(advantageItems.length - 1, Math.max(0, i));
 });
 
-// Pinned height = one viewport (the sticky frame) plus the horizontal travel,
-// so the section releases exactly when the last card lands.
-const sectionHeight = computed(() => `calc(100vh + ${scrollDistance.value}px)`);
+const sectionHeight = computed(() =>
+  isPinned.value ? `calc(100dvh + ${scrollDistance.value}px)` : "auto"
+);
 
 const trackStyle = computed(() => ({
   transform: `translate3d(${-progress.value * scrollDistance.value}px, 0, 0)`,
 }));
 
 const measure = () => {
-  if (!trackRef.value) return;
-  // scrollWidth is the full track width including the overflowing cards.
-  const overflow = trackRef.value.scrollWidth - window.innerWidth;
-  scrollDistance.value = Math.max(0, overflow);
+  const track = trackRef.value;
+  if (!track) return;
+
+  // Sum the real laid-out card widths rather than trusting scrollWidth: the
+  // track has visible overflow (the active card lifts out of the box), and in
+  // that case scrollWidth can under-report, which leaves the last cards
+  // unreachable because the section reserves too little scroll.
+  const cards = Array.from(track.children);
+  if (!cards.length) return;
+
+  // offsetLeft/offsetWidth are layout values, unaffected by the track's
+  // translate — getBoundingClientRect() would report transformed coordinates
+  // and yield a different answer depending on the current scroll position.
+  // offsetLeft is measured from the track's padding box, so the leading gutter
+  // is already included; only the trailing padding needs adding.
+  const lastCard = cards[cards.length - 1];
+  const padRight = parseFloat(getComputedStyle(track).paddingInlineEnd) || 0;
+  const total = lastCard.offsetLeft + lastCard.offsetWidth + padRight;
+
+  // Travel = how much of the track sits beyond the viewport's right edge.
+  scrollDistance.value = Math.max(0, Math.round(total - track.clientWidth));
 };
+
+// Only pin when there is something to scroll horizontally. Below that (narrow
+// viewports, or few enough cards to fit) the section behaves as a normal block
+// and claims no extra scroll — otherwise it would pin over dead space.
+const isPinned = computed(() => scrollDistance.value > 0);
 
 const update = () => {
   if (!sectionRef.value) return;
 
   const rect = sectionRef.value.getBoundingClientRect();
-  const total = rect.height - window.innerHeight;
+  // Measure against the sticky frame's real height rather than innerHeight:
+  // they must be the same number or progress finishes early/late, which is
+  // what leaves the track parked mid-travel with blank space beside it.
+  const frameHeight = frameRef.value?.offsetHeight ?? window.innerHeight;
+  const total = rect.height - frameHeight;
 
   if (total <= 0) {
     progress.value = 0;
@@ -117,7 +144,13 @@ const update = () => {
 let stopLenis;
 let observer;
 
-onMounted(() => {
+onMounted(async () => {
+  measure();
+  // Applying `isPinned` swaps the frame to h-dvh, which relays out the cards
+  // and changes their width. Re-measure once that has been committed, or the
+  // travel distance stays based on the pre-pin layout and the last cards are
+  // never reachable.
+  await nextTick();
   measure();
   update();
 
@@ -134,12 +167,14 @@ onMounted(() => {
   }
 
   // Card widths are viewport-relative and images load late, both of which
-  // change the travel distance.
+  // change the travel distance. Watch the frame too: its height drives the
+  // card height, which (via aspect-driven content) can shift widths.
   observer = new ResizeObserver(() => {
     measure();
     update();
   });
   observer.observe(trackRef.value);
+  if (frameRef.value) observer.observe(frameRef.value);
 });
 
 onBeforeUnmount(() => {
@@ -152,12 +187,16 @@ onBeforeUnmount(() => {
   <section
     ref="sectionRef"
     class="advantage-section relative bg-navy-50"
+    :class="isPinned ? 'is-pinned' : 'py-16 md:py-20'"
     :style="{ height: sectionHeight }"
   >
     <!-- Sticky frame: stays put for the whole scroll block while the track
-         inside it slides horizontally. -->
+         inside it slides horizontally. h-dvh matches the unit used for the
+         section height so the two can't disagree. -->
     <div
-      class="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-center"
+      ref="frameRef"
+      class="advantage-frame relative w-full overflow-hidden flex flex-col justify-center"
+      :class="isPinned ? 'sticky top-0 h-dvh' : ''"
     >
       <!-- Ambient glow blobs — same glass/navy/gold language as header & footer -->
       <div
@@ -203,11 +242,12 @@ onBeforeUnmount(() => {
         </div>
       </UContainer>
 
-      <!-- The moving track. Padded to the container's gutter so the first card
-           lines up with the heading above it. -->
+      <!-- The moving track. Fills the remaining frame height (grow + min-h-0)
+           so the cards are as tall as the pinned viewport allows instead of
+           clustering at the top and leaving a band of empty space. -->
       <div
         ref="trackRef"
-        class="advantage-track flex gap-6 will-change-transform"
+        class="advantage-track flex gap-6 grow min-h-0 items-stretch will-change-transform"
         :style="trackStyle"
       >
         <article
@@ -222,7 +262,10 @@ onBeforeUnmount(() => {
               {{ item.title }}
             </h3>
 
-            <div class="overflow-hidden rounded-xl mb-6 aspect-4/3 relative">
+            <!-- grow: the image absorbs whatever height the taller card has
+                 spare, rather than the card ending in dead space. min-h-40
+                 stops it collapsing on short viewports. -->
+            <div class="overflow-hidden rounded-xl mb-6 relative grow min-h-40">
               <img
                 :src="item.image"
                 alt="HCTPAL Manufacturing"
@@ -231,7 +274,7 @@ onBeforeUnmount(() => {
               />
             </div>
 
-            <p class="text-sm text-gray-500 leading-relaxed grow">
+            <p class="text-sm text-gray-500 leading-relaxed shrink-0">
               {{ item.description }}
             </p>
           </div>
@@ -258,20 +301,31 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Track gutter matches UContainer's so card 1 aligns with the heading. */
+/* Leading gutter aligns card 1 with the heading above it.
+   The TRAILING gutter is deliberately small: symmetric padding meant the last
+   ~336px of travel (at 1920px wide) was spent scrolling empty padding past the
+   viewport, so the module finished on blank space instead of the final card. */
 .advantage-track {
-  padding-inline: max(1rem, calc((100vw - 80rem) / 2 + 1rem));
+  padding-inline: max(1rem, calc((100% - 80rem) / 2 + 1rem)) 1rem;
+  padding-block: 0.5rem 1.5rem; /* room for the is-active lift + its shadow */
 }
 
 .advantage-card {
-  /* Card width drives how many are visible at once, and (via scrollWidth) how
-     much scroll distance the section claims. */
-  width: min(500vw, 22rem);
+  /* Card width drives how many are visible at once and, via scrollWidth, how
+     much scroll distance the section claims. Kept as a share of the viewport
+     so the cards scale up on large screens instead of stranding empty space. */
+  width: min(86vw, 26rem);
 }
 
 @media (min-width: 768px) {
   .advantage-card {
-    width: 24rem;
+    width: min(46vw, 30rem);
+  }
+}
+
+@media (min-width: 1280px) {
+  .advantage-card {
+    width: min(32vw, 34rem);
   }
 }
 
@@ -293,22 +347,27 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .advantage-section {
     height: auto !important;
+    padding-block: 4rem;
   }
 
-  .advantage-section > div {
+  .advantage-frame {
     position: static;
     height: auto;
-    padding-block: 4rem;
   }
 
   .advantage-track {
     transform: none !important;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    /* Restore a symmetric trailing gutter: without the pin there's no
+       translate, so the last card needs real padding to breathe. */
+    padding-inline: max(1rem, calc((100% - 80rem) / 2 + 1rem));
   }
 
   .advantage-card {
     scroll-snap-align: center;
+    /* No pinned frame to fill, so let content set the height. */
+    height: auto;
   }
 }
 </style>

@@ -18,7 +18,7 @@
         ></div>
 
         <div
-          class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center p-8 md:p-12 lg:p-14"
+          class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center p-10 md:p-12 lg:p-14"
         >
           <h2
             class="text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight"

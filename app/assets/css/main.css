@@ -113,7 +113,12 @@ html {
 
 html,
 body {
-  overflow-x: hidden;
+  /* `clip`, NOT `hidden`. Both suppress horizontal overflow, but `hidden`
+     makes the element a scroll container — and `position: sticky` then sticks
+     to THAT container instead of the viewport, so every pinned section on the
+     page silently scrolls away as if sticky were never set. `clip` has no such
+     side effect. Do not change this back to `hidden`. */
+  overflow-x: clip;
   width: 100%;
   max-width: 100%;
 }
