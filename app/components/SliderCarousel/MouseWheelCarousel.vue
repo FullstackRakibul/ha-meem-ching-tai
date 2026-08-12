@@ -45,21 +45,21 @@ const images = [
     desc: "Crafting export-quality accessories for the global apparel industry.",
   },
 
-  {
-    id: 5,
-    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai30.jpeg",
-    title: "Built for Export",
-    desc: "Strengthening Bangladesh's backward linkage industry.",
-  },
+  // {
+  //   id: 5,
+  //   url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai30.jpeg",
+  //   title: "Built for Export",
+  //   desc: "Strengthening Bangladesh's backward linkage industry.",
+  // },
 
   {
-    id: 6,
+    id: 5,
     url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg",
     title: "Strategic Partnership",
     desc: "A joint venture between Ha-Meem Group and Ching Tai.",
   },
   {
-    id: 7,
+    id: 6,
     url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg",
     title: "Global Reach",
     desc: "Trusted by sourcing teams across five continents.",
@@ -89,10 +89,15 @@ watch(currentSlide, (index) => emit("slide-change", index));
 //     the cross-fade duration AND the wheel gate: the library holds
 //     `isSliding` for the whole transition and `useWheel` drops every event
 //     while it is true. Too long and consecutive wheel steps get eaten (the
-//     old 2000ms felt broken); too short and the fade looks abrupt. 1100ms is
-//     a long, soft cross-fade that still accepts a deliberate second scroll,
-//     because the CSS easing below front-loads the visible change — the slide
-//     looks settled well before the gate actually lifts.
+//     old 2000ms felt broken); too short and the fade looks abrupt.
+//
+//     1100ms with the symmetric ease-in-out curve in the CSS below now uses
+//     the full duration visually, so the gate and the visible fade end
+//     together. That is the intended feel here — a dissolve you can watch
+//     finish — and it is why the curve is NOT front-loaded: opacity has no
+//     momentum to imply, so an aggressive ease just reads as a snap. If
+//     consecutive scrolls ever feel eaten, lower this number rather than
+//     sharpening the curve.
 //
 //   wrapAround stays false — index.vue's handover logic keys off "last slide"
 //     to release the wheel to the page, and wrapping would never let it settle.
@@ -173,7 +178,10 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
             :key="slide.id"
             type="button"
             class="hct-tick"
-            :class="{ 'is-active': index === currentSlide, 'is-past': index < currentSlide }"
+            :class="{
+              'is-active': index === currentSlide,
+              'is-past': index < currentSlide,
+            }"
             :aria-label="`Go to slide ${index + 1}`"
             :aria-current="index === currentSlide ? 'true' : undefined"
             @click="goTo(index)"
@@ -226,15 +234,21 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 /* ============================================
    KEN BURNS (Zoom) ANIMATION
    ============================================ */
-/* Base state only. The zoom is applied to the ACTIVE slide (below) instead of
-   every slide at once — otherwise each hidden slide's animation is already
-   mid-cycle when it fades in, so it arrives at an arbitrary zoom level. */
+/* The zoom runs on EVERY slide continuously (see the unscoped block), not just
+   the active one. Keying it to --active is what caused the visible "bounce":
+   the outgoing slide lost the class mid-cross-fade, its animation was removed,
+   and its transform snapped from ~scale(1.08) back to scale(1) while still
+   half-visible. A continuous animation never starts or stops at transition
+   time, so there is nothing left to snap. */
 .slide-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transform: scale(1);
+  /* Promote to its own layer so the scale animation and the opacity
+     cross-fade don't force layout work on the same frame. */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* ============================================
@@ -420,9 +434,8 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   color: #fff;
   font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 300ms ease, border-color 300ms ease,
-    color 300ms ease, transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 300ms ease;
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1), opacity 300ms ease;
 }
 
 .hct-arrow:hover:not(:disabled) {
@@ -508,13 +521,16 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   height: 100vh;
 }
 
-/* The library sets only a duration, so the curve is ours. This one is
-   deliberately front-loaded: most of the opacity change happens in the first
-   ~40% of the 1100ms, so the new slide reads as "arrived" early while the tail
-   of the transition keeps the wheel gate closed a little longer. That is what
-   makes rapid scrolling feel damped rather than stuttery. */
+/* The library sets only a duration, so the curve is ours.
+   A cross-fade is the one case where an aggressive ease is wrong: opacity has
+   no momentum to imply, and easeOutExpo (the previous curve) dumped ~80% of
+   the change into the first third of the duration, which reads as a snap
+   followed by a long tail. This gentle symmetric ease-in-out keeps both slides
+   partly visible through the middle of the transition, which is what actually
+   looks like a dissolve. */
 .hct-carousel.is-effect-fade .carousel__slide {
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
 }
 
 /* Overlay copy rises in behind the fade, title first. Keyed to --active so it
@@ -524,14 +540,15 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   animation: hctRiseIn 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Delays sit inside the 1100ms cross-fade so the copy rises as the image
-   arrives, rather than after it has already settled. */
+/* Delays are tuned to the symmetric fade curve above, whose visual midpoint is
+   ~550ms. The copy starts rising just past that point so it reads as arriving
+   *with* the new image rather than racing ahead of it. */
 .hct-carousel .carousel__slide--active .overlay-title {
-  animation-delay: 250ms;
+  animation-delay: 400ms;
 }
 
 .hct-carousel .carousel__slide--active .overlay-desc {
-  animation-delay: 420ms;
+  animation-delay: 560ms;
 }
 
 @keyframes hctRiseIn {
@@ -552,12 +569,17 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   }
 }
 
-/* Ken Burns runs only on the active slide, so the zoom starts from scale(1)
-   each time a slide comes forward. `--vc-*`/`--active` are library classes,
-   hence this lives in the unscoped block. Duration comfortably exceeds the
-   6s autoplay delay so the motion never visibly resets mid-view. */
-.hct-carousel .carousel__slide--active .slide-image {
-  animation: hctKenBurns 9s ease-out forwards;
+/* Ken Burns runs on EVERY slide, continuously — never keyed to --active.
+   `alternate` means the zoom breathes 1 -> 1.14 -> 1 forever instead of ending
+   on a `forwards` hold, so there is no terminal state to snap away from and no
+   restart when a slide comes forward. The slide you are looking at is simply
+   caught at whatever point in the cycle it happens to be, which is what makes
+   the change read as a pure cross-fade with continuous motion behind it.
+
+   `ease-in-out` + a 24s cycle keeps the drift slow enough that the arbitrary
+   entry point is never perceptible as a jump in zoom level. */
+.hct-carousel .slide-image {
+  animation: hctKenBurns 24s ease-in-out infinite alternate;
 }
 
 @keyframes hctKenBurns {
@@ -565,13 +587,14 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
     transform: scale(1);
   }
   to {
-    transform: scale(1.12);
+    transform: scale(1.14);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hct-carousel .carousel__slide--active .slide-image {
+  .hct-carousel .slide-image {
     animation: none;
+    transform: scale(1);
   }
 }
 
