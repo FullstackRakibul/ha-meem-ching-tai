@@ -37,6 +37,19 @@
   --color-clay-800: #2c1511;
   --color-clay-900: #1a0c0a;
   --color-clay-950: #0d0605;
+  
+  
+  --color-brand-50:  #f2f6f8;
+  --color-brand-100: #dbe7ec;
+  --color-brand-200: #bccfd8;
+  --color-brand-300: #8faec0;
+  --color-brand-400: #5d85a1;
+  --color-brand-500: #3d6485;
+  --color-brand-600: #2e4f6b;
+  --color-brand-700: #274257;   /* ← your brand color */
+  --color-brand-800: #1f3445;
+  --color-brand-900: #182530;
+  --color-brand-950: #0e1820;
 
   --font-sans: 'Inter', system-ui, sans-serif;
 }
@@ -46,8 +59,17 @@
    block and those utilities fall back to Nuxt UI's built-in blue. The
    app.config.ts `colors` map takes a palette NAME ('navy'), never a hex. */
 :root {
-  --ui-primary: var(--color-navy-500);
+  /* --ui-primary: var(--color-navy-500); */
   --ui-secondary: var(--color-clay-500);
+
+  --ui-primary: var(--color-brand-700);
+  --ui-primary-contrast: var(--color-brand-50);
+  --ui-primary-muted: var(--color-brand-100);
+  --ui-primary-dimmed: var(--color-brand-200);
+  --ui-primary-subtle: var(--color-brand-50);
+  --ui-primary-elevated: var(--color-brand-600);
+  --ui-primary-accented: var(--color-brand-800);
+  --ui-primary-highlighted: var(--color-brand-900);
 }
 
 .dark {
