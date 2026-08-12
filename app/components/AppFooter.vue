@@ -43,7 +43,7 @@
                 class="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
               >
                 <UIcon name="i-heroicons-phone-20-solid" class="w-4 h-4" />
-                +1 (212) 578-5758
+                +880 131 9320527
               </a>
             </div>
           </div>
@@ -60,7 +60,7 @@
       >
         <span
           class="block font-bold uppercase text-navy-500/4 leading-none whitespace-nowrap tracking-tight"
-          style="font-size: 9.5cqw"
+          style="font-size: 9.6cqw"
         >
           Ha-Meem Ching Tai
         </span>
@@ -102,7 +102,7 @@
           <h4 class="font-semibold text-[#1a1a1a] text-sm mb-4">Offices</h4>
           <div class="space-y-4 text-[15px] text-gray-500">
             <p>Factory HQ<br />Ghorashal, Narsingdi</p>
-            <p>Head office<br />Gulshan, Dhaka</p>
+            <p>Head office<br />Times Media Limited (TML), Building, 387, Dhaka 1208</p>
           </div>
         </div>
       </div>

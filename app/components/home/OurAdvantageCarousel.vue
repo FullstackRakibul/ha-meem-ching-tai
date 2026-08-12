@@ -195,7 +195,7 @@ onBeforeUnmount(() => {
          section height so the two can't disagree. -->
     <div
       ref="frameRef"
-      class="advantage-frame relative w-full overflow-hidden flex flex-col justify-center"
+      class="advantage-frame relative py-20 w-full overflow-hidden flex flex-col justify-center"
       :class="isPinned ? 'sticky top-0 h-dvh' : ''"
     >
       <!-- Ambient glow blobs — same glass/navy/gold language as header & footer -->

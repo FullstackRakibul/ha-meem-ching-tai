@@ -51,9 +51,11 @@
 }
 
 .dark {
-  /* Step 500 is too dark to read on a dark surface — lift both ramps. */
-  --ui-primary: var(--color-navy-300);
-  --ui-secondary: var(--color-clay-300);
+  /* Keep the brand primary consistent across modes so `text-primary` and
+     heading titles stay on the dark navy brand color instead of the pale
+     dark-mode override. */
+  --ui-primary: var(--color-navy-500);
+  --ui-secondary: var(--color-clay-500);
 }
 
 /* Text-on-brand pairings. Both #142e53 (contrast 14.3:1 on white) and
