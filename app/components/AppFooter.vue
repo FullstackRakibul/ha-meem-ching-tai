@@ -1,11 +1,11 @@
 <template>
-  <footer class="relative w-full overflow-hidden bg-[#f5f5f0] pt-16 md:pt-24">
+  <footer class="relative w-full overflow-hidden bg-[#f5f5f0] pt-12 sm:pt-16 md:pt-24">
     <UContainer>
       <!-- ================= Dark CTA card ================= -->
       <!-- The one dark surface in a light footer, same treatment as the
            featured card in VentureAtAGlance: photo + gradient + navy ring. -->
       <div
-        class="relative rounded-3xl overflow-hidden shadow-xl ring-1 ring-primary/20 bg-navy-400"
+        class="relative rounded-2xl md:rounded-3xl overflow-hidden shadow-xl ring-1 ring-primary/20 bg-navy-400"
       >
         <img
           src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg"
@@ -14,32 +14,32 @@
           class="absolute inset-0 w-full h-full object-cover"
         />
         <div
-          class="absolute inset-0 bg-linear-to-r from-navy-900/5 via-navy-900/85 to-navy-900/90"
+          class="absolute inset-0 bg-navy-900/80 lg:bg-transparent lg:bg-linear-to-r lg:from-navy-900/5 lg:via-navy-900/85 lg:to-navy-900/90"
         ></div>
 
         <div
-          class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center p-10 md:p-12 lg:p-14"
+          class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center p-6 sm:p-10 md:p-12 lg:p-14"
         >
           <h2
-            class="text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight"
+            class="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight tracking-tight"
           >
             Tell us what you're<br class="hidden md:block" />
             sourcing.
           </h2>
 
           <div class="lg:pl-4">
-            <p class="text-white/70 leading-relaxed mb-6">
+            <p class="text-white/70 text-sm sm:text-base leading-relaxed mb-6">
               Send your requirements and an engineer from the mill comes back with fabric
               options, honest lead times, and pricing against your order volume.
             </p>
-            <div class="flex flex-wrap items-center gap-4">
+            <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-4">
               <UButton
                 label="Request a quote"
                 trailing-icon="i-heroicons-arrow-right-20-solid"
-                class="bg-white hover:bg-secondary text-navy-900 hover:text-white font-semibold rounded-full px-6 py-2.5 text-sm transition-colors"
+                class="bg-white hover:bg-secondary text-navy-900 hover:text-white font-semibold rounded-full px-6 py-2.5 text-sm transition-colors justify-center w-full sm:w-auto"
               />
               <a
-                href="tel:+12125785758"
+                href="tel:+8801319320527"
                 class="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors"
               >
                 <UIcon name="i-heroicons-phone-20-solid" class="w-4 h-4" />
@@ -55,7 +55,7 @@
            UContainer it sits in and stays inside the gutters — vw is measured
            against the viewport, which pushed it past both edges. -->
       <div
-        class="relative select-none pointer-events-none -mt-2 md:-mt-6 mb-4 md:mb-8 flex justify-center overflow-hidden"
+        class="relative select-none pointer-events-none -mt-2 md:-mt-6 mb-4 md:mb-8 hidden sm:flex justify-center overflow-hidden"
         style="container-type: inline-size"
       >
         <span
@@ -67,13 +67,13 @@
       </div>
 
       <!-- ================= Link columns ================= -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-x-8 gap-y-10 pb-14">
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-x-6 sm:gap-x-8 gap-y-8 sm:gap-y-10 pt-10 sm:pt-0 pb-10 sm:pb-14">
         <!-- Brand -->
         <div class="col-span-2 sm:col-span-4 lg:col-span-3 lg:pr-8">
-          <div class="font-bold text-[#1a1a1a] text-xl tracking-tight uppercase mb-3">
+          <div class="font-bold text-[#1a1a1a] text-lg sm:text-xl tracking-tight uppercase mb-3">
             Ha-Meem Ching Tai
           </div>
-          <p class="text-[15px] text-gray-500 leading-relaxed max-w-sm">
+          <p class="text-sm sm:text-[15px] text-gray-500 leading-relaxed max-w-sm">
             Garment accessories made in Bangladesh — the ones the industry used to wait
             months to import.
           </p>
@@ -86,7 +86,7 @@
           class="sm:col-span-1 lg:col-span-2"
         >
           <h4 class="font-semibold text-[#1a1a1a] text-sm mb-4">{{ column.title }}</h4>
-          <ul class="space-y-3 text-[15px]">
+          <ul class="space-y-3 text-sm sm:text-[15px]">
             <li v-for="link in column.links" :key="link">
               <a
                 href="#"
@@ -100,7 +100,7 @@
         <!-- Offices -->
         <div class="col-span-2 sm:col-span-1 lg:col-span-3">
           <h4 class="font-semibold text-[#1a1a1a] text-sm mb-4">Offices</h4>
-          <div class="space-y-4 text-[15px] text-gray-500">
+          <div class="space-y-4 text-sm sm:text-[15px] text-gray-500">
             <p>Factory HQ<br />Ghorashal, Narsingdi</p>
             <p>Head office<br />Times Media Limited (TML), Building, 387, Dhaka 1208</p>
           </div>
@@ -112,7 +112,7 @@
     <div class="border-t border-gray-200">
       <UContainer>
         <div
-          class="py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-400"
+          class="py-6 flex flex-col md:flex-row justify-between items-center gap-3 text-xs sm:text-sm text-gray-400 text-center md:text-left"
         >
           <p>
             &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai (HCTPAL). All rights

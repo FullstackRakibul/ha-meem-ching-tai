@@ -1,5 +1,5 @@
 <template>
-  <section class="parallax-banner relative w-full h-[50vh] md:h-[70vh] flex items-center justify-center group">
+  <section class="parallax-banner relative w-full h-[45dvh] sm:h-[50vh] md:h-[70vh] flex items-center justify-center group">
     <div class="parallax-viewport">
       <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai10.jpeg"
         alt="Colorful thread spools in textile manufacturing"
@@ -12,7 +12,7 @@
     <!-- Floating Play Button -->
     <button type="button" aria-label="Play intro video"
       class="group/btn relative z-10 flex flex-col items-center gap-3 cursor-pointer">
-      <span class="relative flex items-center justify-center w-20 h-20 md:w-24 md:h-24">
+      <span class="relative flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
         <!-- Outer glass ring -->
         <span
           class="absolute inset-0 rounded-full bg-white/10 backdrop-blur-md border border-white/40 shadow-xl transition-all duration-300 ease-out group-hover/btn:bg-[#e8b938] group-hover/btn:border-[#e8b938] group-hover/btn:scale-110">
@@ -23,11 +23,11 @@
         </span>
         <!-- Play triangle -->
         <UIcon name="i-heroicons-play-solid"
-          class="relative w-7 h-7 md:w-8 md:h-8 text-white translate-x-0.5 transition-transform duration-300 ease-out group-hover/btn:scale-110 group-hover/btn:text-[#152F53]" />
+          class="relative w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white translate-x-0.5 transition-transform duration-300 ease-out group-hover/btn:scale-110 group-hover/btn:text-[#152F53]" />
       </span>
 
       <span
-        class="text-white text-xs md:text-sm font-semibold uppercase tracking-[0.25em] drop-shadow-md transition-colors duration-300 group-hover/btn:text-[#e8b938]">
+        class="text-white text-[11px] sm:text-xs md:text-sm font-semibold uppercase tracking-[0.2em] sm:tracking-[0.25em] drop-shadow-md transition-colors duration-300 group-hover/btn:text-[#e8b938]">
         Intro Video
       </span>
     </button>

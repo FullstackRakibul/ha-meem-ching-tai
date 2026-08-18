@@ -114,15 +114,36 @@ body {
 
 
 
-/* Custom brand cursor across the whole site */
-html,
-body,
-a,
-button,
-input,
-select,
-textarea {
-  cursor: url('/yarn-ball-ha-meem-ching-tai.svg') 24 24, auto !important;
+/* Custom brand cursor across the whole site.
+   Gated to devices that actually have a pointer: a touch device has no cursor
+   to style, and shipping the rule there only costs an image request. */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    cursor: url('/yarn-ball-ha-meem-ching-tai.svg') 24 24, auto !important;
+  }
+}
+
+/* Touch targets: iOS zooms the page when an input smaller than 16px is
+   focused, which leaves the user zoomed in with no obvious way back. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Stop iOS Safari inflating text in rotated/landscape layouts, which breaks
+   the carefully-sized headings above. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 html {

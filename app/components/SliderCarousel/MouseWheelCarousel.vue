@@ -19,7 +19,7 @@ const emit = defineEmits(["slide-change", "total-slides"]);
 const images = [
   {
     id: 1,
-    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai40.jpeg",
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPALc/HameemChingTai40.jpeg",
     title: "Precision Engineering",
     desc: "Crafting export-quality accessories for the global apparel industry.",
   },
@@ -69,6 +69,21 @@ const images = [
 const currentSlide = ref(0);
 const isLastSlide = computed(() => currentSlide.value >= images.length - 1);
 
+// Coarse pointer = phone/tablet. Used to switch the carousel from
+// wheel-driven (desktop) to swipe-driven (touch); see `config` below.
+// Resolved on the client only — SSR has no matchMedia, and defaulting to
+// false means the server renders the desktop config, which then corrects on
+// mount before any interaction is possible.
+const isTouch = ref(false);
+
+onMounted(() => {
+  const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+  isTouch.value = mq.matches;
+  const onChange = (e) => (isTouch.value = e.matches);
+  mq.addEventListener("change", onChange);
+  onBeforeUnmount(() => mq.removeEventListener("change", onChange));
+});
+
 onMounted(() => {
   emit("total-slides", images.length);
   emit("slide-change", currentSlide.value);
@@ -102,7 +117,7 @@ watch(currentSlide, (index) => emit("slide-change", index));
 //   wrapAround stays false — index.vue's handover logic keys off "last slide"
 //     to release the wheel to the page, and wrapping would never let it settle.
 const config = computed(() => ({
-  height: "100vh",
+  height: "100dvh",
   itemsToShow: 1,
   gap: 0,
   wrapAround: false,
@@ -123,7 +138,14 @@ const config = computed(() => ({
   // never read by useWheel() — only `threshold` is. Wheel repeat-rate is
   // actually gated by `isSliding`, i.e. by `transition` above, so that is the
   // knob that controls how quickly consecutive wheel steps are accepted.
-  mouseWheel: props.wheelEnabled ? { threshold: 15 } : false,
+  //
+  //   On touch the wheel config is irrelevant (no wheel events fire) and the
+  //   parent no longer intercepts anything — vertical swipes must scroll the
+  //   page normally. Slide changes come from `touchDrag` instead.
+  mouseWheel: !isTouch.value && props.wheelEnabled ? { threshold: 15 } : false,
+  // Horizontal swipe navigates slides. On desktop it stays off so a click-drag
+  // on a full-bleed photo doesn't feel like a broken image drag.
+  touchDrag: isTouch.value,
 }));
 
 // --- Custom controls ------------------------------------------------------
@@ -157,6 +179,14 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 
         <!-- Scrim keeps the glass header readable over bright images -->
         <div class="slide-scrim"></div>
+
+        <!-- Touch affordance. The arrows are hidden on phones, so without this
+             nothing tells the user the hero is swipeable. Shown on the first
+             slide only — once they've moved, the hint has done its job. -->
+        <div v-if="isTouch && currentSlide === 0" class="swipe-hint" aria-hidden="true">
+          <UIcon name="i-heroicons-chevron-double-right-20-solid" />
+          <span>Swipe</span>
+        </div>
       </div>
     </Slide>
 
@@ -219,14 +249,14 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 <style scoped>
 .hct-carousel {
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
 .carousel__item {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   /* Required for the Ken Burns zoom to stay inside */
 }
@@ -263,37 +293,82 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 1rem;
+  /* Generous side padding on phones so the copy never touches the edge, and
+     bottom padding that clears the control bar sitting at the foot of the
+     slide (which is taller on mobile now that it stacks). */
+  padding: 6rem 1.5rem 8rem;
   pointer-events: none;
   /* Allows clicks to pass through to nav controls */
 }
 
+@media (min-width: 768px) {
+  .text-overlay {
+    padding: 6rem 2rem 9rem;
+  }
+}
+
+/* Fluid type: clamp() lets one rule cover 320px phones through 4K without a
+   ladder of breakpoints. The 6vw middle term is what keeps a long title from
+   wrapping to four lines on a narrow phone. */
 .overlay-title {
   font-family: serif;
   font-weight: bold;
-  font-size: 2.5rem;
-  line-height: 1.2;
+  font-size: clamp(1.75rem, 6vw, 5rem);
+  line-height: 1.15;
   color: #fff;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
+  text-wrap: balance;
 }
 
 .overlay-desc {
   max-width: 32rem;
-  font-size: 1.125rem;
+  font-size: clamp(0.9375rem, 2.2vw, 1.25rem);
+  line-height: 1.55;
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
   font-weight: 300;
 }
 
-/* Responsive text sizes */
-@media (min-width: 768px) {
-  .overlay-title {
-    font-size: 5rem;
-  }
+/* --- Swipe hint (touch only) -------------------------------------------- */
+.swipe-hint {
+  position: absolute;
+  z-index: 16;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgb(255 255 255 / 0.25);
+  color: rgb(255 255 255 / 0.9);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: hctSwipeNudge 2.4s ease-in-out infinite;
+}
 
-  .overlay-desc {
-    font-size: 1.25rem;
+@keyframes hctSwipeNudge {
+  0%,
+  100% {
+    transform: translateX(-50%);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(calc(-50% + 6px));
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-hint {
+    animation: none;
   }
 }
 
@@ -457,19 +532,103 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   outline-offset: 3px;
 }
 
-@media (max-width: 640px) {
+/* --- Touch / small-screen control bar ---------------------------------- */
+@media (max-width: 767px) {
   .hct-controls {
-    gap: 1rem;
-    bottom: 1.5rem;
+    gap: 0.875rem;
+    /* env(safe-area-inset-bottom) keeps the bar off the iOS home indicator;
+       it resolves to 0 everywhere else, so no separate rule is needed. */
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding-inline: 1.25rem;
   }
 
   .hct-counter__current {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .hct-counter__rule {
+    width: 1rem;
+  }
+
+  .hct-counter__total {
+    font-size: 0.75rem;
+  }
+
+  /* Ticks are 2px tall — an unhittable tap target. Pad them out vertically
+     with a transparent hit area while the visible bar stays thin, so tapping
+     to jump slides actually works on a phone. */
+  .hct-ticks {
+    gap: 0.3rem;
+  }
+
+  .hct-tick {
+    /* The visible rule is drawn by ::before; the button itself is a 24px tap
+       target, comfortably above the 24px WCAG minimum for inline controls. */
+    height: 24px;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    overflow: visible;
+  }
+
+  .hct-tick::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2px;
+    background: rgb(255 255 255 / 0.25);
+    transition: height 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .hct-tick.is-active::before {
+    height: 4px;
+  }
+
+  /* The fill has to shrink to the visible rule too, or it would paint a solid
+     24px block across the whole tap target. */
+  .hct-tick__fill {
+    top: 50%;
+    bottom: auto;
+    height: 2px;
+    transform: translateY(-50%) scaleX(0);
+  }
+
+  .hct-tick.is-past .hct-tick__fill,
+  .hct-tick.is-active .hct-tick__fill {
+    transform: translateY(-50%) scaleX(1);
+  }
+
+  .hct-tick.is-active .hct-tick__fill {
+    height: 4px;
+  }
+
+  /* Hover states are meaningless on touch and stick after a tap. */
+  .hct-tick:hover {
+    height: 24px;
+    background: transparent;
   }
 
   /* Arrows are redundant on touch — swipe already works. */
   .hct-arrows {
     display: none;
+  }
+}
+
+/* Tablets: keep the arrows but shrink them so the bar doesn't dominate. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hct-controls {
+    gap: 1.25rem;
+    bottom: 1.75rem;
+    padding-inline: 2rem;
+  }
+
+  .hct-arrow {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1rem;
   }
 }
 
@@ -482,14 +641,14 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 }
 
 .hct-carousel .carousel__viewport {
-  height: 100vh;
+  height: 100dvh;
   padding: 0;
   margin: 0;
   overflow: hidden;
 }
 
 .hct-carousel .carousel__track {
-  height: 100vh;
+  height: 100dvh;
   padding: 0;
   margin: 0;
 }
@@ -497,7 +656,7 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
 /* width:100% (not 100vw) — 100vw includes the vertical scrollbar's width and
    is what pushes slides off-screen, producing a horizontal scrollbar. */
 .hct-carousel .carousel__slide {
-  height: 100vh;
+  height: 100dvh;
   width: 100%;
   padding: 0;
   margin: 0;
@@ -513,12 +672,12 @@ const totalLabel = computed(() => String(images.length).padStart(2, "0"));
   display: grid;
   grid-template-columns: 100%;
   grid-template-rows: 100%;
-  height: 100vh;
+  height: 100dvh;
 }
 
 .hct-carousel.is-effect-fade .carousel__slide {
   grid-area: 1 / 1;
-  height: 100vh;
+  height: 100dvh;
 }
 
 /* The library sets only a duration, so the curve is ours.

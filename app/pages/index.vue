@@ -6,8 +6,17 @@
     <!-- data-lenis-prevent: the stage runs its own wheel arbitration below
          (carousel navigation + handover to the page). Lenis must not consume
          those events or preventDefault() here would have nothing to cancel. -->
-    <div ref="stageRef" data-lenis-prevent
-      class="sticky top-0 z-0 w-full h-screen overflow-hidden">
+    <!-- On touch the stage is a PLAIN block, not sticky, and carries no
+         `data-lenis-prevent`: there are no wheel events to arbitrate, so the
+         desktop handover has nothing to do, and keeping the stage pinned only
+         traps the user on the hero with no way to reach the content. A normal
+         100dvh block simply scrolls away under a swipe. -->
+    <div
+      ref="stageRef"
+      :data-lenis-prevent="isTouch ? undefined : ''"
+      class="w-full overflow-hidden"
+      :class="isTouch ? 'relative z-0 h-[100dvh]' : 'sticky top-0 z-0 h-screen'"
+    >
       <MouseWheelCarousel :wheel-enabled="wheelEnabled" @slide-change="onSlideChange" @total-slides="onTotalSlides" />
     </div>
     <!-- Site content: sits above the sticky carousel and slides up over it.
@@ -41,6 +50,20 @@ const WHEEL_THRESHOLD = 15
 
 const stageRef = ref(null)
 const contentRef = ref(null)
+
+// Coarse pointer = phone/tablet. Everything below (sticky pin, wheel
+// arbitration, Lenis exclusion) is desktop-only behaviour; on touch the hero
+// is an ordinary full-height block and the browser's own scrolling handles it.
+// Starts false so SSR renders the desktop markup and corrects on mount.
+const isTouch = ref(false)
+
+onMounted(() => {
+  const mq = window.matchMedia('(hover: none) and (pointer: coarse)')
+  isTouch.value = mq.matches
+  const onChange = (e) => (isTouch.value = e.matches)
+  mq.addEventListener('change', onChange)
+  onBeforeUnmount(() => mq.removeEventListener('change', onChange))
+})
 
 const currentSlide = ref(0)
 const totalSlides = ref(0)
@@ -107,6 +130,12 @@ useEventListener(
   stageRef,
   'wheel',
   (event) => {
+    // Touch devices never reach the handover logic — the stage isn't pinned
+    // there, so there is nothing to hand over from. (Some touch laptops do
+    // emit wheel events; this keeps them on the plain-scroll path to match
+    // the non-sticky layout they were served.)
+    if (isTouch.value) return
+
     // Already scrolled into the content: the page owns the wheel. Scrolling back
     // up to the stage hands control to the carousel again on the next event.
     if (y.value > window.innerHeight * 0.9) return

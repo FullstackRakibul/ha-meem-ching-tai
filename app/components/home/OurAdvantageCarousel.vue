@@ -116,10 +116,32 @@ const measure = () => {
   scrollDistance.value = Math.max(0, Math.round(total - track.clientWidth));
 };
 
+// Coarse pointer = phone/tablet. Scroll-jacking is far more hostile on touch
+// than on a wheel: a vertical swipe that moves cards sideways instead of
+// advancing the page reads as a broken scroll, and there's no way to "scroll
+// past" it quickly. On touch the section becomes a normal swipeable strip
+// (the same fallback reduced-motion already used) and claims no extra scroll.
+const isTouch = ref(false);
+
+onMounted(() => {
+  const mq = window.matchMedia("(hover: none) and (pointer: coarse)");
+  isTouch.value = mq.matches;
+  const onChange = (e) => {
+    isTouch.value = e.matches;
+    // Layout mode changed: re-measure or the travel distance is stale.
+    nextTick(() => {
+      measure();
+      update();
+    });
+  };
+  mq.addEventListener("change", onChange);
+  onBeforeUnmount(() => mq.removeEventListener("change", onChange));
+});
+
 // Only pin when there is something to scroll horizontally. Below that (narrow
 // viewports, or few enough cards to fit) the section behaves as a normal block
 // and claims no extra scroll — otherwise it would pin over dead space.
-const isPinned = computed(() => scrollDistance.value > 0);
+const isPinned = computed(() => !isTouch.value && scrollDistance.value > 0);
 
 const update = () => {
   if (!sectionRef.value) return;
@@ -195,7 +217,7 @@ onBeforeUnmount(() => {
          section height so the two can't disagree. -->
     <div
       ref="frameRef"
-      class="advantage-frame relative py-20 w-full overflow-hidden flex flex-col justify-center"
+      class="advantage-frame relative py-12 md:py-20 w-full overflow-hidden flex flex-col justify-center"
       :class="isPinned ? 'sticky top-0 h-dvh' : ''"
     >
       <!-- Ambient glow blobs — same glass/navy/gold language as header & footer -->
@@ -207,7 +229,7 @@ onBeforeUnmount(() => {
       ></div>
 
       <UContainer class="relative w-full">
-        <div class="mb-10 lg:mb-14 flex flex-wrap items-end justify-between gap-6">
+        <div class="mb-8 md:mb-10 lg:mb-14 flex flex-wrap items-end justify-between gap-4 md:gap-6">
           <div>
             <UBadge
               label="OUR ADVANTAGE"
@@ -216,7 +238,7 @@ onBeforeUnmount(() => {
               class="border border-gray-200 bg-white px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-5"
             />
             <h2
-              class="text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight"
+              class="text-2xl sm:text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight"
             >
               Why We Stand Out in the<br class="hidden md:block" />
               Manufacturing Industry
@@ -224,8 +246,11 @@ onBeforeUnmount(() => {
           </div>
 
           <!-- Progress readout: the only affordance telling the user this
-               section consumes scroll, so it earns its place. -->
-          <div class="flex items-center gap-4">
+               section consumes scroll, so it earns its place. Hidden when the
+               section isn't pinned — `progress` never advances there, so the
+               bar would sit frozen at 0% and read as broken. The snap-scroll
+               strip signals itself via the peeking next card instead. -->
+          <div v-if="isPinned" class="flex items-center gap-4">
             <span class="text-sm font-bold text-primary tabular-nums">
               {{ String(activeIndex + 1).padStart(2, "0") }}
               <span class="text-gray-400"
@@ -245,10 +270,15 @@ onBeforeUnmount(() => {
       <!-- The moving track. Fills the remaining frame height (grow + min-h-0)
            so the cards are as tall as the pinned viewport allows instead of
            clustering at the top and leaving a band of empty space. -->
+      <!-- When pinned, the transform drives the position and the track must not
+           scroll itself. When not pinned (touch, or a viewport where
+           everything fits) it becomes an ordinary snap-scrolling strip so the
+           cards stay reachable by swipe. -->
       <div
         ref="trackRef"
-        class="advantage-track flex gap-6 grow min-h-0 items-stretch will-change-transform"
-        :style="trackStyle"
+        class="advantage-track flex gap-6 grow min-h-0 items-stretch"
+        :class="isPinned ? 'will-change-transform' : 'is-free'"
+        :style="isPinned ? trackStyle : undefined"
       >
         <article
           v-for="(item, index) in advantageItems"
@@ -310,11 +340,39 @@ onBeforeUnmount(() => {
   padding-block: 0.5rem 1.5rem; /* room for the is-active lift + its shadow */
 }
 
+/* Unpinned mode: a real horizontal scroller with snap points. `overscroll-x:
+   contain` stops a swipe that runs off the last card from also flicking the
+   page or triggering a browser back-gesture. */
+.advantage-track.is-free {
+  transform: none !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  /* Restore a symmetric trailing gutter: with no translate, the last card
+     needs real padding to breathe. */
+  padding-inline: max(1rem, calc((100% - 80rem) / 2 + 1rem));
+  scrollbar-width: none;
+}
+
+.advantage-track.is-free::-webkit-scrollbar {
+  height: 0;
+}
+
+.advantage-track.is-free .advantage-card {
+  scroll-snap-align: center;
+  /* No pinned frame to fill, so let content set the height. */
+  height: auto;
+}
+
 .advantage-card {
   /* Card width drives how many are visible at once and, via scrollWidth, how
      much scroll distance the section claims. Kept as a share of the viewport
-     so the cards scale up on large screens instead of stranding empty space. */
-  width: min(86vw, 26rem);
+     so the cards scale up on large screens instead of stranding empty space.
+     82% leaves a sliver of the next card visible on a phone, which is the
+     cheapest possible signal that the strip scrolls sideways. */
+  width: min(82vw, 26rem);
 }
 
 @media (min-width: 768px) {
@@ -344,6 +402,9 @@ onBeforeUnmount(() => {
 
 /* Reduced motion: drop the pin entirely and let the cards be a normal
    horizontally-scrollable strip, so no scroll distance is hijacked. */
+/* Reduced motion: drop the pin entirely, exactly as the unpinned/touch mode
+   does. These users can still be on a desktop, where `isPinned` is true and
+   the JS keeps applying a translate — so the override has to come from CSS. */
 @media (prefers-reduced-motion: reduce) {
   .advantage-section {
     height: auto !important;
@@ -358,7 +419,9 @@ onBeforeUnmount(() => {
   .advantage-track {
     transform: none !important;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
     /* Restore a symmetric trailing gutter: without the pin there's no
        translate, so the last card needs real padding to breathe. */
     padding-inline: max(1rem, calc((100% - 80rem) / 2 + 1rem));
