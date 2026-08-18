@@ -19,7 +19,7 @@ const emit = defineEmits(["slide-change", "total-slides"]);
 const images = [
   {
     id: 1,
-    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai33.jpeg",
+    url: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai40.jpeg",
     title: "Precision Engineering",
     desc: "Crafting export-quality accessories for the global apparel industry.",
   },
