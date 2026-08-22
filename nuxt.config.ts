@@ -4,6 +4,13 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: ['@nuxt/ui', 'vue3-carousel-nuxt'],
   css: ['~/assets/css/main.css'],
+  icon: {
+    // bundle heroicons at build time so SSR resolves them locally
+    // instead of round-tripping through /api/_nuxt_icon/*
+    serverBundle: {
+      collections: ['heroicons'],
+    },
+  },
   components: [
     {
       path: '~/components',

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+/* Lenis (inertial smooth scroll, initialised in plugins/lenis.client.js).
+   Ships the html.lenis-* rules the library toggles while it owns scrolling. */
+@import "lenis/dist/lenis.css";
 
 /* ========================================= */
 /* NUXT UI / TAILWIND CUSTOM COLOR VARIABLES */
@@ -34,6 +37,19 @@
   --color-clay-800: #2c1511;
   --color-clay-900: #1a0c0a;
   --color-clay-950: #0d0605;
+  
+  
+  --color-brand-50:  #f2f6f8;
+  --color-brand-100: #dbe7ec;
+  --color-brand-200: #bccfd8;
+  --color-brand-300: #8faec0;
+  --color-brand-400: #5d85a1;
+  --color-brand-500: #3d6485;
+  --color-brand-600: #2e4f6b;
+  --color-brand-700: #274257;   /* ← your brand color */
+  --color-brand-800: #1f3445;
+  --color-brand-900: #182530;
+  --color-brand-950: #0e1820;
 
   --font-sans: 'Inter', system-ui, sans-serif;
 }
@@ -43,14 +59,25 @@
    block and those utilities fall back to Nuxt UI's built-in blue. The
    app.config.ts `colors` map takes a palette NAME ('navy'), never a hex. */
 :root {
-  --ui-primary: var(--color-navy-500);
+  /* --ui-primary: var(--color-navy-500); */
   --ui-secondary: var(--color-clay-500);
+
+  --ui-primary: var(--color-brand-700);
+  --ui-primary-contrast: var(--color-brand-50);
+  --ui-primary-muted: var(--color-brand-100);
+  --ui-primary-dimmed: var(--color-brand-200);
+  --ui-primary-subtle: var(--color-brand-50);
+  --ui-primary-elevated: var(--color-brand-600);
+  --ui-primary-accented: var(--color-brand-800);
+  --ui-primary-highlighted: var(--color-brand-900);
 }
 
 .dark {
-  /* Step 500 is too dark to read on a dark surface — lift both ramps. */
-  --ui-primary: var(--color-navy-300);
-  --ui-secondary: var(--color-clay-300);
+  /* Keep the brand primary consistent across modes so `text-primary` and
+     heading titles stay on the dark navy brand color instead of the pale
+     dark-mode override. */
+  --ui-primary: var(--color-navy-500);
+  --ui-secondary: var(--color-clay-500);
 }
 
 /* Text-on-brand pairings. Both #142e53 (contrast 14.3:1 on white) and
@@ -61,42 +88,82 @@
   --color-on-clay: #ffffff;
 }
 
-/* === Custom Scrollbar Styling (navy ramp, base #142e53) === */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: #f5f5f0; border-radius: 10px; }
-::-webkit-scrollbar-thumb {
-  background: var(--color-navy-500);
-  border-radius: 10px;
-  border: 2px solid #f5f5f0;
-}
-::-webkit-scrollbar-thumb:hover { background: var(--color-navy-700); }
-* { scrollbar-width: thin; scrollbar-color: var(--color-navy-500) #f5f5f0; }
+/* === Scrollbar ===========================================================
+   The page scrollbar is hidden and replaced by <ScrollTracer>, the glowing
+   progress rail mounted in app.vue. Scrolling itself is untouched — only the
+   native chrome is removed.
 
+   Hiding it reclaims the ~10px gutter the old bar occupied, so `100vw` and
+   the viewport now agree; the overflow-x backstop at the bottom of this file
+   still stands for anything that oversteps.
 
-
-
-/* Custom brand cursor across the whole site */
-html,
-body,
-a,
-button,
-input,
-select,
-textarea {
-  cursor: url('/yarn-ball-ha-meem-ching-tai.svg') 24 24, auto !important;
-}
-
-html {
-  scroll-behavior: smooth; 
-  
-  /* Enables native momentum/overscroll bounce (like iOS) on desktop */
-  overscroll-behavior-y: contain; 
-  -webkit-overflow-scrolling: touch; 
+   Scoped to the document, NOT `*`: inner scrollable panes should keep a
+   visible scrollbar, since nothing else signals that they scroll. */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 html,
 body {
-  overflow-x: hidden;
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* legacy Edge */
+}
+
+
+
+
+/* Custom brand cursor across the whole site.
+   Gated to devices that actually have a pointer: a touch device has no cursor
+   to style, and shipping the rule there only costs an image request. */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body,
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    cursor: url('/yarn-ball-ha-meem-ching-tai.svg') 24 24, auto !important;
+  }
+}
+
+/* Touch targets: iOS zooms the page when an input smaller than 16px is
+   focused, which leaves the user zoomed in with no obvious way back. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Stop iOS Safari inflating text in rotated/landscape layouts, which breaks
+   the carefully-sized headings above. */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html {
+  /* NOTE: `scroll-behavior: smooth` is deliberately absent. Lenis animates the
+     scroll position itself, and the CSS property makes the browser animate
+     toward each of those per-frame targets as well — the two compound into a
+     laggy, rubber-banding scroll. Anchor jumps go through lenis.scrollTo().
+     If Lenis is ever removed, restore it here. */
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+html,
+body {
+  /* `clip`, NOT `hidden`. Both suppress horizontal overflow, but `hidden`
+     makes the element a scroll container — and `position: sticky` then sticks
+     to THAT container instead of the viewport, so every pinned section on the
+     page silently scrolls away as if sticky were never set. `clip` has no such
+     side effect. Do not change this back to `hidden`. */
+  overflow-x: clip;
   width: 100%;
   max-width: 100%;
 }

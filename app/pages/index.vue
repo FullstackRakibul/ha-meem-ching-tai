@@ -3,7 +3,20 @@
     <!-- Sticky full-screen carousel stage. This page is `fullBleed` (see
          definePageMeta), so the layout applies no width constraint or top padding
          and the slides genuinely reach the screen edges. -->
-    <div ref="stageRef" class="sticky top-0 z-0 w-full h-screen overflow-hidden">
+    <!-- data-lenis-prevent: the stage runs its own wheel arbitration below
+         (carousel navigation + handover to the page). Lenis must not consume
+         those events or preventDefault() here would have nothing to cancel. -->
+    <!-- On touch the stage is a PLAIN block, not sticky, and carries no
+         `data-lenis-prevent`: there are no wheel events to arbitrate, so the
+         desktop handover has nothing to do, and keeping the stage pinned only
+         traps the user on the hero with no way to reach the content. A normal
+         100dvh block simply scrolls away under a swipe. -->
+    <div
+      ref="stageRef"
+      :data-lenis-prevent="isTouch ? undefined : ''"
+      class="w-full overflow-hidden"
+      :class="isTouch ? 'relative z-0 h-[100dvh]' : 'sticky top-0 z-0 h-screen'"
+    >
       <MouseWheelCarousel :wheel-enabled="wheelEnabled" @slide-change="onSlideChange" @total-slides="onTotalSlides" />
     </div>
     <!-- Site content: sits above the sticky carousel and slides up over it.
@@ -32,8 +45,25 @@ import CompanyDescription from '~/components/home/CompanyDescription.vue'
 // carousel can occupy the full viewport.
 definePageMeta({ fullBleed: true })
 
+// Keep in sync with `mouseWheel.threshold` in MouseWheelCarousel.vue.
+const WHEEL_THRESHOLD = 15
+
 const stageRef = ref(null)
 const contentRef = ref(null)
+
+// Coarse pointer = phone/tablet. Everything below (sticky pin, wheel
+// arbitration, Lenis exclusion) is desktop-only behaviour; on touch the hero
+// is an ordinary full-height block and the browser's own scrolling handles it.
+// Starts false so SSR renders the desktop markup and corrects on mount.
+const isTouch = ref(false)
+
+onMounted(() => {
+  const mq = window.matchMedia('(hover: none) and (pointer: coarse)')
+  isTouch.value = mq.matches
+  const onChange = (e) => (isTouch.value = e.matches)
+  mq.addEventListener('change', onChange)
+  onBeforeUnmount(() => mq.removeEventListener('change', onChange))
+})
 
 const currentSlide = ref(0)
 const totalSlides = ref(0)
@@ -54,17 +84,38 @@ const isLastSlide = computed(
 const wheelEnabled = computed(() => !isDrifting.value)
 
 // Gentle, eased drift from the last slide into the content section.
+let driftTimer = null
+
+const DRIFT_DURATION = 1.6 // seconds
+
 const driftToContent = () => {
   if (isDrifting.value || !contentRef.value) return
   isDrifting.value = true
 
   const target = contentRef.value.getBoundingClientRect().top + window.scrollY
-  window.scrollTo({ top: target, behavior: 'smooth' })
 
-  setTimeout(() => {
+  // Route the handover through Lenis. Lenis owns window.scrollY while it's
+  // running, so a native scrollTo({behavior:'smooth'}) would be fighting it
+  // frame-for-frame and visibly stutter. Falls back to native when Lenis is
+  // absent (reduced-motion, or before the plugin has initialised).
+  const { $lenis } = useNuxtApp()
+
+  if ($lenis) {
+    $lenis.scrollTo(target, {
+      duration: DRIFT_DURATION,
+      easing: (t) => 1 - Math.pow(1 - t, 3), // ease-out cubic
+    })
+  } else {
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
+  clearTimeout(driftTimer)
+  driftTimer = setTimeout(() => {
     isDrifting.value = false
-  }, 900)
+  }, DRIFT_DURATION * 1000 + 100)
 }
+
+onBeforeUnmount(() => clearTimeout(driftTimer))
 
 const debouncedDrift = useDebounceFn(driftToContent, 60)
 
@@ -79,6 +130,12 @@ useEventListener(
   stageRef,
   'wheel',
   (event) => {
+    // Touch devices never reach the handover logic — the stage isn't pinned
+    // there, so there is nothing to hand over from. (Some touch laptops do
+    // emit wheel events; this keeps them on the plain-scroll path to match
+    // the non-sticky layout they were served.)
+    if (isTouch.value) return
+
     // Already scrolled into the content: the page owns the wheel. Scrolling back
     // up to the stage hands control to the carousel again on the next event.
     if (y.value > window.innerHeight * 0.9) return
@@ -88,6 +145,12 @@ useEventListener(
       event.preventDefault()
       return
     }
+
+    // Match the carousel's own wheel threshold (mouseWheel.threshold in
+    // MouseWheelCarousel). Below it the library ignores the event entirely, so
+    // treating it as a real scroll here would drift the page on a stray
+    // trackpad twitch that never moved the carousel.
+    if (Math.abs(event.deltaY) <= WHEEL_THRESHOLD) return
 
     const scrollingDown = event.deltaY > 0
 

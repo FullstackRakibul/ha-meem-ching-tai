@@ -25,6 +25,7 @@ const items = [
   }
 ]
 
+
 const activeIndex = ref(0)
 let interval = null
 
@@ -61,8 +62,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="relative w-full h-[80vh] lg:h-screen overflow-hidden bg-gray-100" @mouseenter="stopAutoplay"
-    @mouseleave="startAutoplay">
+  <!-- dvh, not vh: on mobile browsers vh is measured against the *expanded*
+       viewport, so the bottom-anchored pills sit behind the URL bar. -->
+  <section class="relative w-full h-[85dvh] md:h-[80vh] lg:h-screen overflow-hidden bg-gray-100"
+    @mouseenter="stopAutoplay" @mouseleave="startAutoplay">
 
     <!-- Background Images Loop (Smooth Crossfade) -->
     <div v-for="(item, index) in items" :key="item.id"
@@ -75,26 +78,43 @@ onUnmounted(() => {
     <div class="absolute inset-0 z-20 bg-linear-to-b from-black/20 via-transparent to-black/30 pointer-events-none">
     </div>
 
-    <!-- 4 Interactive Columns -->
-    <div class="absolute inset-0 z-30 grid grid-cols-4 divide-x divide-white/30">
-      <div v-for="(item, index) in items" :key="item.id"
-        class="relative group cursor-pointer flex flex-col items-center pt-[20vh] transition-colors duration-300"
+    <!-- Interactive selectors.
+         Desktop: four full-height columns, divided by hairlines, chosen on
+         hover — the labels sit a fifth of the way down so they read against
+         the image rather than crowding the top edge.
+         Mobile: four columns of ~90px cannot hold "The venture at a glance"
+         in uppercase tracked-out text; it wraps to unreadable slivers. So on
+         small screens the same four items become a stacked list of full-width
+         pills anchored to the bottom, chosen by tap. -->
+    <div
+      class="absolute inset-0 z-30 flex flex-col justify-end gap-2.5 p-5 pb-8
+             md:grid md:grid-cols-4 md:gap-0 md:p-0 md:divide-x md:divide-white/30"
+      :style="{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))' }"
+    >
+      <button v-for="(item, index) in items" :key="item.id" type="button"
+        class="relative group cursor-pointer flex md:flex-col md:items-center md:justify-start md:pt-[20vh] transition-colors duration-300 text-left md:text-center"
+        :aria-pressed="activeIndex === index"
         @mouseenter="handleSelect(index)" @click="handleSelect(index)">
 
-        <!-- ACTIVE State: Glass pill with gold underline accent -->
+        <!-- ACTIVE State: Glass pill with gold accent.
+             The accent is an underline on desktop (centred beneath the pill)
+             and a leading bar on mobile, where a full-width pill has no
+             natural centre to hang a 40px rule from. -->
         <div v-if="activeIndex === index"
-          class="relative flex flex-col items-center gap-2.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-lg px-6 py-3 text-white text-sm font-semibold uppercase tracking-widest transition-all duration-500 ease-out">
+          class="relative w-full md:w-auto flex items-center md:flex-col md:items-center gap-3 md:gap-2.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/30 shadow-lg px-5 py-3.5 md:px-6 md:py-3 text-white text-xs sm:text-sm font-semibold uppercase tracking-wider md:tracking-widest transition-all duration-500 ease-out">
+          <span class="md:hidden h-4 w-0.5 shrink-0 rounded-full bg-[#e8b938]"></span>
           {{ item.title }}
-          <span class="absolute -bottom-3 h-0.5 w-10 rounded-full bg-[#e8b938]"></span>
+          <span class="hidden md:block absolute -bottom-3 h-0.5 w-10 rounded-full bg-[#e8b938]"></span>
         </div>
 
-        <!-- INACTIVE State: Faded text that lifts and gains a glass outline on hover -->
+        <!-- INACTIVE State: Faded, lifting on hover (desktop) or simply dimmed
+             (mobile, where there is no hover to reveal it). -->
         <div v-else
-          class="rounded-full border border-transparent px-6 py-3 text-white/50 text-sm font-semibold uppercase tracking-widest transition-all duration-300 ease-out group-hover:text-white group-hover:border-white/20 group-hover:bg-white/5 group-hover:backdrop-blur-md group-hover:-translate-y-0.5">
+          class="w-full md:w-auto rounded-full border border-white/10 md:border-transparent bg-black/15 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none px-5 py-3.5 md:px-6 md:py-3 text-white/60 md:text-white/50 text-xs sm:text-sm font-semibold uppercase tracking-wider md:tracking-widest transition-all duration-300 ease-out md:group-hover:text-white md:group-hover:border-white/20 md:group-hover:bg-white/5 md:group-hover:backdrop-blur-md md:group-hover:-translate-y-0.5">
           {{ item.title }}
         </div>
 
-      </div>
+      </button>
     </div>
 
   </section>
