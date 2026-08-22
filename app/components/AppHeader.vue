@@ -1,11 +1,11 @@
 <template>
   <header
-    class="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white text-brand-900 shadow-lg transition-all duration-300 lg:w-[calc(100%-4rem)]"
+    class="fixed left-1/2 top-3 z-50 w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-[1.35rem] border border-slate-200/90 bg-white text-brand-900 shadow-[0_12px_32px_rgba(15,39,59,0.12)] transition-all duration-300 sm:top-4 sm:w-[calc(100%-2rem)] lg:w-[calc(100%-4rem)]"
     :class="scrolled ? 'max-w-6xl' : 'max-w-7xl'"
     @keydown.esc="closeDesktopMenu"
   >
-    <div class="mx-auto flex items-center justify-between gap-6 px-5 transition-all duration-300 lg:px-8"
-    :class="scrolled ? 'py-2' : 'py-4'">
+    <div class="mx-auto flex items-center justify-between gap-3 px-4 transition-all duration-300 sm:gap-6 sm:px-5 lg:px-8"
+    :class="scrolled ? 'py-2.5' : 'py-3.5 sm:py-4'">
       <ULink to="#" class="flex shrink-0 items-center gap-3" aria-label="Hameem Ching Tai home" @click="closeDesktopMenu">
         <span class="grid size-10 place-items-center rounded-xl bg-brand-700 text-white shadow-sm">
           <UIcon name="i-heroicons-sparkles-20-solid" class="size-5" />
@@ -28,7 +28,7 @@
         <UButton to="#" label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" class="rounded-lg bg-brand-700 px-5 py-2.5 font-semibold text-white hover:bg-brand-800" @click="closeDesktopMenu" />
       </div>
 
-      <button type="button" class="grid size-10 place-items-center rounded-lg text-brand-900 hover:bg-brand-50 lg:hidden" :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'" @click="mobileOpen = !mobileOpen">
+      <button type="button" class="grid size-11 place-items-center rounded-xl border border-slate-200 text-brand-900 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 lg:hidden" :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'" @click="mobileOpen = !mobileOpen">
         <UIcon :name="mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'" class="size-6" />
       </button>
     </div>
@@ -38,11 +38,11 @@
         <div class="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
           <div class="col-span-8 grid grid-cols-2 gap-x-10 gap-y-8">
             <section v-for="column in activeGroup.columns" :key="column.title">
-              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{{ column.title }}</p>
+              <p class="mb-4 animate-[fade-in_.4s_ease-out_both] text-xs font-bold uppercase tracking-[.16em] text-brand-600">{{ column.title }}</p>
               <div class="grid gap-2">
                 <ULink v-for="item in column.items" :key="item.label" to="#" class="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-brand-50" @click="closeDesktopMenu">
                   <span class="grid size-10 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-brand-700 shadow-sm"><UIcon :name="item.icon" class="size-5" /></span>
-                  <span><strong class="block text-sm text-brand-900">{{ item.label }}</strong><span class="mt-1 block text-sm leading-5 text-slate-500">{{ item.description }}</span></span>
+                  <span><strong class="block text-sm text-brand-900">{{ item.label }}</strong><span class="mt-1 block text-[13px] font-normal leading-5 text-slate-500 transition-colors group-hover:text-slate-600">{{ item.description }}</span></span>
                 </ULink>
               </div>
             </section>
@@ -61,10 +61,11 @@
     </Transition>
 
     <Transition name="mobile">
-      <div v-if="mobileOpen" id="mobile-nav" class="border-t border-slate-200 bg-white px-5 pb-6 pt-4 lg:hidden">
+      <div v-if="mobileOpen" id="mobile-nav" class="max-h-[calc(100dvh-6rem)] overflow-y-auto border-t border-slate-100 bg-white px-4 pb-5 pt-3 sm:px-5 lg:hidden">
         <nav class="grid gap-1" aria-label="Mobile navigation">
-          <ULink v-for="link in allMobileLinks" :key="link.label" :to="link.to" class="rounded-lg px-3 py-3 text-base font-medium text-brand-900 hover:bg-brand-50" @click="mobileOpen = false">{{ link.label }}</ULink>
-          <UButton to="#" label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" block class="mt-3 rounded-lg bg-brand-700 py-3 font-semibold text-white hover:bg-brand-800" @click="mobileOpen = false" />
+          <ULink v-for="link in allMobileLinks" :key="link.label" :to="link.to" class="flex min-h-12 items-center rounded-xl px-3 text-[15px] font-medium text-brand-900 transition-colors hover:bg-brand-50 active:bg-brand-100" @click="mobileOpen = false">{{ link.label }}</ULink>
+          <div class="my-2 h-px bg-slate-100" aria-hidden="true" />
+          <UButton to="#" label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" block class="rounded-xl bg-brand-700 py-3.5 font-semibold text-white shadow-sm transition-transform hover:bg-brand-800 active:scale-[.98]" @click="mobileOpen = false" />
         </nav>
       </div>
     </Transition>
