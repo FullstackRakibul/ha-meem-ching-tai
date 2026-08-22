@@ -10,6 +10,12 @@ export default defineNuxtConfig({
       pathPrefix: false,
     },
   ],
-  
-  
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/png', href: './hameem.png' }
+      ]
+    }
+  }
+
 })
