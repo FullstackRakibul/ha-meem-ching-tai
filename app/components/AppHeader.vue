@@ -1,157 +1,107 @@
 <template>
-  <!-- The pill is `rounded-full` only while it is a single row. Once the mobile
-       menu expands, the header becomes a tall panel and a full radius would
-       bow the sides absurdly — so the radius drops to `rounded-3xl` and the
-       shape animates between the two. -->
   <header
-    class="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] bg-white/80 backdrop-blur-xl shadow-xl border border-white/30 transition-all duration-500 ease-in-out"
-    :class="[
-      mobileOpen ? 'rounded-3xl' : 'rounded-full',
-      scrolled ? 'max-w-lg px-4 sm:px-6 py-2' : 'max-w-7xl px-3 sm:px-2 py-2',
-    ]"
+    class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white text-brand-900 shadow-sm transition-all duration-300"
+    :class="scrolled ? 'py-2' : 'py-4'"
+    @keydown.esc="closeDesktopMenu"
   >
-    <div class="flex items-center justify-between w-full gap-2">
-      <!-- Left: Logo.
-           Desktop: the full legal name, collapsed to zero width when scrolled.
-           Mobile: the full name never fits in a pill, so the short logo mark is
-           shown instead and it does NOT collapse — otherwise the mobile header
-           scrolls down to a bar containing nothing but a hamburger. -->
-      <div
-        class="flex items-center gap-2 text-primary-900 font-bold tracking-tight shrink-0 min-w-0"
-      >
-        <!-- Mobile / tablet mark -->
-        <span class="lg:hidden text-sm sm:text-base whitespace-nowrap">HCTPAL</span>
-
-        <!-- Desktop full name -->
-        <span
-          class="hidden lg:inline transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
-          :class="scrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2 text-sm'"
-        >
-          HAMEEM CHING TAI POCKETING &amp; ACCESSORIES LTD.
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
+      <ULink to="#" class="flex shrink-0 items-center gap-3" aria-label="Hameem Ching Tai home" @click="closeDesktopMenu">
+        <span class="grid size-10 place-items-center rounded-xl bg-brand-700 text-white shadow-sm">
+          <UIcon name="i-heroicons-sparkles-20-solid" class="size-5" />
         </span>
-      </div>
+        <span class="hidden max-w-48 text-sm font-bold leading-tight text-brand-900 sm:block">
+          HAMEEM CHING TAI<br />
+          <span class="font-medium text-brand-600">POCKETING &amp; ACCESSORIES LTD.</span>
+        </span>
+      </ULink>
 
-      <!-- Center: Nav. `hidden lg:flex` is the fix for the mobile overflow —
-           previously this rendered on phones alongside the hamburger and burst
-           out of the pill. -->
-      <nav
-        class="hidden lg:flex items-center justify-center gap-6 lg:gap-8 font-medium tracking-wide uppercase text-primary-900 transition-all duration-500 ease-in-out flex-1"
-        :class="scrolled ? 'text-xs' : 'text-sm'"
-      >
-        <ULink
-          v-for="link in navLinks"
-          :key="link.label"
-          :to="link.to"
-          class="text-primary-900 hover:text-secondary transition-colors whitespace-nowrap"
-        >
+      <nav class="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
+        <ULink v-for="link in simpleLinks" :key="link.label" :to="link.to" class="rounded-lg px-4 py-2 text-sm font-medium text-brand-900 transition-colors hover:bg-brand-50 hover:text-brand-700" @click="closeDesktopMenu">
           {{ link.label }}
         </ULink>
+        <button v-for="menu in menuGroups" :key="menu.label" type="button" class="flex items-center gap-1 rounded-lg px-4 py-2 text-sm font-medium text-brand-900 transition-colors hover:bg-brand-50 hover:text-brand-700" :aria-expanded="activeMenu === menu.label" @mouseenter="openDesktopMenu(menu.label)" @focus="openDesktopMenu(menu.label)" @click="toggleDesktopMenu(menu.label)">
+          {{ menu.label }}
+          <UIcon name="i-heroicons-chevron-down-20-solid" class="size-4 transition-transform" :class="activeMenu === menu.label ? 'rotate-180' : ''" />
+        </button>
       </nav>
 
-      <!-- Right: CTA. Desktop only — on mobile it lives inside the drawer. -->
-      <div
-        class="hidden lg:flex items-center shrink-0 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
-        :class="scrolled ? 'opacity-0 w-0' : 'opacity-100 w-auto'"
-      >
-        <UButton
-          label="Development milestones"
-          trailing-icon="i-heroicons-arrow-right-20-solid"
-          class="bg-primary hover:bg-secondary text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors"
-        />
+      <div class="hidden items-center gap-3 lg:flex">
+        <ULink to="#" class="px-3 py-2 text-sm font-medium text-brand-900 hover:text-brand-700" @click="closeDesktopMenu">Contact us</ULink>
+        <UButton to="#" label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" class="rounded-lg bg-brand-700 px-5 py-2.5 font-semibold text-white hover:bg-brand-800" @click="closeDesktopMenu" />
       </div>
 
-      <!-- Hamburger / close toggle -->
-      <button
-        type="button"
-        class="lg:hidden flex items-center justify-center w-10 h-10 rounded-full text-primary-900 shrink-0 hover:bg-primary/5 transition-colors"
-        :aria-expanded="mobileOpen"
-        aria-controls="mobile-nav"
-        :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
-        @click="mobileOpen = !mobileOpen"
-      >
-        <UIcon
-          :name="
-            mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'
-          "
-          class="text-2xl"
-        />
+      <button type="button" class="grid size-10 place-items-center rounded-lg text-brand-900 hover:bg-brand-50 lg:hidden" :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'" @click="mobileOpen = !mobileOpen">
+        <UIcon :name="mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'" class="size-6" />
       </button>
     </div>
 
-    <!-- Mobile drawer.
-         Animated by max-height rather than v-if so it slides open and closed
-         instead of popping. max-h is capped against the viewport (minus the
-         header's own offset) and scrolls internally, so a long menu can never
-         run off the bottom of a short phone screen. -->
-    <div
-      id="mobile-nav"
-      class="lg:hidden overflow-hidden transition-[max-height,opacity] duration-400 ease-in-out"
-      :class="mobileOpen ? 'max-h-[calc(100dvh-6rem)] opacity-100' : 'max-h-0 opacity-0'"
-    >
-      <nav
-        class="mt-3 pt-3 border-t border-gray-200/80 flex flex-col text-sm uppercase font-medium text-primary-900 overflow-y-auto"
-      >
-        <ULink
-          v-for="link in navLinks"
-          :key="link.label"
-          :to="link.to"
-          class="py-3 px-2 rounded-xl hover:bg-primary/5 transition-colors"
-          @click="mobileOpen = false"
-        >
-          {{ link.label }}
-        </ULink>
+    <Transition name="menu">
+      <div v-if="activeMenu" class="absolute inset-x-0 top-full hidden border-b border-slate-200 bg-white shadow-xl lg:block" @mouseenter="cancelClose" @mouseleave="scheduleClose">
+        <div class="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
+          <div class="col-span-8 grid grid-cols-2 gap-x-10 gap-y-8">
+            <section v-for="column in activeGroup.columns" :key="column.title">
+              <p class="mb-4 text-xs font-bold uppercase tracking-widest text-brand-600">{{ column.title }}</p>
+              <div class="grid gap-2">
+                <ULink v-for="item in column.items" :key="item.label" to="#" class="group flex gap-3 rounded-xl p-3 transition-colors hover:bg-brand-50" @click="closeDesktopMenu">
+                  <span class="grid size-10 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-brand-700 shadow-sm"><UIcon :name="item.icon" class="size-5" /></span>
+                  <span><strong class="block text-sm text-brand-900">{{ item.label }}</strong><span class="mt-1 block text-sm leading-5 text-slate-500">{{ item.description }}</span></span>
+                </ULink>
+              </div>
+            </section>
+          </div>
+          <aside class="col-span-4 rounded-2xl bg-brand-50 p-5">
+            <p class="text-xs font-bold uppercase tracking-widest text-brand-600">What&apos;s new</p>
+            <div class="mt-5 grid h-28 place-items-center rounded-xl bg-brand-700 text-white"><UIcon name="i-heroicons-chart-bar-square-20-solid" class="size-14 opacity-90" /></div>
+            <h3 class="mt-5 text-lg font-bold text-brand-900">Development milestones</h3>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Follow our progress as we build better pocketing and accessory solutions.</p>
+            <ULink to="#" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-700 hover:text-brand-800" @click="closeDesktopMenu">Explore the project <UIcon name="i-heroicons-arrow-right-20-solid" class="size-4" /></ULink>
+          </aside>
+        </div>
+      </div>
+    </Transition>
 
-        <UButton
-          label="Development milestones"
-          trailing-icon="i-heroicons-arrow-right-20-solid"
-          block
-          class="mt-3 mb-1 bg-primary hover:bg-secondary text-white font-medium rounded-full py-2.5 text-sm transition-colors"
-          @click="mobileOpen = false"
-        />
-      </nav>
-    </div>
+    <Transition name="mobile">
+      <div v-if="mobileOpen" id="mobile-nav" class="border-t border-slate-200 bg-white px-5 pb-6 pt-4 lg:hidden">
+        <nav class="grid gap-1" aria-label="Mobile navigation">
+          <ULink v-for="link in allMobileLinks" :key="link.label" :to="link.to" class="rounded-lg px-3 py-3 text-base font-medium text-brand-900 hover:bg-brand-50" @click="mobileOpen = false">{{ link.label }}</ULink>
+          <UButton to="#" label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" block class="mt-3 rounded-lg bg-brand-700 py-3 font-semibold text-white hover:bg-brand-800" @click="mobileOpen = false" />
+        </nav>
+      </div>
+    </Transition>
   </header>
 </template>
 
 <script setup>
 import { useWindowScroll, useDebounceFn } from "@vueuse/core";
 
-// Single source of truth: the desktop bar and the mobile drawer render from
-// the same list, so they can no longer drift apart (the old markup had "The
-// facility" in the mobile menu only).
-const navLinks = [
+const simpleLinks = [
   { label: "Home", to: "#" },
   { label: "Why it matters", to: "#" },
-  { label: "The venture at a glance", to: "#" },
+  { label: "Our venture", to: "#" },
   { label: "The facility", to: "#" },
 ];
-
+const menuGroups = [
+  { label: "Products", columns: [{ title: "Capabilities", items: [{ label: "Pocketing solutions", description: "Purpose-built materials for better performance.", icon: "i-heroicons-cube-transparent-20-solid" }, { label: "Accessory components", description: "Reliable components made for modern production.", icon: "i-heroicons-squares-2x2-20-solid" }] }, { title: "Explore", items: [{ label: "Our approach", description: "See how our team turns ideas into products.", icon: "i-heroicons-light-bulb-20-solid" }, { label: "Quality standards", description: "Built with care, consistency, and accountability.", icon: "i-heroicons-shield-check-20-solid" }] }] },
+  { label: "Resources", columns: [{ title: "Learn", items: [{ label: "Blog", description: "News, updates, and useful industry insights.", icon: "i-heroicons-document-text-20-solid" }, { label: "Customer stories", description: "Discover how our partners work with us.", icon: "i-heroicons-chat-bubble-left-right-20-solid" }] }, { title: "Company", items: [{ label: "About us", description: "Learn about our mission and roadmap.", icon: "i-heroicons-building-office-20-solid" }, { label: "Careers", description: "Join our growing team.", icon: "i-heroicons-briefcase-20-solid" }] }] },
+];
+const allMobileLinks = [...simpleLinks, ...menuGroups.flatMap((group) => group.columns.flatMap((column) => column.items.map(({ label }) => ({ label, to: "#" })) ))];
 const { y } = useWindowScroll();
 const scrolled = ref(false);
 const mobileOpen = ref(false);
-
-const updateScrolled = useDebounceFn(() => {
-  scrolled.value = y.value > 50;
-}, 50);
-
-watch(y, updateScrolled);
-
-// Collapsing the header to `max-w-lg` while the drawer is open would yank the
-// panel narrower mid-interaction. Scrolling with the menu open closes it
-// instead, which is also what a user tapping outside the pill expects.
-watch(y, () => {
-  if (mobileOpen.value) mobileOpen.value = false;
-});
-
-// Returning to desktop width must not strand the drawer open — its container
-// is `lg:hidden`, so the state would persist invisibly and the next mobile
-// resize would show it already expanded.
-onMounted(() => {
-  const mq = window.matchMedia("(min-width: 1024px)");
-  const onChange = (e) => {
-    if (e.matches) mobileOpen.value = false;
-  };
-  mq.addEventListener("change", onChange);
-  onBeforeUnmount(() => mq.removeEventListener("change", onChange));
-});
+const activeMenu = ref(null);
+let closeTimer;
+const activeGroup = computed(() => menuGroups.find((group) => group.label === activeMenu.value));
+const openDesktopMenu = (label) => { clearTimeout(closeTimer); activeMenu.value = label; };
+const scheduleClose = () => { closeTimer = window.setTimeout(() => { activeMenu.value = null; }, 180); };
+const cancelClose = () => clearTimeout(closeTimer);
+const toggleDesktopMenu = (label) => { activeMenu.value = activeMenu.value === label ? null : label; };
+const closeDesktopMenu = () => { activeMenu.value = null; mobileOpen.value = false; };
+watch(y, useDebounceFn(() => { scrolled.value = y.value > 40; if (mobileOpen.value) mobileOpen.value = false; }, 50));
+onMounted(() => { const mq = window.matchMedia("(min-width: 1024px)"); const onChange = (event) => { if (event.matches) mobileOpen.value = false; }; mq.addEventListener("change", onChange); onBeforeUnmount(() => mq.removeEventListener("change", onChange)); });
 </script>
+
+<style scoped>
+.menu-enter-active, .menu-leave-active, .mobile-enter-active, .mobile-leave-active { transition: opacity .2s ease, transform .2s ease; }
+.menu-enter-from, .menu-leave-to { opacity: 0; transform: translateY(-8px); }
+.mobile-enter-from, .mobile-leave-to { opacity: 0; transform: translateY(-10px); }
+</style>
