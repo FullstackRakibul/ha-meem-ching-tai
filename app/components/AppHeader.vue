@@ -1,18 +1,16 @@
 <template>
   <header
-    class="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white text-brand-900 shadow-sm transition-all duration-300"
-    :class="scrolled ? 'py-2' : 'py-4'"
+    class="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white text-brand-900 shadow-lg transition-all duration-300 lg:w-[calc(100%-4rem)]"
+    :class="scrolled ? 'max-w-6xl' : 'max-w-7xl'"
     @keydown.esc="closeDesktopMenu"
   >
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
+    <div class="mx-auto flex items-center justify-between gap-6 px-5 transition-all duration-300 lg:px-8"
+    :class="scrolled ? 'py-2' : 'py-4'">
       <ULink to="#" class="flex shrink-0 items-center gap-3" aria-label="Hameem Ching Tai home" @click="closeDesktopMenu">
         <span class="grid size-10 place-items-center rounded-xl bg-brand-700 text-white shadow-sm">
           <UIcon name="i-heroicons-sparkles-20-solid" class="size-5" />
         </span>
-        <span class="hidden max-w-48 text-sm font-bold leading-tight text-brand-900 sm:block">
-          HAMEEM CHING TAI<br />
-          <span class="font-medium text-brand-600">POCKETING &amp; ACCESSORIES LTD.</span>
-        </span>
+        <span class="hidden max-w-48 truncate whitespace-nowrap text-sm font-bold leading-tight text-brand-900 sm:block lg:max-w-none lg:text-base">Ha-Meem Ching Tai</span>
       </ULink>
 
       <nav class="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
@@ -35,7 +33,7 @@
       </button>
     </div>
 
-    <Transition name="menu">
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 translate-y-3" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-3">
       <div v-if="activeMenu" class="absolute inset-x-0 top-full hidden border-b border-slate-200 bg-white shadow-xl lg:block" @mouseenter="cancelClose" @mouseleave="scheduleClose">
         <div class="mx-auto grid max-w-7xl grid-cols-12 gap-8 px-8 py-8">
           <div class="col-span-8 grid grid-cols-2 gap-x-10 gap-y-8">
@@ -51,7 +49,9 @@
           </div>
           <aside class="col-span-4 rounded-2xl bg-brand-50 p-5">
             <p class="text-xs font-bold uppercase tracking-widest text-brand-600">What&apos;s new</p>
-            <div class="mt-5 grid h-28 place-items-center rounded-xl bg-brand-700 text-white"><UIcon name="i-heroicons-chart-bar-square-20-solid" class="size-14 opacity-90" /></div>
+            <div class="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/6deed8254d47b203e7dbef2ddcf99098-6dQabfgwyv02nXkljPmqTc1zDe88X8.webp" alt="New dashboard preview" class="h-36 w-full object-cover" />
+            </div>
             <h3 class="mt-5 text-lg font-bold text-brand-900">Development milestones</h3>
             <p class="mt-2 text-sm leading-6 text-slate-600">Follow our progress as we build better pocketing and accessory solutions.</p>
             <ULink to="#" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand-700 hover:text-brand-800" @click="closeDesktopMenu">Explore the project <UIcon name="i-heroicons-arrow-right-20-solid" class="size-4" /></ULink>
