@@ -1,224 +1,517 @@
+<!-- AppHeader.vue -->
 <template>
   <header
-    class="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] md:w-[calc(100%-4rem)] -translate-x-1/2 rounded-full border border-slate-200/60 bg-white/80 backdrop-blur-lg shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-500"
-    :class="scrolled ? 'max-w-4xl py-1.5' : 'max-w-7xl py-3'" @keydown.esc="closeDesktopMenu">
-    <div class="mx-auto flex items-center justify-between gap-6 px-5 md:px-8 transition-all duration-500">
-      <ULink to="#" class="flex shrink-0 items-center gap-3 transition-transform hover:scale-105" aria-label="Hameem Ching Tai home"
-        @click="closeDesktopMenu">
-        <span class="flex items-center">
-          <img :src=mainLogo alt="Ha-Meem Ching Tai" class="h-7 sm:h-9 w-auto object-contain drop-shadow-sm">
+    class="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] sm:w-[calc(100%-2rem)] bg-white/80 backdrop-blur-xl shadow-xl border border-white/30 transition-all duration-500 ease-in-out"
+    :class="[
+      mobileOpen ? 'rounded-3xl' : 'rounded-full',
+      scrolled ? 'max-w-lg px-4 sm:px-6 py-2' : 'max-w-7xl px-3 sm:px-2 py-2',
+    ]"
+  >
+    <div class="flex items-center justify-between w-full gap-2">
+      <!-- Left: Logo -->
+      <div
+        class="flex items-center gap-2 text-primary-900 font-bold tracking-tight shrink-0 min-w-0"
+      >
+        <span class="lg:hidden text-sm sm:text-base whitespace-nowrap">HCTPAL</span>
+        <span
+          class="hidden lg:inline transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
+          :class="scrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2 text-sm'"
+        >
+          HAMEEM CHING TAI
         </span>
       </ULink>
 
-      <nav class="hidden items-center gap-1.5 lg:flex" aria-label="Main navigation">
-        <ULink v-for="link in simpleLinks" :key="link.label" :to="link.to"
-          class="rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100/80 hover:text-brand-600"
-          @click="closeDesktopMenu">
-          {{ link.label }}
-        </ULink>
-        <div class="relative flex items-center h-full" v-for="menu in menuGroups" :key="menu.label" @mouseenter="openDesktopMenu(menu.label)" @mouseleave="scheduleClose">
-          <button type="button"
-            class="group flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100/80 hover:text-brand-600"
-            :aria-expanded="activeMenu === menu.label"
-            @focus="openDesktopMenu(menu.label)" @click="toggleDesktopMenu(menu.label)">
-            {{ menu.label }}
-            <svg class="size-4 text-slate-400 transition-transform duration-300 group-hover:text-brand-500"
-              :class="activeMenu === menu.label ? 'rotate-180 text-brand-500' : ''"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+      <!-- Center: Nav with Mega Menu -->
+      <nav
+        class="hidden lg:flex items-center justify-center gap-6 lg:gap-8 font-medium tracking-wide uppercase text-primary-900 transition-all duration-500 ease-in-out flex-1"
+        :class="scrolled ? 'text-xs' : 'text-sm'"
+      >
+        <div
+          v-for="link in navLinks"
+          :key="link.label"
+          class="relative group"
+          @mouseenter="activeMegaMenu = link.label"
+          @mouseleave="activeMegaMenu = null"
+        >
+          <!-- Nav Link -->
+          <ULink
+            :to="link.to"
+            class="flex items-center gap-1.5 text-primary-900 hover:text-secondary transition-colors whitespace-nowrap py-2"
+          >
+            {{ link.label }}
+            <UIcon
+              v-if="link.megaMenu"
+              name="i-heroicons-chevron-down-20-solid"
+              class="w-3.5 h-3.5 transition-transform duration-300"
+              :class="activeMegaMenu === link.label ? 'rotate-180' : ''"
+            />
+          </ULink>
+
+          <!-- Mega Menu Dropdown -->
+          <Transition
+            enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 translate-y-3 scale-[0.98]"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition-all duration-200 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-3 scale-[0.98]"
+          >
+            <div
+              v-if="link.megaMenu && activeMegaMenu === link.label"
+              class="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-170 md:min-w-6xl"
+            >
+              <div
+                class="bg-white rounded-2xl shadow-2xl border border-gray-100/80 overflow-hidden"
+              >
+                <!-- Mega Menu Content -->
+                <div class="flex">
+                  <!-- Left: Featured Panel -->
+                  <div
+                    class="w-65 relative overflow-hidden shrink-0"
+                    :style="{
+                      background: link.megaMenu.featured.gradient,
+                    }"
+                  >
+                    <!-- Abstract Pattern SVG -->
+                    <svg
+                      class="absolute inset-0 w-full h-full opacity-10"
+                      viewBox="0 0 260 400"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="200"
+                        cy="50"
+                        r="120"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                      />
+                      <circle
+                        cx="180"
+                        cy="80"
+                        r="90"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                      />
+                      <circle
+                        cx="220"
+                        cy="40"
+                        r="140"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                      />
+                      <path
+                        d="M0 200 Q 130 150, 260 200"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                        fill="none"
+                      />
+                      <path
+                        d="M0 240 Q 130 190, 260 240"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                        fill="none"
+                      />
+                      <path
+                        d="M0 280 Q 130 230, 260 280"
+                        stroke="currentColor"
+                        stroke-width="0.5"
+                        fill="none"
+                      />
+                    </svg>
+
+                    <div
+                      class="relative p-6 h-full flex flex-col justify-between text-white"
+                    >
+                      <div>
+                        <div
+                          class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4"
+                        >
+                          <!-- Custom Icon -->
+                          <svg
+                            class="w-6 h-6"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                          >
+                            <path
+                              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                            <path
+                              d="M2 12l10 5 10-5"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold leading-tight mb-2">
+                          {{ link.megaMenu.featured.title }}
+                        </h3>
+                        <p class="text-sm text-white/80 leading-relaxed">
+                          {{ link.megaMenu.featured.description }}
+                        </p>
+                      </div>
+
+                      <ULink
+                        :to="link.megaMenu.featured.ctaLink"
+                        class="inline-flex items-center gap-2 text-sm font-medium text-white hover:text-white/80 transition-colors mt-4 group/link"
+                      >
+                        {{ link.megaMenu.featured.ctaLabel }}
+                        <svg
+                          class="w-4 h-4 transition-transform group-hover/link:translate-x-1"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path
+                            d="M5 12h14M12 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </ULink>
+                    </div>
+                  </div>
+
+                  <!-- Right: Menu Grid -->
+                  <div class="flex-1 p-6">
+                    <!-- Section Title -->
+                    <div class="flex items-center gap-3 mb-5">
+                      <div
+                        class="h-px flex-1 bg-linear-to-r from-gray-200 to-transparent"
+                      />
+                      <span
+                        class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400"
+                      >
+                        {{ link.megaMenu.sectionTitle }}
+                      </span>
+                      <div
+                        class="h-px flex-1 bg-linear-to-l from-gray-200 to-transparent"
+                      />
+                    </div>
+
+                    <!-- Items Grid -->
+                    <div class="grid grid-cols-2 gap-2">
+                      <ULink
+                        v-for="item in link.megaMenu.items"
+                        :key="item.label"
+                        :to="item.to"
+                        class="group/item flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200"
+                      >
+                        <!-- Icon Container -->
+                        <div
+                          class="w-10 h-10 rounded-lg bg-linear-to-br flex items-center justify-center shrink-0 transition-transform duration-200 group-hover/item:scale-110"
+                          :class="item.iconBg"
+                        >
+                          <svg
+                            class="w-5 h-5 text-white"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.5"
+                          >
+                            <path
+                              :d="item.iconPath"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                        </div>
+
+                        <!-- Text -->
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-1.5">
+                            <span
+                              class="text-sm font-semibold text-gray-900 group-hover/item:text-primary-900 transition-colors"
+                            >
+                              {{ item.label }}
+                            </span>
+                            <span
+                              v-if="item.badge"
+                              class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase rounded-full"
+                              :class="item.badgeClass"
+                            >
+                              {{ item.badge }}
+                            </span>
+                          </div>
+                          <p
+                            class="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2"
+                          >
+                            {{ item.description }}
+                          </p>
+                        </div>
+                      </ULink>
+                    </div>
+
+                    <!-- Bottom CTA -->
+                    <div
+                      class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between"
+                    >
+                      <p class="text-xs text-gray-400">
+                        {{ link.megaMenu.footerText }}
+                      </p>
+                      <ULink
+                        :to="link.megaMenu.footerLink"
+                        class="text-xs font-semibold text-primary-900 hover:text-secondary transition-colors flex items-center gap-1"
+                      >
+                        View all
+                        <svg
+                          class="w-3 h-3"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                        >
+                          <path
+                            d="M9 5l7 7-7 7"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </ULink>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Transition>
         </div>
       </nav>
 
-      <div class="hidden items-center gap-4 lg:flex">
-        <UButton to="#" label="Milestones"
-          class="group rounded-full bg-slate-900 px-6 py-2.5 font-semibold text-white shadow-md transition-all hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-500/30"
-          @click="closeDesktopMenu">
-          <template #trailing>
-            <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
-          </template>
-        </UButton>
+      <!-- Right: CTA -->
+      <div
+        class="hidden lg:flex items-center shrink-0 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
+        :class="scrolled ? 'opacity-0 w-0' : 'opacity-100 w-auto'"
+      >
+        <UButton
+          label="Development milestones"
+          trailing-icon="i-heroicons-arrow-right-20-solid"
+          class="bg-primary hover:bg-secondary text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors"
+        />
       </div>
 
-      <button type="button"
-        class="grid size-10 place-items-center rounded-full text-slate-700 hover:bg-slate-100 lg:hidden transition-colors"
-        :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
-        @click="mobileOpen = !mobileOpen">
-        <svg v-if="!mobileOpen" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-        <svg v-else class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      <!-- Hamburger -->
+      <button
+        type="button"
+        class="lg:hidden flex items-center justify-center w-10 h-10 rounded-full text-primary-900 shrink-0 hover:bg-primary/5 transition-colors"
+        :aria-expanded="mobileOpen"
+        aria-controls="mobile-nav"
+        :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+        @click="mobileOpen = !mobileOpen"
+      >
+        <UIcon
+          :name="
+            mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'
+          "
+          class="text-2xl"
+        />
       </button>
     </div>
 
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 translate-y-4 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100" leave-active-class="transition ease-in duration-200"
-      leave-from-class="opacity-100 translate-y-0 scale-100" leave-to-class="opacity-0 translate-y-4 scale-95">
-      <div v-if="activeMenu"
-        class="absolute inset-x-0 top-[calc(100%+1rem)] hidden rounded-[2rem] border border-white/50 bg-white/95 backdrop-blur-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] lg:block overflow-hidden"
-        @mouseenter="cancelClose" @mouseleave="scheduleClose">
-        <div class="mx-auto grid max-w-7xl grid-cols-12 gap-6 p-6">
-          <div class="col-span-8 grid grid-cols-2 gap-x-8 gap-y-8 pl-4 py-2">
-            <section v-for="column in activeGroup.columns" :key="column.title">
-              <p class="mb-5 text-xs font-bold uppercase tracking-widest text-slate-400">
-                {{ column.title }}
-              </p>
-              <div class="grid gap-3">
-                <ULink v-for="item in column.items" :key="item.label" to="#"
-                  class="group flex items-start gap-4 rounded-2xl p-3 transition-all duration-300 hover:bg-slate-50 hover:shadow-sm" @click="closeDesktopMenu">
-                  <span
-                    class="grid size-12 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md"
-                    :class="item.iconBg">
-                    <div v-html="item.icon" class="size-6 transition-colors duration-300" :class="item.iconColor"></div>
-                  </span>
-                  <div>
-                    <strong class="block text-sm font-bold text-slate-900 transition-colors group-hover:text-brand-600">{{ item.label }}</strong>
-                    <span class="mt-1 block text-sm leading-relaxed text-slate-500">{{ item.description }}</span>
-                  </div>
-                </ULink>
-              </div>
-            </section>
-          </div>
-          <aside class="col-span-4 flex flex-col justify-between overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 border border-slate-100">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-widest text-brand-600 mb-4">
-                What&apos;s new
-              </p>
-              <div class="overflow-hidden rounded-xl bg-slate-200 shadow-inner group">
-                <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg"
-                  alt="New dashboard preview" class="h-40 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              </div>
-              <h3 class="mt-5 text-lg font-bold text-slate-900">
-                Development milestones
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-slate-600">
-                Follow our progress as we build better pocketing and accessory
-                solutions for the global market.
-              </p>
-            </div>
-            <ULink to="#"
-              class="group mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand-600 transition-colors hover:text-brand-700"
-              @click="closeDesktopMenu">Explore the project
-              <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
-            </ULink>
-          </aside>
-        </div>
-      </div>
-    </Transition>
+    <!-- Mobile drawer -->
+    <div
+      id="mobile-nav"
+      class="lg:hidden overflow-hidden transition-[max-height,opacity] duration-400 ease-in-out"
+      :class="mobileOpen ? 'max-h-[calc(100dvh-6rem)] opacity-100' : 'max-h-0 opacity-0'"
+    >
+      <nav
+        class="mt-3 pt-3 border-t border-gray-200/80 flex flex-col text-sm uppercase font-medium text-primary-900 overflow-y-auto"
+      >
+        <ULink
+          v-for="link in navLinks"
+          :key="link.label"
+          :to="link.to"
+          class="py-3 px-2 rounded-xl hover:bg-primary/5 transition-colors"
+          @click="mobileOpen = false"
+        >
+          {{ link.label }}
+        </ULink>
 
-    <Transition name="mobile">
-      <div v-if="mobileOpen" id="mobile-nav"
-        class="absolute left-0 right-0 top-[calc(100%+0.5rem)] max-h-[calc(100dvh-6rem)] overflow-y-auto rounded-3xl border border-slate-200/60 bg-white/95 backdrop-blur-xl shadow-2xl px-4 pb-6 pt-4 lg:hidden">
-        <nav class="grid gap-2" aria-label="Mobile navigation">
-          <ULink v-for="link in allMobileLinks" :key="link.label" :to="link.to"
-            class="flex min-h-[3rem] items-center rounded-2xl px-4 text-[15px] font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-brand-600 active:scale-[0.98]"
-            @click="mobileOpen = false">{{ link.label }}</ULink>
-          <div class="my-3 h-px w-full bg-slate-100" aria-hidden="true" />
-          <UButton to="#" label="Milestones" block
-            class="group mt-2 rounded-2xl bg-slate-900 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-brand-600 active:scale-[.98]"
-            @click="mobileOpen = false">
-            <template #trailing>
-              <svg class="size-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
-            </template>
-          </UButton>
-        </nav>
-      </div>
-    </Transition>
+        <UButton
+          label="Development milestones"
+          trailing-icon="i-heroicons-arrow-right-20-solid"
+          block
+          class="mt-3 mb-1 bg-primary hover:bg-secondary text-white font-medium rounded-full py-2.5 text-sm transition-colors"
+          @click="mobileOpen = false"
+        />
+      </nav>
+    </div>
   </header>
 </template>
 
 <script setup>
 import { useWindowScroll, useDebounceFn } from "@vueuse/core";
-import mainLogo from "@/assets/img/hctpal.png";
-const simpleLinks = [
-  { label: "Home", to: "#" },
-  { label: "Why it matters", to: "#" },
-];
-const menuGroups = [
+
+const activeMegaMenu = ref(null);
+
+const navLinks = [
   {
-    label: "The Facilities",
-    columns: [
-      {
-        title: "Capabilities",
-        items: [
-          {
-            label: "Pocketing solutions",
-            description: "Purpose-built materials for better performance.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`,
-            iconColor: "text-blue-600",
-            iconBg: "bg-blue-50",
-          },
-          {
-            label: "Accessory components",
-            description: "Reliable components made for modern production.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>`,
-            iconColor: "text-purple-600",
-            iconBg: "bg-purple-50",
-          },
-        ],
-      },
-      {
-        title: "Explore",
-        items: [
-          {
-            label: "Our approach",
-            description: "See how our team turns ideas into products.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.967.714-1.756 1.62-1.928 1.46-.277 2.63-1.4 2.898-2.859.167-.91.93-1.63 1.882-1.63H21M8.25 12H2.25m10.5 0a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5v1.5a1.5 1.5 0 01-1.5 1.5H12a1.5 1.5 0 01-1.5-1.5V12z" /></svg>`,
-            iconColor: "text-amber-500",
-            iconBg: "bg-amber-50",
-          },
-          {
-            label: "Quality standards",
-            description: "Built with care, consistency, and accountability.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>`,
-            iconColor: "text-emerald-500",
-            iconBg: "bg-emerald-50",
-          },
-        ],
-      },
-    ],
+    label: "Home",
+    to: "#",
   },
   {
-    label: "Resources",
-    columns: [
-      {
-        title: "Learn",
-        items: [
-          {
-            label: "Blog",
-            description: "News, updates, and useful industry insights.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`,
-            iconColor: "text-rose-500",
-            iconBg: "bg-rose-50",
-          },
-          {
-            label: "Customer stories",
-            description: "Discover how our partners work with us.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>`,
-            iconColor: "text-cyan-500",
-            iconBg: "bg-cyan-50",
-          },
-        ],
+    label: "Why it matters",
+    to: "#",
+    megaMenu: {
+      featured: {
+        gradient: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+        title: "Exceptional Care for Aging with Dignity",
+        description: "High-quality caregiving designed around comfort and respect.",
+        ctaLabel: "Explore our approach",
+        ctaLink: "#",
       },
-      {
-        title: "Company",
-        items: [
-          {
-            label: "About us",
-            description: "Learn about our mission and roadmap.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" /></svg>`,
-            iconColor: "text-indigo-500",
-            iconBg: "bg-indigo-50",
-          },
-          {
-            label: "Careers",
-            description: "Join our growing team.",
-            icon: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" /></svg>`,
-            iconColor: "text-orange-500",
-            iconBg: "bg-orange-50",
-          },
-        ],
+      sectionTitle: "Special Services",
+      items: [
+        {
+          label: "TPD Claims",
+          description: "Provide a lump sum payment for total permanent disability.",
+          to: "#",
+          iconBg: "from-emerald-400 to-teal-500",
+          iconPath:
+            "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z",
+        },
+        {
+          label: "Companionship & Support",
+          description: "Encourage social interaction and emotional wellbeing.",
+          to: "#",
+          iconBg: "from-rose-400 to-pink-500",
+          iconPath:
+            "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z",
+        },
+        {
+          label: "IP & Salary Claims",
+          description: "Replace part of your income during recovery periods.",
+          to: "#",
+          iconBg: "from-amber-400 to-orange-500",
+          iconPath: "M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+        },
+        {
+          label: "Terminal Illness Claims",
+          description: "Early access to insurance benefits when needed most.",
+          to: "#",
+          iconBg: "from-violet-400 to-purple-500",
+          iconPath: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
+          badge: "Soon",
+          badgeClass: "bg-violet-100 text-violet-700",
+        },
+        {
+          label: "Trauma Claims",
+          description: "Pays a lump sum for serious medical conditions.",
+          to: "#",
+          iconBg: "from-sky-400 to-blue-500",
+          iconPath: "M22 12h-4l-3 9L9 3l-3 9H2",
+        },
+        {
+          label: "Property Damage",
+          description: "Coverage for events causing property loss.",
+          to: "#",
+          iconBg: "from-slate-400 to-gray-500",
+          iconPath: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+        },
+      ],
+      footerText: "Need assistance choosing a service?",
+      footerLink: "#",
+    },
+  },
+  {
+    label: "The venture",
+    to: "#",
+    megaMenu: {
+      featured: {
+        gradient: "linear-gradient(145deg, #134e4a 0%, #115e59 50%, #0f766e 100%)",
+        title: "Building Tomorrow's Care Infrastructure",
+        description: "A venture designed to transform how we support aging populations.",
+        ctaLabel: "Discover the vision",
+        ctaLink: "#",
       },
-    ],
+      sectionTitle: "At a Glance",
+      items: [
+        {
+          label: "Our Facility",
+          description: "State-of-the-art care environment with modern amenities.",
+          to: "#",
+          iconBg: "from-teal-400 to-emerald-500",
+          iconPath: "M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9",
+        },
+        {
+          label: "Leadership Team",
+          description: "Experienced professionals dedicated to excellence.",
+          to: "#",
+          iconBg: "from-indigo-400 to-blue-500",
+          iconPath:
+            "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+        },
+        {
+          label: "Development Timeline",
+          description: "Track our progress and upcoming milestones.",
+          to: "#",
+          iconBg: "from-amber-400 to-yellow-500",
+          iconPath: "M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z",
+        },
+        {
+          label: "Investment Overview",
+          description: "Financial structure and growth projections.",
+          to: "#",
+          iconBg: "from-emerald-400 to-green-500",
+          iconPath: "M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+        },
+      ],
+      footerText: "Interested in partnership opportunities?",
+      footerLink: "#",
+    },
+  },
+  {
+    label: "The facility",
+    to: "#",
+    megaMenu: {
+      featured: {
+        gradient: "linear-gradient(145deg, #7c2d12 0%, #9a3412 50%, #c2410c 100%)",
+        title: "Designed for Dignity, Built for Comfort",
+        description: "Every detail crafted to enhance quality of life.",
+        ctaLabel: "Take a virtual tour",
+        ctaLink: "#",
+      },
+      sectionTitle: "Spaces & Amenities",
+      items: [
+        {
+          label: "Resident Rooms",
+          description: "Private suites with personalized climate and lighting.",
+          to: "#",
+          iconBg: "from-orange-400 to-red-500",
+          iconPath:
+            "M2 20h20M5 20v-8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8M9 10V6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4",
+        },
+        {
+          label: "Common Areas",
+          description: "Social spaces designed for connection and activity.",
+          to: "#",
+          iconBg: "from-rose-400 to-pink-500",
+          iconPath:
+            "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+        },
+        {
+          label: "Wellness Center",
+          description: "On-site rehabilitation and therapy services.",
+          to: "#",
+          iconBg: "from-teal-400 to-cyan-500",
+          iconPath: "M22 12h-4l-3 9L9 3l-3 9H2",
+        },
+        {
+          label: "Gardens & Grounds",
+          description: "Therapeutic outdoor spaces for relaxation.",
+          to: "#",
+          iconBg: "from-green-400 to-emerald-500",
+          iconPath:
+            "M12 22c4.97 0 9-4.03 9-9-4.5 0-9 4.5-9 9zM12 22c-4.97 0-9-4.03-9-9 4.5 0 9 4.5 9 9zM12 13c-4.97 0-9-4.03-9-9 4.5 0 9 4.5 9 9zM12 13c4.97 0 9-4.03 9-9-4.5 0-9 4.5-9 9z",
+        },
+      ],
+      footerText: "Schedule an in-person visit?",
+      footerLink: "#",
+    },
   },
 ];
 const allMobileLinks = [
@@ -232,35 +525,17 @@ const allMobileLinks = [
 const { y } = useWindowScroll();
 const scrolled = ref(false);
 const mobileOpen = ref(false);
-const activeMenu = ref(null);
-let closeTimer;
-const activeGroup = computed(() =>
-  menuGroups.find((group) => group.label === activeMenu.value),
-);
-const openDesktopMenu = (label) => {
-  clearTimeout(closeTimer);
-  activeMenu.value = label;
-};
-const scheduleClose = () => {
-  closeTimer = window.setTimeout(() => {
-    activeMenu.value = null;
-  }, 180);
-};
-const cancelClose = () => clearTimeout(closeTimer);
-const toggleDesktopMenu = (label) => {
-  activeMenu.value = activeMenu.value === label ? null : label;
-};
-const closeDesktopMenu = () => {
-  activeMenu.value = null;
-  mobileOpen.value = false;
-};
-watch(
-  y,
-  useDebounceFn(() => {
-    scrolled.value = y.value > 40;
-    if (mobileOpen.value) mobileOpen.value = false;
-  }, 50),
-);
+
+const updateScrolled = useDebounceFn(() => {
+  scrolled.value = y.value > 50;
+}, 50);
+
+watch(y, updateScrolled);
+
+watch(y, () => {
+  if (mobileOpen.value) mobileOpen.value = false;
+});
+
 onMounted(() => {
   const mq = window.matchMedia("(min-width: 1024px)");
   const onChange = (event) => {
