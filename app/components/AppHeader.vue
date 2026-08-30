@@ -5,146 +5,67 @@
     :class="[
       mobileOpen ? 'rounded-3xl' : 'rounded-full',
       scrolled ? 'max-w-lg px-4 sm:px-6 py-2' : 'max-w-7xl px-3 sm:px-2 py-2',
-    ]"
-  >
+    ]">
     <div class="flex items-center justify-between w-full gap-2">
       <!-- Left: Logo -->
-      <div
-        class="flex items-center gap-2 text-primary-900 font-bold tracking-tight shrink-0 min-w-0"
-      >
+      <div class="flex items-center gap-2 text-primary-900 font-bold tracking-tight shrink-0 min-w-0">
         <span class="lg:hidden text-sm sm:text-base whitespace-nowrap">HCTPAL</span>
-        <span
-          class="hidden lg:inline transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
-          :class="scrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2 text-sm'"
-        >
+        <span class="hidden lg:inline transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
+          :class="scrolled ? 'opacity-0 w-0 ml-0' : 'opacity-100 w-auto ml-2 text-sm'">
           HAMEEM CHING TAI
         </span>
-      </ULink>
+      </div>
 
       <!-- Center: Nav with Mega Menu -->
       <nav
         class="hidden lg:flex items-center justify-center gap-6 lg:gap-8 font-medium tracking-wide uppercase text-primary-900 transition-all duration-500 ease-in-out flex-1"
-        :class="scrolled ? 'text-xs' : 'text-sm'"
-      >
-        <div
-          v-for="link in navLinks"
-          :key="link.label"
-          class="relative group"
-          @mouseenter="activeMegaMenu = link.label"
-          @mouseleave="activeMegaMenu = null"
-        >
+        :class="scrolled ? 'text-xs' : 'text-sm'">
+        <div v-for="link in navLinks" :key="link.label" class="relative group" @mouseenter="activeMegaMenu = link.label"
+          @mouseleave="activeMegaMenu = null">
           <!-- Nav Link -->
-          <ULink
-            :to="link.to"
-            class="flex items-center gap-1.5 text-primary-900 hover:text-secondary transition-colors whitespace-nowrap py-2"
-          >
+          <ULink :to="link.to"
+            class="flex items-center gap-1.5 text-primary-900 hover:text-secondary transition-colors whitespace-nowrap py-2">
             {{ link.label }}
-            <UIcon
-              v-if="link.megaMenu"
-              name="i-heroicons-chevron-down-20-solid"
+            <UIcon v-if="link.megaMenu" name="i-heroicons-chevron-down-20-solid"
               class="w-3.5 h-3.5 transition-transform duration-300"
-              :class="activeMegaMenu === link.label ? 'rotate-180' : ''"
-            />
+              :class="activeMegaMenu === link.label ? 'rotate-180' : ''" />
           </ULink>
 
           <!-- Mega Menu Dropdown -->
-          <Transition
-            enter-active-class="transition-all duration-300 ease-out"
-            enter-from-class="opacity-0 translate-y-3 scale-[0.98]"
-            enter-to-class="opacity-100 translate-y-0 scale-100"
+          <Transition enter-active-class="transition-all duration-300 ease-out"
+            enter-from-class="opacity-0 translate-y-3 scale-[0.98]" enter-to-class="opacity-100 translate-y-0 scale-100"
             leave-active-class="transition-all duration-200 ease-in"
             leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-3 scale-[0.98]"
-          >
-            <div
-              v-if="link.megaMenu && activeMegaMenu === link.label"
-              class="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-170 md:min-w-6xl"
-            >
-              <div
-                class="bg-white rounded-2xl shadow-2xl border border-gray-100/80 overflow-hidden"
-              >
+            leave-to-class="opacity-0 translate-y-3 scale-[0.98]">
+            <div v-if="link.megaMenu && activeMegaMenu === link.label"
+              class="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-170 md:min-w-6xl">
+              <div class="bg-white rounded-2xl shadow-2xl border border-gray-100/80 overflow-hidden">
                 <!-- Mega Menu Content -->
                 <div class="flex">
                   <!-- Left: Featured Panel -->
-                  <div
-                    class="w-65 relative overflow-hidden shrink-0"
-                    :style="{
-                      background: link.megaMenu.featured.gradient,
-                    }"
-                  >
+                  <div class="w-65 relative overflow-hidden shrink-0" :style="{
+                    background: link.megaMenu.featured.gradient,
+                  }">
                     <!-- Abstract Pattern SVG -->
-                    <svg
-                      class="absolute inset-0 w-full h-full opacity-10"
-                      viewBox="0 0 260 400"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <circle
-                        cx="200"
-                        cy="50"
-                        r="120"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                      />
-                      <circle
-                        cx="180"
-                        cy="80"
-                        r="90"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                      />
-                      <circle
-                        cx="220"
-                        cy="40"
-                        r="140"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                      />
-                      <path
-                        d="M0 200 Q 130 150, 260 200"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                        fill="none"
-                      />
-                      <path
-                        d="M0 240 Q 130 190, 260 240"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                        fill="none"
-                      />
-                      <path
-                        d="M0 280 Q 130 230, 260 280"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                        fill="none"
-                      />
+                    <svg class="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 260 400" fill="none"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="200" cy="50" r="120" stroke="currentColor" stroke-width="0.5" />
+                      <circle cx="180" cy="80" r="90" stroke="currentColor" stroke-width="0.5" />
+                      <circle cx="220" cy="40" r="140" stroke="currentColor" stroke-width="0.5" />
+                      <path d="M0 200 Q 130 150, 260 200" stroke="currentColor" stroke-width="0.5" fill="none" />
+                      <path d="M0 240 Q 130 190, 260 240" stroke="currentColor" stroke-width="0.5" fill="none" />
+                      <path d="M0 280 Q 130 230, 260 280" stroke="currentColor" stroke-width="0.5" fill="none" />
                     </svg>
 
-                    <div
-                      class="relative p-6 h-full flex flex-col justify-between text-white"
-                    >
+                    <div class="relative p-6 h-full flex flex-col justify-between text-white">
                       <div>
                         <div
-                          class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4"
-                        >
+                          class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4">
                           <!-- Custom Icon -->
-                          <svg
-                            class="w-6 h-6"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                          >
-                            <path
-                              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
-                            <path
-                              d="M2 12l10 5 10-5"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
+                          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5" stroke-linecap="round"
+                              stroke-linejoin="round" />
+                            <path d="M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round" />
                           </svg>
                         </div>
                         <h3 class="text-lg font-semibold leading-tight mb-2">
@@ -155,23 +76,12 @@
                         </p>
                       </div>
 
-                      <ULink
-                        :to="link.megaMenu.featured.ctaLink"
-                        class="inline-flex items-center gap-2 text-sm font-medium text-white hover:text-white/80 transition-colors mt-4 group/link"
-                      >
+                      <ULink :to="link.megaMenu.featured.ctaLink"
+                        class="inline-flex items-center gap-2 text-sm font-medium text-white hover:text-white/80 transition-colors mt-4 group/link">
                         {{ link.megaMenu.featured.ctaLabel }}
-                        <svg
-                          class="w-4 h-4 transition-transform group-hover/link:translate-x-1"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <path
-                            d="M5 12h14M12 5l7 7-7 7"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
+                        <svg class="w-4 h-4 transition-transform group-hover/link:translate-x-1" viewBox="0 0 24 24"
+                          fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                       </ULink>
                     </div>
@@ -181,44 +91,24 @@
                   <div class="flex-1 p-6">
                     <!-- Section Title -->
                     <div class="flex items-center gap-3 mb-5">
-                      <div
-                        class="h-px flex-1 bg-linear-to-r from-gray-200 to-transparent"
-                      />
-                      <span
-                        class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400"
-                      >
+                      <div class="h-px flex-1 bg-linear-to-r from-gray-200 to-transparent" />
+                      <span class="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">
                         {{ link.megaMenu.sectionTitle }}
                       </span>
-                      <div
-                        class="h-px flex-1 bg-linear-to-l from-gray-200 to-transparent"
-                      />
+                      <div class="h-px flex-1 bg-linear-to-l from-gray-200 to-transparent" />
                     </div>
 
                     <!-- Items Grid -->
                     <div class="grid grid-cols-2 gap-2">
-                      <ULink
-                        v-for="item in link.megaMenu.items"
-                        :key="item.label"
-                        :to="item.to"
-                        class="group/item flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200"
-                      >
+                      <ULink v-for="item in link.megaMenu.items" :key="item.label" :to="item.to"
+                        class="group/item flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200">
                         <!-- Icon Container -->
                         <div
                           class="w-10 h-10 rounded-lg bg-linear-to-br flex items-center justify-center shrink-0 transition-transform duration-200 group-hover/item:scale-110"
-                          :class="item.iconBg"
-                        >
-                          <svg
-                            class="w-5 h-5 text-white"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.5"
-                          >
-                            <path
-                              :d="item.iconPath"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            />
+                          :class="item.iconBg">
+                          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path :d="item.iconPath" stroke-linecap="round" stroke-linejoin="round" />
                           </svg>
                         </div>
 
@@ -226,21 +116,16 @@
                         <div class="min-w-0">
                           <div class="flex items-center gap-1.5">
                             <span
-                              class="text-sm font-semibold text-gray-900 group-hover/item:text-primary-900 transition-colors"
-                            >
+                              class="text-sm font-semibold text-gray-900 group-hover/item:text-primary-900 transition-colors">
                               {{ item.label }}
                             </span>
-                            <span
-                              v-if="item.badge"
+                            <span v-if="item.badge"
                               class="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase rounded-full"
-                              :class="item.badgeClass"
-                            >
+                              :class="item.badgeClass">
                               {{ item.badge }}
                             </span>
                           </div>
-                          <p
-                            class="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2"
-                          >
+                          <p class="text-xs text-gray-500 mt-0.5 leading-relaxed line-clamp-2">
                             {{ item.description }}
                           </p>
                         </div>
@@ -248,29 +133,15 @@
                     </div>
 
                     <!-- Bottom CTA -->
-                    <div
-                      class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between"
-                    >
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
                       <p class="text-xs text-gray-400">
                         {{ link.megaMenu.footerText }}
                       </p>
-                      <ULink
-                        :to="link.megaMenu.footerLink"
-                        class="text-xs font-semibold text-primary-900 hover:text-secondary transition-colors flex items-center gap-1"
-                      >
+                      <ULink :to="link.megaMenu.footerLink"
+                        class="text-xs font-semibold text-primary-900 hover:text-secondary transition-colors flex items-center gap-1">
                         View all
-                        <svg
-                          class="w-3 h-3"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2.5"
-                        >
-                          <path
-                            d="M9 5l7 7-7 7"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
                         </svg>
                       </ULink>
                     </div>
@@ -285,59 +156,34 @@
       <!-- Right: CTA -->
       <div
         class="hidden lg:flex items-center shrink-0 transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap"
-        :class="scrolled ? 'opacity-0 w-0' : 'opacity-100 w-auto'"
-      >
-        <UButton
-          label="Development milestones"
-          trailing-icon="i-heroicons-arrow-right-20-solid"
-          class="bg-primary hover:bg-secondary text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors"
-        />
+        :class="scrolled ? 'opacity-0 w-0' : 'opacity-100 w-auto'">
+        <UButton label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid"
+          class="bg-primary hover:bg-secondary text-white font-medium rounded-full px-6 py-2.5 text-sm transition-colors" />
       </div>
 
       <!-- Hamburger -->
-      <button
-        type="button"
+      <button type="button"
         class="lg:hidden flex items-center justify-center w-10 h-10 rounded-full text-primary-900 shrink-0 hover:bg-primary/5 transition-colors"
-        :aria-expanded="mobileOpen"
-        aria-controls="mobile-nav"
-        :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
-        @click="mobileOpen = !mobileOpen"
-      >
-        <UIcon
-          :name="
-            mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'
-          "
-          class="text-2xl"
-        />
+        :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
+        @click="mobileOpen = !mobileOpen">
+        <UIcon :name="mobileOpen ? 'i-heroicons-x-mark-20-solid' : 'i-heroicons-bars-3-20-solid'
+          " class="text-2xl" />
       </button>
     </div>
 
     <!-- Mobile drawer -->
-    <div
-      id="mobile-nav"
-      class="lg:hidden overflow-hidden transition-[max-height,opacity] duration-400 ease-in-out"
-      :class="mobileOpen ? 'max-h-[calc(100dvh-6rem)] opacity-100' : 'max-h-0 opacity-0'"
-    >
+    <div id="mobile-nav" class="lg:hidden overflow-hidden transition-[max-height,opacity] duration-400 ease-in-out"
+      :class="mobileOpen ? 'max-h-[calc(100dvh-6rem)] opacity-100' : 'max-h-0 opacity-0'">
       <nav
-        class="mt-3 pt-3 border-t border-gray-200/80 flex flex-col text-sm uppercase font-medium text-primary-900 overflow-y-auto"
-      >
-        <ULink
-          v-for="link in navLinks"
-          :key="link.label"
-          :to="link.to"
-          class="py-3 px-2 rounded-xl hover:bg-primary/5 transition-colors"
-          @click="mobileOpen = false"
-        >
+        class="mt-3 pt-3 border-t border-gray-200/80 flex flex-col text-sm uppercase font-medium text-primary-900 overflow-y-auto">
+        <ULink v-for="link in allMobileLinks" :key="link.label" :to="link.to"
+          class="py-3 px-2 rounded-xl hover:bg-primary/5 transition-colors" @click="mobileOpen = false">
           {{ link.label }}
         </ULink>
 
-        <UButton
-          label="Development milestones"
-          trailing-icon="i-heroicons-arrow-right-20-solid"
-          block
+        <UButton label="Development milestones" trailing-icon="i-heroicons-arrow-right-20-solid" block
           class="mt-3 mb-1 bg-primary hover:bg-secondary text-white font-medium rounded-full py-2.5 text-sm transition-colors"
-          @click="mobileOpen = false"
-        />
+          @click="mobileOpen = false" />
       </nav>
     </div>
   </header>
@@ -514,12 +360,15 @@ const navLinks = [
     },
   },
 ];
+const simpleLinks = navLinks.map(({ label, to }) => ({ label, to }));
+simpleLinks.push({ label: "Contact us", to: "#" });
+
 const allMobileLinks = [
   ...simpleLinks,
-  ...menuGroups.flatMap((group) =>
-    group.columns.flatMap((column) =>
-      column.items.map(({ label }) => ({ label, to: "#" })),
-    ),
+  ...navLinks.flatMap((link) =>
+    link.megaMenu
+      ? link.megaMenu.items.map(({ label }) => ({ label, to: "#" }))
+      : []
   ),
 ];
 const { y } = useWindowScroll();
@@ -549,7 +398,8 @@ onMounted(() => {
 <style scoped>
 .menu-enter-active,
 .menu-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .menu-enter-from,
@@ -560,7 +410,8 @@ onMounted(() => {
 
 .mobile-enter-active,
 .mobile-leave-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-enter-from,
