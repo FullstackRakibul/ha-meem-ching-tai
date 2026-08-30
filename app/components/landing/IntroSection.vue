@@ -10,16 +10,12 @@ defineProps<{
     <div class="editorial-intro" data-reveal>
       <div class="editorial-intro__collage">
         <div class="intro-image intro-image--main" data-parallax="0.04">
-          <img
-            src="https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&q=80&w=800"
-            alt="Textile weaving loom at HCTPAL factory"
-          />
+          <img src="https://api.hameemgroup.com:9012/Resources/HCTPALc/HameemChingTai40.jpeg"
+            alt="Textile weaving loom at HCTPAL factory" />
         </div>
         <div class="intro-image intro-image--small" data-parallax="-0.03">
-          <img
-            src="https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=600"
-            alt="Garment trims and interlinings detail"
-          />
+          <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai34.jpeg"
+            alt="Garment trims and interlinings detail" />
         </div>
       </div>
 

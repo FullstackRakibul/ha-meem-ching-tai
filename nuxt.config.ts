@@ -11,6 +11,9 @@ export default defineNuxtConfig({
     serverBundle: {
       collections: ['heroicons'],
     },
+    clientBundle: {
+      scan: true,
+    },
   },
   components: [
     {

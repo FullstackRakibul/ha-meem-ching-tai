@@ -32,20 +32,20 @@ const headerHidden = ref(false)
 const sceneIndex = ref('01')
 
 const navItems = [
-  { label: 'Home', href: '#top', image: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600' },
-  { label: 'Why It Matters', href: '#why-matters', image: 'https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&q=80&w=600' },
-  { label: 'Products', href: '#collections', image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=600' },
-  { label: 'Factory', href: '#factory', image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600' },
-  { label: 'Contact', href: '#contact', image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600' },
+  { label: 'Home', href: '#top', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai33.jpeg' },
+  { label: 'Why It Matters', href: '#why-matters', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai07.jpeg' },
+  { label: 'Products', href: '#collections', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai12.jpeg' },
+  { label: 'Factory', href: '#factory', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai13.jpeg' },
+  { label: 'Contact', href: '#contact', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg' },
 ]
 
 const featuredProducts: Array<[string, string, string]> = [
-  ['TC 65/35 Pocketing', 'Pocketing Fabrics', 'https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&q=80&w=600'],
-  ['Woven Fusible Interlining', 'Interlinings', 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=600'],
-  ['Non-Woven Backing', 'Interlinings', 'https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=600'],
-  ['Shirt Collar Stay', 'Interlinings', 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=600'],
-  ['Printed Cotton Pocketing', 'Pocketing Fabrics', 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=600'],
-  ['Stretch Trouser Waistband', 'Waistbands', 'https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&q=80&w=600'],
+  ['TC 65/35 Pocketing', 'Pocketing Fabrics', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg'],
+  ['Woven Fusible Interlining', 'Interlinings', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg'],
+  ['Non-Woven Backing', 'Interlinings', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai15.jpeg'],
+  ['Shirt Collar Stay', 'Interlinings', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg'],
+  ['Printed Cotton Pocketing', 'Pocketing Fabrics', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg'],
+  ['Stretch Trouser Waistband', 'Waistbands', 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg'],
 ]
 
 const categoryScenes = [
@@ -53,28 +53,28 @@ const categoryScenes = [
     id: '01',
     title: 'Pocketing',
     description: 'Crafted to meet international specifications, competing with markets like Japan and China. High-density cotton, TC blended, and twill pocketings engineered for strength.',
-    image: 'https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&q=80&w=800',
+    image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg',
     type: 'contain',
   },
   {
     id: '02',
     title: 'Interlinings',
     description: 'High-quality shape retention for premium manufacturing. Fusible, non-fusible, woven, and non-woven interlinings tailored for garment stability.',
-    image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&q=80&w=800',
+    image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai17.jpeg',
     type: 'cover',
   },
   {
     id: '03',
     title: 'Waistbands',
     description: 'Precision-engineered for long-lasting wear and consistent tension. Pre-constructed jacket and trouser waistbands with custom rubberized grip tape.',
-    image: 'https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=800',
+    image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai13.jpeg',
     type: 'cover',
   },
   {
     id: '04',
     title: 'Trims',
     description: 'A comprehensive suite of export-quality trims. Custom brand labels, seam tapes, and accessories meeting international Oeko-Tex standards.',
-    image: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=800',
+    image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai11.jpeg',
     type: 'contain',
   },
 ]
@@ -212,18 +212,10 @@ onMounted(() => {
 
     <Loader :loaded="loaded" :loading-progress="loadingProgress" />
 
-    <SiteHeader
-      :header-hidden="headerHidden"
-      :menu-open="menuOpen"
-      @toggle-menu="menuOpen = !menuOpen"
-      @close-menu="menuOpen = false"
-    />
+    <SiteHeader :header-hidden="headerHidden" :menu-open="menuOpen" @toggle-menu="menuOpen = !menuOpen"
+      @close-menu="menuOpen = false" />
 
-    <SiteMenu
-      :menu-open="menuOpen"
-      :nav-items="navItems"
-      @close-menu="menuOpen = false"
-    />
+    <SiteMenu :menu-open="menuOpen" :nav-items="navItems" @close-menu="menuOpen = false" />
 
     <main id="main-content">
       <HeroSection />

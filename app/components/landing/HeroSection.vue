@@ -14,10 +14,8 @@ onMounted(() => {
 <template>
   <section id="top" :class="['catalog-hero', { 'catalog-hero--ready': ready }]">
     <div class="catalog-hero__image" data-hero-image>
-      <img
-        src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&q=80&w=1600"
-        alt="Precision engineering — HCTPAL manufacturing floor"
-      />
+      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai31.jpeg"
+        alt="Precision engineering — HCTPAL manufacturing floor" />
     </div>
     <div class="catalog-hero__veil" />
 
@@ -51,10 +49,8 @@ onMounted(() => {
       <p>Integrated Supply Chain</p>
       <span>From raw materials to finished trims</span>
       <div>
-        <img
-          src="https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=600"
-          alt="Fabric weave close-up"
-        />
+        <img src="https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=600"
+          alt="Fabric weave close-up" />
       </div>
     </div>
 

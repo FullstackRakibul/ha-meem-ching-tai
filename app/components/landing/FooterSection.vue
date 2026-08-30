@@ -3,10 +3,8 @@
   <footer>
     <section id="visit" class="showroom-visit" data-reveal>
       <div class="showroom-visit__image">
-        <img
-          src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=1000"
-          alt="HCTPAL manufacturing plant exterior"
-        />
+        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg"
+          alt="HCTPAL manufacturing plant exterior" />
       </div>
       <div class="showroom-visit__copy">
         <p>Factory & Headquarters</p>
@@ -38,10 +36,8 @@
 
     <div class="image-footer">
       <div class="image-footer__backdrop">
-        <img
-          src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1600"
-          alt="Fabric weave dark background"
-        />
+        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg"
+          alt="Fabric weave dark background" />
       </div>
       <div class="image-footer__shade" />
 

@@ -2,10 +2,8 @@
 <template>
   <section id="bespoke" class="origin-panel" data-reveal>
     <div class="origin-panel__image">
-      <img
-        src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1600"
-        alt="Industrial machinery at HCTPAL factory"
-      />
+      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai12.jpeg"
+        alt="Industrial machinery at HCTPAL factory" />
     </div>
 
     <div class="origin-card">

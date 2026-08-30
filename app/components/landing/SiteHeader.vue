@@ -12,24 +12,17 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <header
-    :class="[
-      'site-header',
-      { 'site-header--hidden': headerHidden },
-      { 'site-header--open': menuOpen }
-    ]"
-  >
+  <header :class="[
+    'site-header',
+    { 'site-header--hidden': headerHidden },
+    { 'site-header--open': menuOpen }
+  ]">
     <a href="#top" class="header-logo" @click="emit('closeMenu')" aria-label="Ha-Meem Ching Tai home">
-      <span>HCTPAL</span>
+      <span class="font-bold text-lg text-primary  ">Ha-Meem Ching Tai</span>
     </a>
 
-    <button
-      type="button"
-      class="menu-button"
-      :aria-expanded="menuOpen"
-      aria-controls="site-menu"
-      @click="emit('toggleMenu')"
-    >
+    <button type="button" class="menu-button" :aria-expanded="menuOpen" aria-controls="site-menu"
+      @click="emit('toggleMenu')">
       <i aria-hidden="true"><span /><span /></i>
       <span>{{ menuOpen ? 'Close' : 'Menu' }}</span>
     </button>

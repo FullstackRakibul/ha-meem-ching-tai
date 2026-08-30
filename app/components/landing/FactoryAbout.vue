@@ -5,10 +5,8 @@
 <template>
   <section id="factory" class="factory-about" data-reveal>
     <div class="factory-about__image">
-      <img
-        src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200"
-        alt="HCTPAL factory interior with modern machinery"
-      />
+      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai03.jpeg"
+        alt="HCTPAL factory interior with modern machinery" />
     </div>
 
     <div class="factory-about__content">
