@@ -1,10 +1,10 @@
 <template>
   <header
     class="fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] md:w-[calc(100%-4rem)] -translate-x-1/2 rounded-full border border-slate-200/60 bg-white/80 backdrop-blur-lg shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-500"
-    :class="scrolled ? 'max-w-4xl py-1.5' : 'max-w-7xl py-3'" @keydown.esc="closeDesktopMenu">
+    :class="scrolled ? 'max-w-4xl py-1.5' : 'max-w-7xl py-2'" @keydown.esc="closeDesktopMenu">
     <div class="mx-auto flex items-center justify-between gap-6 px-5 md:px-8 transition-all duration-500">
-      <ULink to="#" class="flex shrink-0 items-center gap-3 transition-transform hover:scale-105" aria-label="Hameem Ching Tai home"
-        @click="closeDesktopMenu">
+      <ULink to="#" class="flex shrink-0 items-center gap-3 transition-transform hover:scale-105"
+        aria-label="Hameem Ching Tai home" @click="closeDesktopMenu">
         <span class="flex items-center">
           <img :src=mainLogo alt="Ha-Meem Ching Tai" class="h-7 sm:h-9 w-auto object-contain drop-shadow-sm">
         </span>
@@ -16,15 +16,16 @@
           @click="closeDesktopMenu">
           {{ link.label }}
         </ULink>
-        <div class="relative flex items-center h-full" v-for="menu in menuGroups" :key="menu.label" @mouseenter="openDesktopMenu(menu.label)" @mouseleave="scheduleClose">
+        <div class="relative flex items-center h-full" v-for="menu in menuGroups" :key="menu.label"
+          @mouseenter="openDesktopMenu(menu.label)" @mouseleave="scheduleClose">
           <button type="button"
             class="group flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100/80 hover:text-brand-600"
-            :aria-expanded="activeMenu === menu.label"
-            @focus="openDesktopMenu(menu.label)" @click="toggleDesktopMenu(menu.label)">
+            :aria-expanded="activeMenu === menu.label" @focus="openDesktopMenu(menu.label)"
+            @click="toggleDesktopMenu(menu.label)">
             {{ menu.label }}
             <svg class="size-4 text-slate-400 transition-transform duration-300 group-hover:text-brand-500"
-              :class="activeMenu === menu.label ? 'rotate-180 text-brand-500' : ''"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              :class="activeMenu === menu.label ? 'rotate-180 text-brand-500' : ''" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -36,7 +37,10 @@
           class="group rounded-full bg-slate-900 px-6 py-2.5 font-semibold text-white shadow-md transition-all hover:bg-brand-600 hover:shadow-lg hover:shadow-brand-500/30"
           @click="closeDesktopMenu">
           <template #trailing>
-            <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+            <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+            </svg>
           </template>
         </UButton>
       </div>
@@ -45,14 +49,19 @@
         class="grid size-10 place-items-center rounded-full text-slate-700 hover:bg-slate-100 lg:hidden transition-colors"
         :aria-expanded="mobileOpen" aria-controls="mobile-nav" :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
         @click="mobileOpen = !mobileOpen">
-        <svg v-if="!mobileOpen" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-        <svg v-else class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        <svg v-if="!mobileOpen" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+        <svg v-else class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
 
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 translate-y-4 scale-95"
-      enter-to-class="opacity-100 translate-y-0 scale-100" leave-active-class="transition ease-in duration-200"
-      leave-from-class="opacity-100 translate-y-0 scale-100" leave-to-class="opacity-0 translate-y-4 scale-95">
+    <Transition enter-active-class="transition ease-out duration-300"
+      enter-from-class="opacity-0 translate-y-4 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 translate-y-4 scale-95">
       <div v-if="activeMenu"
         class="absolute inset-x-0 top-[calc(100%+1rem)] hidden rounded-[2rem] border border-white/50 bg-white/95 backdrop-blur-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] lg:block overflow-hidden"
         @mouseenter="cancelClose" @mouseleave="scheduleClose">
@@ -64,28 +73,33 @@
               </p>
               <div class="grid gap-3">
                 <ULink v-for="item in column.items" :key="item.label" to="#"
-                  class="group flex items-start gap-4 rounded-2xl p-3 transition-all duration-300 hover:bg-slate-50 hover:shadow-sm" @click="closeDesktopMenu">
+                  class="group flex items-start gap-4 rounded-2xl p-3 transition-all duration-300 hover:bg-slate-50 hover:shadow-sm"
+                  @click="closeDesktopMenu">
                   <span
                     class="grid size-12 shrink-0 place-items-center rounded-xl transition-transform duration-300 group-hover:scale-110 group-hover:shadow-md"
                     :class="item.iconBg">
                     <div v-html="item.icon" class="size-6 transition-colors duration-300" :class="item.iconColor"></div>
                   </span>
                   <div>
-                    <strong class="block text-sm font-bold text-slate-900 transition-colors group-hover:text-brand-600">{{ item.label }}</strong>
+                    <strong
+                      class="block text-sm font-bold text-slate-900 transition-colors group-hover:text-brand-600">{{
+                        item.label }}</strong>
                     <span class="mt-1 block text-sm leading-relaxed text-slate-500">{{ item.description }}</span>
                   </div>
                 </ULink>
               </div>
             </section>
           </div>
-          <aside class="col-span-4 flex flex-col justify-between overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 border border-slate-100">
+          <aside
+            class="col-span-4 flex flex-col justify-between overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-slate-50 to-slate-100/50 p-6 border border-slate-100">
             <div>
               <p class="text-xs font-bold uppercase tracking-widest text-brand-600 mb-4">
                 What&apos;s new
               </p>
               <div class="overflow-hidden rounded-xl bg-slate-200 shadow-inner group">
                 <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai20.jpeg"
-                  alt="New dashboard preview" class="h-40 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  alt="New dashboard preview"
+                  class="h-40 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
               </div>
               <h3 class="mt-5 text-lg font-bold text-slate-900">
                 Development milestones
@@ -98,7 +112,10 @@
             <ULink to="#"
               class="group mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand-600 transition-colors hover:text-brand-700"
               @click="closeDesktopMenu">Explore the project
-              <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+              <svg class="size-4 transition-transform duration-300 group-hover:translate-x-1" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
             </ULink>
           </aside>
         </div>
@@ -117,7 +134,10 @@
             class="group mt-2 rounded-2xl bg-slate-900 py-3.5 font-semibold text-white shadow-md transition-all hover:bg-brand-600 active:scale-[.98]"
             @click="mobileOpen = false">
             <template #trailing>
-              <svg class="size-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>
+              <svg class="size-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+              </svg>
             </template>
           </UButton>
         </nav>
