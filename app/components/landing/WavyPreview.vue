@@ -59,7 +59,8 @@ const fragmentShader = `
 
 const updateTextureCover = (tex: THREE.Texture, container: HTMLDivElement) => {
   if (!tex.image) return
-  const imgAspect = tex.image.width / tex.image.height
+  const image = tex.image as { width: number; height: number }
+  const imgAspect = image.width / image.height
   const containerAspect = container.clientWidth / container.clientHeight
   if (imgAspect > containerAspect) {
     const scale = containerAspect / imgAspect
@@ -77,20 +78,20 @@ const loadTexture = (url: string) => {
   if (!url || !material || !mountRef.value) return
   if (textureCache.has(url)) {
     const cached = textureCache.get(url)!
-    material.uniforms.uTexture.value = cached
+    if (material.uniforms.uTexture) material.uniforms.uTexture.value = cached
     updateTextureCover(cached, mountRef.value)
     return
   }
   const textureLoader = new THREE.TextureLoader()
   textureLoader.setCrossOrigin('anonymous')
-  textureLoader.load(url, (tex: { colorSpace: any; minFilter: any; magFilter: any; generateMipmaps: boolean; }) => {
+  textureLoader.load(url, (tex: THREE.Texture) => {
     tex.colorSpace = THREE.SRGBColorSpace
     tex.minFilter = THREE.LinearFilter
     tex.magFilter = THREE.LinearFilter
     tex.generateMipmaps = false
     textureCache.set(url, tex)
     if (props.src === url && material && mountRef.value) {
-      material.uniforms.uTexture.value = tex
+      if (material.uniforms.uTexture) material.uniforms.uTexture.value = tex
       updateTextureCover(tex, mountRef.value)
     }
   })
@@ -165,9 +166,9 @@ onMounted(() => {
     hover += (targetHover - hover) * 0.06
 
     if (material) {
-      material.uniforms.uTime.value = time
-      material.uniforms.uOpacity.value = opacity
-      material.uniforms.uHover.value = hover
+      if (material.uniforms.uTime) material.uniforms.uTime.value = time
+      if (material.uniforms.uOpacity) material.uniforms.uOpacity.value = opacity
+      if (material.uniforms.uHover) material.uniforms.uHover.value = hover
     }
 
     if (mesh) {
