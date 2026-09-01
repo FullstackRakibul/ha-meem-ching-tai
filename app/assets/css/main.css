@@ -126,7 +126,7 @@ p {
 }
 
 /* Custom brand cursor */
-@media (hover: hover) and (pointer: fine) {
+/* @media (hover: hover) and (pointer: fine) {
 
   html,
   body,
@@ -137,7 +137,7 @@ p {
   textarea {
     cursor: url('/yarn-ball-ha-meem-ching-tai.svg') 24 24, auto !important;
   }
-}
+} */
 
 /* Skip Link */
 .skip-link {
