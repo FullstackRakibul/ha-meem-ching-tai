@@ -59,9 +59,9 @@ const endDrag = (event: PointerEvent) => {
     </div>
 
     <div
-      :class="['product-rail', { 'is-dragging': isDragging }]"
+      :class="['product-rail', { 'is-dragging': isDragging }, 'hide-native-cursor']"
       aria-label="Product rail"
-      data-cursor-area="Drag"
+      data-cursor-text="DRAG"
       @pointerdown="beginDrag"
       @pointermove="drag"
       @pointerup="endDrag"
@@ -84,3 +84,13 @@ const endDrag = (event: PointerEvent) => {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Hides the default mouse cursor so only your custom one shows */
+.hide-native-cursor {
+  cursor: none !important;
+}
+.hide-native-cursor * {
+  cursor: none !important; 
+}
+</style>

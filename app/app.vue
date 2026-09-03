@@ -1,5 +1,6 @@
 <template>
   <NuxtPage />
+  <CustomCursor />
 </template>
 
 <script setup>

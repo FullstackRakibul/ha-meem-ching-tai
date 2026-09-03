@@ -14,7 +14,7 @@ import CategoryTheatre from '~/components/landing/CategoryTheatre.vue'
 import OriginPanel from '~/components/landing/OriginPanel.vue'
 import SustainabilityCTA from '~/components/landing/SustainabilityCTA.vue'
 import FooterSection from '~/components/landing/FooterSection.vue'
-
+import SustainabilitySection from '~/components/landing/SustainabilitySection.vue'
 useHead({
   title: 'Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing',
   meta: [
@@ -33,8 +33,8 @@ const sceneIndex = ref('01')
 
 const navItems = [
   { label: 'Home', href: '#top', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai33.jpeg' },
-  { label: 'Why It Matters', href: '#why-matters', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai07.jpeg' },
-  { label: 'Products', href: '#collections', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai12.jpeg' },
+  { label: 'Why It Matters', href: '#why-matters', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai50.jpeg' },
+  { label: 'Products', href: '#collections', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg' },
   { label: 'Factory', href: '#factory', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai13.jpeg' },
   { label: 'Contact', href: '#contact', image: 'https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai14.jpeg' },
 ]
@@ -210,7 +210,7 @@ onMounted(() => {
   <div>
     <a class="skip-link" href="#main-content">Skip to content</a>
 
-    <Loader :loaded="loaded" :loading-progress="loadingProgress" />
+    <!-- <Loader :loaded="loaded" :loading-progress="loadingProgress" /> -->
 
     <SiteHeader :header-hidden="headerHidden" :menu-open="menuOpen" @toggle-menu="menuOpen = !menuOpen"
       @close-menu="menuOpen = false" />
@@ -227,6 +227,7 @@ onMounted(() => {
       <CategoryTheatre :category-scenes="categoryScenes" :scene-index="sceneIndex" />
       <OriginPanel />
       <SustainabilityCTA />
+      <SustainabilitySection />
       <FooterSection />
     </main>
   </div>
