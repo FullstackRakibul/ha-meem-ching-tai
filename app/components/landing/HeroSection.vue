@@ -1,5 +1,6 @@
 <!-- components/landing/HeroSection.vue -->
 <script setup lang="ts">
+const { t } = useLocale()
 import { onMounted, ref } from 'vue'
 
 const ready = ref(false)
@@ -29,9 +30,9 @@ onMounted(() => {
     </h1>
 
     <div class="catalog-hero__left">
-      <p>Precision Engineering. Crafting export-quality accessories for the global apparel industry.</p>
+      <p>{{ t('heroLede') }}</p>
       <a class="tiny-link" href="#collections">
-        <span>Explore Catalog</span>
+        <span>{{ t('heroCta') }}</span>
         <i>
           <svg width="12" height="12" viewBox="0 0 20 20">
             <path d="M3 10h13M11 5l5 5-5 5" />
@@ -41,8 +42,8 @@ onMounted(() => {
     </div>
 
     <div class="catalog-hero__statement">
-      <p>Strategic Partnership</p>
-      <h2>Ha-Meem × Ching Tai</h2>
+      <p>{{ t('heroStatementLabel') }}</p>
+      <h2>{{ t('heroStatementTitle') }}</h2>
     </div>
 
     <div class="hero-object" data-parallax="0.06">

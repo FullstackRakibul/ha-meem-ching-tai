@@ -9,25 +9,27 @@ interface Pillar {
   color: string
 }
 
-const pillars = ref<Pillar[]>([
+const { t } = useLocale()
+
+const pillars = computed<Pillar[]>(() => [
   {
-    title: 'Environmental Initiatives',
-    description: 'Strategic partnerships driving systemic change and protecting ecosystems.',
+    title: t('pillar1Title'),
+    description: t('pillar1Desc'),
     icon: 'i-heroicons-globe-americas',
     color: 'text-green-600',
   },
   {
-    title: 'UN SDG Alignment',
-    description: 'Global goals addressed through tangible, verifiable, and targeted action.',
+    title: t('pillar2Title'),
+    description: t('pillar2Desc'),
     icon: 'i-heroicons-document-check',
     color: 'text-blue-600',
   },
   {
-    title: 'Green Manufacturing',
-    description: 'Where technology, circularity, and operational efficiency converge flawlessly.',
+    title: t('pillar3Title'),
+    description: t('pillar3Desc'),
     icon: 'i-heroicons-arrow-path-rounded-square',
     color: 'text-teal-600',
-  }
+  },
 ])
 </script>
 
@@ -60,17 +62,10 @@ const pillars = ref<Pillar[]>([
         <!-- Left Content: High-Density "One-Look" Information -->
         <div class="lg:col-span-6 space-y-8">
           <div>
-            <h2 class="font-manrope text-primary-200 text-sm font-bold tracking-widest text-green-700 uppercase mb-2">
-              Our Vision
-            </h2>
+            <h2 class="font-manrope text-primary-200 text-sm font-bold tracking-widest text-green-700 uppercase mb-2">{{ t('visionEyebrow') }}</h2>
             <h3
-              class="font-playfair text-4xl md:text-5xl font-extrabold tracking-tight text-primary-700 text-slate-900 leading-tight">
-              Sustainability & <br />Environmental Initiatives
-            </h3>
-            <p class="mt-4 text-base text-slate-700 leading-relaxed max-w-lg font-manrope">
-              Weaving nature into every thread. We are committed to green manufacturing, integrating advanced technology
-              with holistic environmental stewardship to drive systemic change.
-            </p>
+              class="font-playfair text-4xl md:text-5xl font-extrabold tracking-tight text-primary-700 text-slate-900 leading-tight">{{ t('visionTitle') }}</h3>
+            <p class="mt-4 text-base text-slate-700 leading-relaxed max-w-lg font-manrope">{{ t('visionBody') }}</p>
           </div>
 
           <!-- Data Cards -->

@@ -1,5 +1,6 @@
 <!-- components/landing/FactoryAbout.vue -->
 <script setup lang="ts">
+const { t } = useLocale()
 </script>
 
 <template>
@@ -10,35 +11,29 @@
     </div>
 
     <div class="factory-about__content">
-      <p class="factory-about__eyebrow">About the Factory</p>
-      <h2 class="factory-about__title">Built to strengthen Bangladesh's manufacturing future</h2>
+      <p class="factory-about__eyebrow">{{ t('factoryEyebrow') }}</p>
+      <h2 class="factory-about__title">{{ t('factoryTitle') }}</h2>
 
       <div class="factory-point">
         <span class="factory-point__number">No. 01</span>
         <div>
-          <p class="factory-point__title">Made Locally</p>
-          <p class="factory-point__text">
-            Accessories that once had to be imported from China are now produced in Bangladesh — cutting delays
-            and keeping value within the national supply chain.
-          </p>
+          <p class="factory-point__title">{{ t('factory1Title') }}</p>
+          <p class="factory-point__text">{{ t('factory1Text') }}</p>
         </div>
       </div>
 
       <div class="factory-point">
         <span class="factory-point__number">No. 02</span>
         <div>
-          <p class="factory-point__title">Advanced Technology</p>
-          <p class="factory-point__text">
-            Advanced Chinese technology and modern machinery manufacture accessories at scale,
-            delivering consistent quality that meets international specifications.
-          </p>
+          <p class="factory-point__title">{{ t('factory2Title') }}</p>
+          <p class="factory-point__text">{{ t('factory2Text') }}</p>
         </div>
       </div>
 
       <div class="factory-point">
         <span class="factory-point__number">No. 03</span>
         <div>
-          <p class="factory-point__title">Built for Export</p>
+          <p class="factory-point__title">{{ t('factory3Title') }}</p>
           <p class="factory-point__text">
             Output meets Ha-Meem Group's own factories and ships internationally,
             competing with established markets like Japan and China.

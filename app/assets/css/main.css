@@ -23,6 +23,7 @@
   --light-line: rgba(245, 242, 235, 0.28);
   --font: "Manrope", "Helvetica Neue", Arial, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
+  --font-bn: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --header: 49px;
 }
@@ -454,6 +455,83 @@ p {
   color: var(--rust);
 }
 
+/*
+  Bangla typography. `setLocale` stamps `lang` on <html>, so the script swap
+  keys off that — no extra class plumbing. Playfair has no Bengali glyphs, so
+  serif headings fall back to Hind Siliguri too; leaving them on Playfair
+  would render Bangla in a browser default face and break the type system.
+  Any element explicitly marked `lang="bn"` (the switcher's own options) gets
+  it regardless of the active locale.
+*/
+:root[lang="bn"] body,
+[lang="bn"] {
+  font-family: var(--font-bn);
+}
+
+:root[lang="bn"] h1,
+:root[lang="bn"] h2,
+:root[lang="bn"] h3,
+:root[lang="bn"] .why-matters__headline,
+:root[lang="bn"] .venture-stats__headline,
+:root[lang="bn"] .sustainability-cta__headline {
+  font-family: var(--font-bn);
+  /* Bengali conjuncts need more headroom than Playfair's tight leading. */
+  line-height: 1.3;
+}
+
+/* ─── Language Switcher ─── */
+.lang-switch__trigger {
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: opacity 0.3s var(--ease);
+}
+
+.lang-switch__trigger:hover {
+  opacity: 0.65;
+}
+
+/* The trigger is a <button>, so it never inherits the .header-links a
+   underline sweep — its own hover fade above stands in for it. */
+.lang-switch__menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 10;
+  min-width: 150px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: 0 12px 40px rgba(36, 44, 44, 0.12);
+}
+
+.lang-switch__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 11px;
+  color: var(--brown);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: none;
+  cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.lang-switch__option:hover {
+  background: var(--paper-soft);
+}
+
+.lang-switch__option.is-active {
+  color: var(--rust);
+}
+
 
 /* ─── Common CTA Link ─── */
 .tiny-link {
@@ -491,6 +569,7 @@ p {
 }
 
 .catalog-hero .tiny-link,
+.sustainability-cta .tiny-link,
 .image-footer .tiny-link {
   --cta-arrow-bg: var(--paper);
   --cta-arrow-fg: var(--ink);
@@ -914,6 +993,21 @@ p {
   gap: 3px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+/*
+  Seven cards into an auto-fit track leaves a ragged tail (5 + 2 at desktop).
+  Pinning four columns divides them 4 + 3 and lets the last card take the
+  leftover cell, so the block always ends flush.
+*/
+@media (min-width: 1024px) {
+  .venture-stats__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .venture-stats__grid .stat-card:last-child {
+    grid-column: span 2;
+  }
 }
 
 .stat-card {
@@ -1445,12 +1539,47 @@ p {
   text-align: center;
 }
 
+.sustainability-cta__header {
+  margin-bottom: clamp(50px, 7vw, 100px);
+}
+
+.sustainability-cta__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 16px;
+}
+
+.sustainability-cta__headline {
+  font-family: var(--font-serif);
+  font-size: clamp(28px, 3.5vw, 56px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  max-width: 900px;
+  margin-inline: auto;
+}
+
 .sustainability-cta__stats {
   display: flex;
   justify-content: center;
   gap: clamp(40px, 6vw, 100px);
   margin-bottom: clamp(40px, 6vw, 80px);
   flex-wrap: wrap;
+}
+
+.sustainability-stat {
+  flex: 0 1 300px;
+}
+
+.sustainability-stat__desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(245, 242, 235, 0.6);
+  max-width: 260px;
+  margin: 10px auto 0;
 }
 
 .sustainability-stat__value {

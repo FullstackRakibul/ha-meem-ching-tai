@@ -3,6 +3,8 @@
 defineProps<{
   servicePoints: string[]
 }>()
+
+const { t } = useLocale()
 </script>
 
 <template>
@@ -20,15 +22,11 @@ defineProps<{
       </div>
 
       <div class="editorial-intro__copy">
-        <h2>Built to Strengthen Bangladesh's Manufacturing Future</h2>
+        <h2>{{ t('introTitle') }}</h2>
         <div>
-          <p>
-            Ha-Meem Ching Tai Pocketing & Accessories Ltd. (HCTPAL) supplies global garment brands with
-            high-performance pocketing, interlinings, waistbands, and custom accessory trims —
-            manufactured locally using advanced Chinese technology.
-          </p>
+          <p>{{ t('introBody') }}</p>
           <a class="tiny-link" href="#why-matters">
-            <span>Why It Matters</span>
+            <span>{{ t('introCta') }}</span>
             <i>
               <svg width="12" height="12" viewBox="0 0 20 20">
                 <path d="M3 10h13M11 5l5 5-5 5" />
