@@ -13,7 +13,7 @@ import ProductRail from '~/components/landing/ProductRail.vue'
 import CategoryTheatre from '~/components/landing/CategoryTheatre.vue'
 import OriginPanel from '~/components/landing/OriginPanel.vue'
 import SustainabilityCTA from '~/components/landing/SustainabilityCTA.vue'
-import FooterSection from '~/components/landing/FooterSection.vue'
+import AppFooter from '~/components/AppFooter.vue'
 import SustainabilitySection from '~/components/landing/SustainabilitySection.vue'
 useHead({
   title: 'Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing',
@@ -228,7 +228,7 @@ onMounted(() => {
       <OriginPanel />
       <SustainabilityCTA />
       <SustainabilitySection />
-      <FooterSection />
+      <AppFooter />
     </main>
   </div>
 </template>

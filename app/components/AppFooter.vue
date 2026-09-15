@@ -1,235 +1,106 @@
 <!-- AppFooter.vue -->
 <template>
-  <footer class="relative w-full overflow-hidden bg-[#f5f5f0]">
-    <!-- ================= Atmospheric Depth Layer ================= -->
-    <!-- Subtle top edge treatment — organic, not geometric -->
-    <div class="relative h-24 sm:h-32 md:h-40 overflow-hidden">
-      <svg class="absolute bottom-0 w-full" viewBox="0 0 1440 120" preserveAspectRatio="none" style="height: 100%">
-        <defs>
-          <linearGradient id="ridgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#14253b" stop-opacity="0.3" />
-            <stop offset="100%" stop-color="#0f576a" stop-opacity="0" />
-          </linearGradient>
-        </defs>
-        <path d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120 Z" fill="url(#ridgeGrad)"
-          opacity="0.6" />
-        <path d="M0,80 C360,110 720,40 1080,80 C1260,100 1380,90 1440,85 L1440,120 L0,120 Z" fill="#0f172a"
-          opacity="0.4" />
-      </svg>
-      <!-- Floating particles — subtle dust motes in light -->
-      <div class="absolute inset-0 pointer-events-none">
-        <div v-for="n in 6" :key="n" class="absolute w-px h-px bg-white/20 rounded-full animate-float" :style="{
-          left: `${15 + n * 14}%`,
-          top: `${20 + (n % 3) * 25}%`,
-          animationDelay: `${n * 0.7}s`,
-          animationDuration: `${4 + n * 0.5}s`,
-        }" />
-      </div>
-    </div>
+  <footer class="footer-root relative w-full  overflow-hidden">
+    <!-- ================= Background Art Layer ================= -->
+    <!-- Bottom-anchored garment line-art with gradient fade overlay -->
+    <div class="footer-bg" aria-hidden="true" />
+    <div class="footer-gradient" aria-hidden="true" />
 
-    <!-- ================= Main Footer Body ================= -->
-    <div class="relative">
-      <!-- Large background word — human-scale, not overwhelming -->
-      <div class="absolute top-8 left-1/2 -translate-x-1/2 pointer-events-none select-none hidden lg:block">
-        <span class="font-serif text-[12rem] leading-none tracking-tighter text-black/5">
-          CHING TAI
-        </span>
-      </div>
+    <!-- ================= Content Layer ================= -->
+    <div class="relative z-10 ">
+      <UContainer>
+        <!-- 3-Column Grid -->
+        <div class="h-screen grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pt-16 pb-24 md:pt-20 md:pb-32">
 
-      <UContainer class="">
-        <!-- Top Section: Newsletter + Social Proof -->
-        <div class="relative grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 py-16 lg:py-20 border-b border-white/6">
-          <!-- Left: Brand Statement -->
-          <div class="lg:col-span-5 xl:col-span-4">
-            <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-xs font-bold tracking-[0.25em] uppercase text-black/70">
-                HCTPAL.
-              </span>
-              <div class="h-px flex-1 bg-linear-to-r from-brand-400/30 to-transparent" />
-            </div>
-
-            <h3
-              class="text-2xl sm:text-3xl md:text-5xl font-bold text-primary leading-[1.15] tracking-tight font-serif lg:text-5xl mb-6 uppercase">
-              Garment accessories,<br />
-              <em class="text-black/60 not-italic">made where they're worn.</em>
+          <!-- Column 1 — Brand -->
+          <div class="col-brand">
+            <h3 class="footer-brand-name">
+              HA-MEEM<br />CHING TAI
             </h3>
-
-            <p class="text-base leading-relaxed text-black/65 max-w-sm">
-              For decades, mills waited on imports. We built the alternative in Bangladesh
-              — pocketing, interlinings, labels, and the care that ships with them.
+            <div class="footer-brand-rule" />
+            <p class="footer-brand-mission">
+              For decades, mills waited on imports. We built the alternative
+              in Bangladesh — pocketing, interlinings, labels, and the care
+              that ships with them.
             </p>
           </div>
 
-          <!-- Center: Newsletter -->
-          <div class="lg:col-span-4 xl:col-span-4 lg:px-6">
-            <div class="lg:border-l lg:border-r border-white/6 lg:px-8">
-              <p class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-                Between the Thread
-              </p>
-              <p class="text-base text-black/65 mb-5 leading-relaxed">
-                Mill notes, fabric arrivals, and the occasional honest opinion on lead
-                times.
-              </p>
+          <!-- Column 2 — Find Us -->
+          <div class="col-findus">
+            <h4 class="footer-heading">Find Us</h4>
 
-              <form class="flex gap-2" @submit.prevent="handleSubscribe">
-                <input v-model="email" type="email" placeholder="your@mill.com"
-                  class="flex-1 bg-black/4 border border-black/10 rounded-lg px-4 py-2.5 text-sm text-black placeholder:text-black/50 focus:outline-none focus:border-black/40 focus:bg-black/6 transition-all" />
-                <button type="submit"
-                  class="shrink-0 bg-brand-400/90 hover:bg-brand-400 text-black font-semibold text-base px-5 py-2.5 rounded-lg transition-colors">
-                  Join
+            <ul class="footer-contact-list">
+              <!-- Ghorashal HQ -->
+              <li>
+                <UIcon name="heroicons:map-pin" class="footer-icon" />
+                <div>
+                  <span class="footer-contact-label">Factory HQ</span>
+                  <span class="footer-contact-text">Ghorashal, Narsingdi, Bangladesh</span>
+                </div>
+              </li>
+              <!-- Dhaka Head Office -->
+              <li>
+                <UIcon name="heroicons:building-office-2" class="footer-icon" />
+                <div>
+                  <span class="footer-contact-label">Head Office</span>
+                  <span class="footer-contact-text">Times Media Building, 387 Tejgaon, Dhaka 1208</span>
+                </div>
+              </li>
+              <!-- Phone -->
+              <li>
+                <UIcon name="heroicons:phone" class="footer-icon" />
+                <a href="tel:+8801319320527" class="footer-contact-text footer-link">
+                  +880 131 9320527
+                </a>
+              </li>
+              <!-- Email -->
+              <li>
+                <UIcon name="heroicons:envelope" class="footer-icon" />
+                <a href="mailto:info@hameemchingtai.com" class="footer-contact-text footer-link">
+                  info@hameemchingtai.com
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Column 3 — Connect -->
+          <div class="col-connect">
+            <h4 class="footer-heading">Connect</h4>
+
+            <!-- Social Icons -->
+            <div class="footer-social-row">
+              <a v-for="social in socials" :key="social.label" :href="social.href" :aria-label="social.label"
+                target="_blank" rel="noopener noreferrer" class="footer-social-icon">
+                <UIcon :name="social.icon" class="size-[18px]" />
+              </a>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="footer-newsletter">
+              <p class="footer-newsletter-label">Stay in the loop</p>
+              <form class="footer-newsletter-form" @submit.prevent="handleSubscribe">
+                <input v-model="email" type="email" placeholder="your@email.com" required
+                  class="footer-newsletter-input" />
+                <button type="submit" class="footer-newsletter-btn" aria-label="Subscribe">
+                  <UIcon name="heroicons:arrow-right-20-solid" class="size-4" />
                 </button>
               </form>
-
-              <p class="text-xs text-black/55 mt-3">
-                No frequency promises. Unsubscribe whenever.
-              </p>
             </div>
           </div>
 
-          <!-- Right: Contact Anchor -->
-          <div class="lg:col-span-3 xl:col-span-4">
-            <p class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Start a conversation
-            </p>
-
-            <a href="tel:+8801319320527" class="group block mb-4">
-              <span
-                class="font-serif text-2xl sm:text-3xl md:text-4xl text-black group-hover:text-black/60 transition-colors duration-500">
-                +880 131 9320527
-              </span>
-            </a>
-
-            <a href="mailto:info@hameemchingtai.com"
-              class="text-base text-black/65 hover:text-black transition-colors block mb-8">
-              info@hameemchingtai.com
-            </a>
-
-            <ULink to="#"
-              class="inline-flex items-center gap-2 text-base font-medium text-black/80 hover:text-black transition-colors group/link">
-              Request fabric swatches
-              <svg class="w-4 h-4 transition-transform group-hover/link:translate-x-1" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </ULink>
-          </div>
-        </div>
-
-        <!-- Middle: Navigation Grid -->
-        <div
-          class="border-t-1 border-black/10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-12 gap-x-8 gap-y-10 py-14 lg:py-16">
-          <!-- Column 1: Company -->
-          <div class="lg:col-span-2">
-            <h4 class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Company
-            </h4>
-            <ul class="space-y-3">
-              <li v-for="link in companyLinks" :key="link">
-                <a href="#"
-                  class="text-base text-black/65 hover:text-black transition-colors duration-300 relative group">
-                  {{ link }}
-                  <span
-                    class="absolute -bottom-0.5 left-0 w-0 h-px bg-amber-400/60 group-hover:w-full transition-all duration-500" />
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Column 2: Products -->
-          <div class="lg:col-span-2">
-            <h4 class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Products
-            </h4>
-            <ul class="space-y-3">
-              <li v-for="link in productLinks" :key="link">
-                <a href="#"
-                  class="text-base text-black/65 hover:text-black transition-colors duration-300 relative group">
-                  {{ link }}
-                  <span
-                    class="absolute -bottom-0.5 left-0 w-0 h-px bg-amber-400/60 group-hover:w-full transition-all duration-500" />
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Column 3: Resources -->
-          <div class="lg:col-span-2">
-            <h4 class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Resources
-            </h4>
-            <ul class="space-y-3">
-              <li v-for="link in resourceLinks" :key="link">
-                <a href="#"
-                  class="text-base text-black/65 hover:text-black transition-colors duration-300 relative group">
-                  {{ link }}
-                  <span
-                    class="absolute -bottom-0.5 left-0 w-0 h-px bg-amber-400/60 group-hover:w-full transition-all duration-500" />
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Column 4: Locations -->
-          <div class="col-span-2 sm:col-span-3 lg:col-span-3 lg:col-start-7">
-            <h4 class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Locations
-            </h4>
-            <div class="space-y-5">
-              <div>
-                <p class="text-base font-medium text-black mb-1">Factory HQ</p>
-                <p class="text-base text-black/55 leading-relaxed">
-                  Ghorashal, Narsingdi<br />Bangladesh
-                </p>
-              </div>
-              <div>
-                <p class="text-base font-medium text-black mb-1">Head Office</p>
-                <p class="text-base text-black/55 leading-relaxed">
-                  Times Media Limited Building<br />387, Dhaka 1208
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 5: Recognition -->
-          <div class="lg:col-span-3">
-            <h4 class="text-xs font-bold tracking-[0.2em] uppercase text-black/60 mb-5">
-              Trusted by
-            </h4>
-            <div class="flex flex-wrap gap-4 items-center opacity-40 text-black">
-              <!-- Stylized text marks instead of generic logos -->
-              <span class="font-serif text-xl text-black">H&M</span>
-              <span class="text-[10px] text-black/50">•</span>
-              <span class="font-serif text-xl text-black">Zara</span>
-              <span class="text-[10px] text-black/50">•</span>
-              <span class="font-serif text-xl text-black">Uniqlo</span>
-              <span class="text-[10px] text-black/50">•</span>
-              <span class="font-serif text-xl text-black">C&A</span>
-            </div>
-          </div>
         </div>
       </UContainer>
 
       <!-- ================= Bottom Bar ================= -->
-      <div class="border-t border-white/6">
+      <div class="footer-bottom-bar">
         <UContainer>
-          <div class="py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-              <p class="text-xs text-black/55 tracking-wide">
-                &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai. All rights
-                reserved.
-              </p>
-            </div>
-
-            <div class="flex items-center gap-6">
-              <a href="#" class="text-xs text-black/60 hover:text-black transition-colors">
-                Privacy
-              </a>
-              <a href="#" class="text-xs text-black/60 hover:text-black transition-colors">
-                Terms
-              </a>
-              <a href="#" class="text-xs text-black/60 hover:text-black transition-colors">
-                Sitemap
-              </a>
+          <div class="footer-bottom-inner">
+            <p class="footer-copyright">
+              &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories Ltd.
+            </p>
+            <div class="footer-legal-links">
+              <a href="#">Privacy</a>
+              <a href="#">Terms</a>
             </div>
           </div>
         </UContainer>
@@ -241,33 +112,261 @@
 <script setup>
 const email = ref("");
 
-const companyLinks = ["About", "Why It Matters", "The Facility", "Milestones", "Careers"];
-const productLinks = ["Pocketing Fabric", "Interlinings", "Labels & Tapes", "Packaging"];
-const resourceLinks = ["Contact", "LinkedIn", "FAQ", "Spec Sheets"];
+const socials = [
+  { label: "LinkedIn", icon: "heroicons:link", href: "https://linkedin.com" },
+  { label: "Facebook", icon: "heroicons:globe-alt", href: "https://facebook.com" },
+  { label: "Email Us", icon: "heroicons:envelope", href: "mailto:info@hameemchingtai.com" },
+];
 
 const handleSubscribe = () => {
-  // Handle newsletter subscription
   console.log("Subscribe:", email.value);
   email.value = "";
 };
 </script>
 
 <style scoped>
-@keyframes float {
+/* ─── Root Container ─── */
+.footer-root {
+  background-color: #f5f5f0;
+  min-height: 480px;
+}
 
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.2;
-  }
+/* ─── Background Art (bottom-anchored) ─── */
+.footer-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: url('~/assets/img/footer-art.jpg');
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
-  50% {
-    transform: translateY(-12px) scale(1.5);
-    opacity: 0.5;
+@media (max-width: 768px) {
+  .footer-bg {
+    background-size: contain;
+    background-position: bottom center;
   }
 }
 
-.animate-float {
-  animation: float ease-in-out infinite;
+/* ─── Gradient Overlay (solid top → transparent bottom) ─── */
+.footer-gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(to bottom,
+      #f5f5f0 0%,
+      #f5f5f0 25%,
+      rgba(245, 245, 240, 0.92) 40%,
+      rgba(245, 245, 240, 0.6) 60%,
+      rgba(245, 245, 240, 0.25) 78%,
+      rgba(245, 245, 240, 0) 100%);
+}
+
+/* ─── Brand Column ─── */
+.footer-brand-name {
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--brown, #242c2c);
+}
+
+.footer-brand-rule {
+  width: 36px;
+  height: 2px;
+  margin: 16px 0 18px;
+  background: var(--brass, #b88d4c);
+  border-radius: 1px;
+}
+
+.footer-brand-mission {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: color-mix(in srgb, var(--brown, #242c2c) 62%, transparent);
+  max-width: 320px;
+}
+
+/* ─── Section Headings ─── */
+.footer-heading {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--brown, #242c2c) 55%, transparent);
+  margin-bottom: 20px;
+}
+
+/* ─── Contact List ─── */
+.footer-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer-contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.footer-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--brass, #b88d4c);
+}
+
+.footer-contact-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--brown, #242c2c);
+  margin-bottom: 2px;
+}
+
+.footer-contact-text {
+  display: block;
+  font-size: 0.825rem;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--brown, #242c2c) 60%, transparent);
+}
+
+.footer-link {
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: var(--brown, #242c2c);
+}
+
+/* ─── Social Icons ─── */
+.footer-social-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.footer-social-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--brown, #242c2c) 18%, transparent);
+  color: var(--brown, #242c2c);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-social-icon:hover {
+  background: var(--brown, #242c2c);
+  color: var(--paper, #f5f2eb);
+  border-color: var(--brown, #242c2c);
+  transform: translateY(-2px);
+}
+
+/* ─── Newsletter ─── */
+.footer-newsletter-label {
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--brown, #242c2c) 55%, transparent);
+  margin-bottom: 10px;
+}
+
+.footer-newsletter-form {
+  display: flex;
+  gap: 0;
+  max-width: 280px;
+}
+
+.footer-newsletter-input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 0.825rem;
+  font-family: inherit;
+  color: var(--brown, #242c2c);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid color-mix(in srgb, var(--brown, #242c2c) 14%, transparent);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  outline: none;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.footer-newsletter-input::placeholder {
+  color: color-mix(in srgb, var(--brown, #242c2c) 38%, transparent);
+}
+
+.footer-newsletter-input:focus {
+  border-color: var(--brass, #b88d4c);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.footer-newsletter-btn {
+  display: grid;
+  place-items: center;
+  padding: 0 14px;
+  background: var(--brown, #242c2c);
+  color: var(--paper, #f5f2eb);
+  border: 1px solid var(--brown, #242c2c);
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.15s ease;
+}
+
+.footer-newsletter-btn:hover {
+  background: color-mix(in srgb, var(--brown, #242c2c) 82%, transparent);
+}
+
+.footer-newsletter-btn:active {
+  transform: scale(0.96);
+}
+
+/* ─── Bottom Bar ─── */
+.footer-bottom-bar {
+  border-top: 1px solid color-mix(in srgb, var(--brown, #242c2c) 10%, transparent);
+}
+
+.footer-bottom-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 0;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .footer-bottom-inner {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.footer-copyright {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--brown, #242c2c) 50%, transparent);
+}
+
+.footer-legal-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-legal-links a {
+  font-size: 0.7rem;
+  color: color-mix(in srgb, var(--brown, #242c2c) 50%, transparent);
+  transition: color 0.3s ease;
+}
+
+.footer-legal-links a:hover {
+  color: var(--brown, #242c2c);
 }
 </style>
