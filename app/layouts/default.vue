@@ -5,7 +5,7 @@
        smaller top offset) — pt-32 there wastes most of the first screen. -->
   <div
     :class="
-      fullBleed ? '' : 'lg:m8x-w-8xl max-w-7xl mx-auto px-4 sm:px-6 pt-24 md:pt-32 pb-12'
+      fullBleed ? '' : 'max-w-7xl mx-auto px-4 sm:px-6 pt-24 md:pt-32 pb-12'
     "
   >
     <slot />

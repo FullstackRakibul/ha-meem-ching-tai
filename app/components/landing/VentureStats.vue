@@ -3,31 +3,47 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as THREE from 'three'
 
+// Canonical venture figures for the whole site. Any other component showing
+// these numbers defers to this list — do not restate them elsewhere.
 const stats = [
-  { value: '৳100cr', label: 'Initial Investment', desc: 'Phase one capital expenditure' },
-  { value: '500K', label: 'Monthly Output (yd)', desc: 'Initial phase: sizing & weaving' },
-  { value: '2M', label: 'Future Capacity (yd)', desc: 'Per month at full scale' },
-  { value: '12,000', label: 'Employment Target', desc: '90% local hiring mandate' },
-  { value: '$9M', label: 'Solar Investment', desc: '16.9 MW capacity across Textile Zone' },
-  { value: 'Zero', label: 'Water Discharge', desc: 'Goal by 2030 with caustic recovery' },
-  { value: '25%', label: 'Ching Tai Stake', desc: 'Chinese JV partner equity' },
+  { value: 'Tk 100 crore', label: 'Initial Investment', desc: 'Phase one capital expenditure' },
+  { value: '700,000 yd', label: 'Monthly Output', desc: 'Initial phase, per month' },
+  { value: '2,000,000 yd', label: 'Full-Scale Capacity', desc: 'Per month at full build-out' },
+  { value: '10,000+', label: 'Employment at Full Capacity', desc: 'From around 200 at launch' },
+  { value: '1965', label: 'Ching Tai Established', desc: 'Hong Kong joint-venture partner' },
+  { value: '4', label: 'Product Lines', desc: 'Pocketing, interlining, lining, waistband' },
+  { value: 'Narsingdi', label: 'Plant Location', desc: 'Repurposed former jute-mill site' },
 ]
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const webglReady = ref(true)
 
 onMounted(() => {
   if (!canvasRef.value) return
+
+  // Particles are decorative — without a GPU context the section stands on its
+  // denim background alone, so bail out before Three.js throws.
+  if (!isWebGLAvailable()) {
+    webglReady.value = false
+    return
+  }
 
   // 1. Scene Setup
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
   camera.position.z = 5
 
-  const renderer = new THREE.WebGLRenderer({
-    canvas: canvasRef.value,
-    alpha: true,
-    antialias: true
-  })
+  let renderer: THREE.WebGLRenderer
+  try {
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvasRef.value,
+      alpha: true,
+      antialias: true
+    })
+  } catch {
+    webglReady.value = false
+    return
+  }
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
@@ -106,16 +122,18 @@ onMounted(() => {
     class="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950" data-reveal>
     <!-- Background Denim Texture -->
     <div class="absolute inset-0 z-0 pointer-events-none">
-      <!-- Ensure you have a denim texture image in your public directory -->
+      <!-- TODO(confirm: replace with a real HCTPAL plant photograph — this is a
+           licensed-stock placeholder and must not ship) -->
       <img
-        src="https://media.istockphoto.com/id/676302668/photo/jeans-background.jpg?s=612x612&w=0&k=20&c=xTqt7jB_cvus_zH-4XjBNj8QPeZx56FgxsI9kO5KEL8="
-        alt="Dark denim weave background" class="w-full h-full object-cover opacity-40 mix-blend-luminosity" />
+        src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai33.jpeg"
+        alt="Woven pocketing fabric on the loom at the Ha-Meem Ching Tai plant in Narsingdi"
+        class="w-full h-full object-cover opacity-40 mix-blend-luminosity" />
       <!-- Gradient overlay to ensure text contrast -->
       <div class="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-900/60 to-slate-950/90"></div>
     </div>
 
     <!-- Three.js Particle Canvas -->
-    <canvas ref="canvasRef" class="absolute inset-0 z-10 pointer-events-none"></canvas>
+    <canvas v-show="webglReady" ref="canvasRef" class="absolute inset-0 z-10 pointer-events-none"></canvas>
 
     <!-- Main Content Layout -->
     <div

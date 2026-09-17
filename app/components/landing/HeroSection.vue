@@ -47,10 +47,11 @@ onMounted(() => {
 
     <div class="hero-object" data-parallax="0.06">
       <p>Integrated Supply Chain</p>
-      <span>From raw materials to finished trims</span>
+      <span>From raw yarn to finished accessories</span>
       <div>
-        <img src="https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=600"
-          alt="Fabric weave close-up" />
+        <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
+        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
+          alt="Close-up of greige pocketing fabric on the loom" />
       </div>
     </div>
 

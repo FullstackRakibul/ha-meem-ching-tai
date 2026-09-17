@@ -1,6 +1,6 @@
 <!-- AppFooter.vue -->
 <template>
-  <footer class="footer-root relative w-full  overflow-hidden">
+  <footer id="contact" class="footer-root relative w-full  overflow-hidden">
     <!-- ================= Background Art Layer ================= -->
     <!-- Bottom-anchored garment line-art with gradient fade overlay -->
     <div class="footer-bg" aria-hidden="true" />
@@ -20,8 +20,8 @@
             <div class="footer-brand-rule" />
             <p class="footer-brand-mission">
               For decades, mills waited on imports. We built the alternative
-              in Bangladesh — pocketing, interlinings, labels, and the care
-              that ships with them.
+              in Bangladesh — pocketing, interlining, lining and waistband,
+              made where the garments are.
             </p>
           </div>
 
@@ -35,7 +35,7 @@
                 <UIcon name="heroicons:map-pin" class="footer-icon" />
                 <div>
                   <span class="footer-contact-label">Factory HQ</span>
-                  <span class="footer-contact-text">Ghorashal, Narsingdi, Bangladesh</span>
+                  <span class="footer-contact-text">Narsingdi, Bangladesh</span>
                 </div>
               </li>
               <!-- Dhaka Head Office -->
@@ -43,21 +43,22 @@
                 <UIcon name="heroicons:building-office-2" class="footer-icon" />
                 <div>
                   <span class="footer-contact-label">Head Office</span>
-                  <span class="footer-contact-text">Times Media Building, 387 Tejgaon, Dhaka 1208</span>
+                  <!-- TODO(confirm: head-office address to publish alongside CT sales contacts) -->
+                  <span class="footer-contact-text">Times Media Bhaban, 387 Tejgaon I/A, Dhaka 1208</span>
                 </div>
               </li>
               <!-- Phone -->
               <li>
                 <UIcon name="heroicons:phone" class="footer-icon" />
-                <a href="tel:+8801319320527" class="footer-contact-text footer-link">
-                  +880 131 9320527
+                <a href="tel:+8801911420392" class="footer-contact-text footer-link">
+                  +88 01911 420392
                 </a>
               </li>
               <!-- Email -->
               <li>
                 <UIcon name="heroicons:envelope" class="footer-icon" />
-                <a href="mailto:info@hameemchingtai.com" class="footer-contact-text footer-link">
-                  info@hameemchingtai.com
+                <a href="mailto:sharif.ershad@ctcloth.hk" class="footer-contact-text footer-link">
+                  sharif.ershad@ctcloth.hk
                 </a>
               </li>
             </ul>
@@ -76,15 +77,15 @@
             </div>
 
             <!-- Newsletter -->
+            <!-- TODO(confirm: newsletter needs a real subscribe endpoint before it goes back.
+                 The form only logged to console, so addresses were silently discarded —
+                 replaced with a direct sales mailto until there is somewhere to post to. -->
             <div class="footer-newsletter">
-              <p class="footer-newsletter-label">Stay in the loop</p>
-              <form class="footer-newsletter-form" @submit.prevent="handleSubscribe">
-                <input v-model="email" type="email" placeholder="your@email.com" required
-                  class="footer-newsletter-input" />
-                <button type="submit" class="footer-newsletter-btn" aria-label="Subscribe">
-                  <UIcon name="heroicons:arrow-right-20-solid" class="size-4" />
-                </button>
-              </form>
+              <p class="footer-newsletter-label">Trade &amp; sample enquiries</p>
+              <a href="mailto:sharif.ershad@ctcloth.hk" class="footer-newsletter-cta">
+                <span>sharif.ershad@ctcloth.hk</span>
+                <UIcon name="heroicons:arrow-right-20-solid" class="size-4" />
+              </a>
             </div>
           </div>
 
@@ -110,18 +111,11 @@
 </template>
 
 <script setup>
-const email = ref("");
-
+// TODO(confirm: real HCTPAL LinkedIn/Facebook profile URLs, then re-add them here.
+// Generic platform homepages were removed rather than shipped as our profiles.)
 const socials = [
-  { label: "LinkedIn", icon: "heroicons:link", href: "https://linkedin.com" },
-  { label: "Facebook", icon: "heroicons:globe-alt", href: "https://facebook.com" },
-  { label: "Email Us", icon: "heroicons:envelope", href: "mailto:info@hameemchingtai.com" },
+  { label: "Email Us", icon: "heroicons:envelope", href: "mailto:sharif.ershad@ctcloth.hk" },
 ];
-
-const handleSubscribe = () => {
-  console.log("Subscribe:", email.value);
-  email.value = "";
-};
 </script>
 
 <style scoped>
@@ -278,53 +272,23 @@ const handleSubscribe = () => {
   margin-bottom: 10px;
 }
 
-.footer-newsletter-form {
-  display: flex;
-  gap: 0;
+.footer-newsletter-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   max-width: 280px;
-}
-
-.footer-newsletter-input {
-  flex: 1;
   padding: 10px 14px;
   font-size: 0.825rem;
-  font-family: inherit;
   color: var(--brown, #242c2c);
   background: rgba(0, 0, 0, 0.04);
   border: 1px solid color-mix(in srgb, var(--brown, #242c2c) 14%, transparent);
-  border-right: none;
-  border-radius: 6px 0 0 6px;
-  outline: none;
+  border-radius: 6px;
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
-.footer-newsletter-input::placeholder {
-  color: color-mix(in srgb, var(--brown, #242c2c) 38%, transparent);
-}
-
-.footer-newsletter-input:focus {
+.footer-newsletter-cta:hover {
   border-color: var(--brass, #b88d4c);
   background: rgba(0, 0, 0, 0.06);
-}
-
-.footer-newsletter-btn {
-  display: grid;
-  place-items: center;
-  padding: 0 14px;
-  background: var(--brown, #242c2c);
-  color: var(--paper, #f5f2eb);
-  border: 1px solid var(--brown, #242c2c);
-  border-radius: 0 6px 6px 0;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.15s ease;
-}
-
-.footer-newsletter-btn:hover {
-  background: color-mix(in srgb, var(--brown, #242c2c) 82%, transparent);
-}
-
-.footer-newsletter-btn:active {
-  transform: scale(0.96);
 }
 
 /* ─── Bottom Bar ─── */

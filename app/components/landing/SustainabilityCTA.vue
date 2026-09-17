@@ -3,20 +3,23 @@
 import { ref } from 'vue'
 
 // Clean Architecture: Separate data from UI representation
+// These are Ha-Meem GROUP textile-zone commitments, not HCTPAL plant figures.
+// Labels must keep that attribution explicit.
+// TODO(confirm: scope and current status of both figures with Ha-Meem Group)
 const stats = ref([
   {
     id: 'solar',
     value: '16.9',
     unit: 'MW',
-    label: 'Solar Power Capacity',
-    desc: 'Driving our high-speed weaving and automated units.'
+    label: 'Group Solar Capacity',
+    desc: 'Installed across the wider Ha-Meem Group textile zone.'
   },
   {
     id: 'water',
     value: 'Zero',
     unit: '',
-    label: 'Water Discharge by 2030',
-    desc: 'Achieved through advanced closed-loop caustic recovery.'
+    label: 'Group Water Discharge Target',
+    desc: 'A Ha-Meem Group commitment for 2030 through caustic recovery.'
   }
 ])
 </script>
@@ -74,10 +77,10 @@ const stats = ref([
 
         <!-- Headers -->
         <header>
-          <h2 class="text-amber-500 font-bold tracking-widest uppercase text-xs sm:text-sm mb-2">Solar-Powered
-            Manufacturing</h2>
+          <h2 class="text-amber-500 font-bold tracking-widest uppercase text-xs sm:text-sm mb-2">Ha-Meem Group
+            Sustainability</h2>
           <h3 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Harnessing the sun to <br class="hidden md:block" />build the future of textiles.
+            Backed by the group's <br class="hidden md:block" />renewable energy programme.
           </h3>
         </header>
 

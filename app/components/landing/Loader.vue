@@ -11,10 +11,10 @@ defineProps<{
     <div class="loader__frame">
       <div class="loader__topline">
         <span>Ha-Meem Ching Tai</span>
-        <span>Est. 2008</span>
+        <span>Narsingdi · Bangladesh</span>
       </div>
       <div class="loader__center">
-        <p class="loader__eyebrow">Engineered · Pocketing · Interlinings</p>
+        <p class="loader__eyebrow">Pocketing · Interlining · Lining · Waistband</p>
         <p class="loader__percentage">{{ String(loadingProgress).padStart(2, '0') }}%</p>
         <p class="loader__word">HCTPAL</p>
         <div class="loader__progress" :style="{ '--loading-progress': `${loadingProgress}%` }">

@@ -15,7 +15,7 @@ defineProps<{
         </div>
         <div class="intro-image intro-image--small" data-parallax="-0.03">
           <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai34.jpeg"
-            alt="Garment trims and interlinings detail" />
+            alt="Close-up of woven interlining and pocketing fabric" />
         </div>
       </div>
 
@@ -23,9 +23,9 @@ defineProps<{
         <h2>Built to Strengthen Bangladesh's Manufacturing Future</h2>
         <div>
           <p>
-            Ha-Meem Ching Tai Pocketing & Accessories Ltd. (HCTPAL) supplies global garment brands with
-            high-performance pocketing, interlinings, waistbands, and custom accessory trims —
-            manufactured locally using advanced Chinese technology.
+            Ha-Meem Ching Tai Pocketing &amp; Accessories Ltd. (HCTPAL) manufactures pocketing,
+            interlining, lining and waistband in Narsingdi, Bangladesh — produced locally on
+            advanced weaving technology and imported machinery.
           </p>
           <a class="tiny-link" href="#why-matters">
             <span>Why It Matters</span>

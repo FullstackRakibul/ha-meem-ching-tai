@@ -105,11 +105,21 @@ onMounted(() => {
   const container = mountRef.value
   if (!container) return
 
+  // Hover preview only — with hardware acceleration off the menu simply shows
+  // no preview rather than logging a context-creation failure.
+  if (!isWebGLAvailable()) return
+
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(28, 1, 0.1, 10)
   camera.position.z = 1.75
 
-  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+  try {
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
+  } catch {
+    scene = null
+    camera = null
+    return
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setClearColor(0x000000, 0)
   container.appendChild(renderer.domElement)

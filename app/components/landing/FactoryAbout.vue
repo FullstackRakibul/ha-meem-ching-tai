@@ -29,7 +29,7 @@
         <div>
           <p class="factory-point__title">Advanced Technology</p>
           <p class="factory-point__text">
-            Advanced Chinese technology and modern machinery manufacture accessories at scale,
+            Advanced weaving technology and imported machinery manufacture accessories at scale,
             delivering consistent quality that meets international specifications and standards.
           </p>
         </div>
@@ -40,18 +40,18 @@
         <div>
           <p class="factory-point__title">Built for Export</p>
           <p class="factory-point__text">
-            Output meets Ha-Meem Group's own factories and ships internationally,
-            competing with established Global markets .
+            Output supplies Ha-Meem Group's own factories and is exported to
+            international markets.
           </p>
         </div>
       </div>
 
       <div class="factory-quote">
         <p class="factory-quote__text">
-          "The project initially started with sizing and weaving… The next phase aims to take
-          production to approximately 2 million yards per month."
+          "The accessories produced here will not only meet the requirements of Ha-Meem Group's
+          own factories but will also be exported to international markets."
         </p>
-        <p class="factory-quote__author">— Muhammad Amin, CEO of Ha-Meem Group</p>
+        <p class="factory-quote__author">— A.K. Azad, Chairman &amp; Managing Director, Ha-Meem Group</p>
       </div>
     </div>
   </section>

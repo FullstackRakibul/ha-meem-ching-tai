@@ -4,9 +4,8 @@
 </template>
 
 <script setup>
+// Title and description live once, in nuxt.config.ts.
 useHead({
-  title: 'Ha-Meem Ching Tai',
-  titleTemplate: '%s',
   meta: [
     {
       name: 'viewport',

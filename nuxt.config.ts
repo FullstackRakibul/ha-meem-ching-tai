@@ -22,11 +22,11 @@ export default defineNuxtConfig({
   ],
   app: {
     head: {
-      title: 'Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing',
+      title: 'Ha-Meem Ching Tai Pocketing & Accessories Ltd.',
       meta: [
         {
           name: 'description',
-          content: 'A joint venture between Ha-Meem Group and Ching Tai. We manufacture export-quality pocketing fabrics, interlinings, and trims in Bangladesh to drastically reduce lead times and strengthen the backward linkage industry.',
+          content: 'A joint venture between Ha-Meem Group and Ching Tai (CT Group). We manufacture export-quality pocketing, interlining, lining and waistband in Narsingdi, Bangladesh, cutting apparel lead times and strengthening the backward-linkage industry.',
         },
       ],
       link: [

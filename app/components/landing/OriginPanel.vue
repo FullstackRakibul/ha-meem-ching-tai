@@ -9,10 +9,11 @@
     <div class="origin-card">
       <p>Quality Standard</p>
       <strong>100%</strong>
-      <span>Inspection & Audit Passed</span>
+      <span>In-House Inspection</span>
+      <!-- TODO(confirm: exact QA test battery and any third-party audit HCTPAL holds) -->
       <p>
-        Every roll of pocketing fabric and every trim package undergoes rigorous
-        tensile, colorfastness, and shrink testing before shipment.
+        Pocketing, interlining, lining and waistband are inspected in-house before
+        shipment, with testing for tensile strength, colourfastness and shrinkage.
       </p>
       <a class="tiny-link" href="#contact">
         <span>Request Samples</span>
