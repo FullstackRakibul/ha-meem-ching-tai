@@ -136,7 +136,7 @@ const handleSubscribe = () => {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image: url('~/assets/img/footer-art.jpg');
+  background-image: url('~/assets/img/HCTPAL.svg');
   background-position: bottom center;
   background-repeat: no-repeat;
   background-size: cover;

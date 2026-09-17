@@ -30,7 +30,7 @@
           <p class="factory-point__title">Advanced Technology</p>
           <p class="factory-point__text">
             Advanced Chinese technology and modern machinery manufacture accessories at scale,
-            delivering consistent quality that meets international specifications.
+            delivering consistent quality that meets international specifications and standards.
           </p>
         </div>
       </div>
@@ -41,7 +41,7 @@
           <p class="factory-point__title">Built for Export</p>
           <p class="factory-point__text">
             Output meets Ha-Meem Group's own factories and ships internationally,
-            competing with established markets like Japan and China.
+            competing with established Global markets .
           </p>
         </div>
       </div>
