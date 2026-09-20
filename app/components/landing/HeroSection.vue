@@ -1,21 +1,23 @@
 <!-- components/landing/HeroSection.vue -->
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from "vue";
 
-const ready = ref(false)
+const ready = ref(false);
 
 onMounted(() => {
   setTimeout(() => {
-    ready.value = true
-  }, 100)
-})
+    ready.value = true;
+  }, 100);
+});
 </script>
 
 <template>
   <section id="top" :class="['catalog-hero', { 'catalog-hero--ready': ready }]">
     <div class="catalog-hero__image" data-hero-image>
-      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai31.jpeg"
-        alt="Precision engineering — HCTPAL manufacturing floor" />
+      <img
+        src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai60.jpeg"
+        alt="Precision engineering — HCTPAL manufacturing floor"
+      />
     </div>
     <div class="catalog-hero__veil" />
 
@@ -29,7 +31,10 @@ onMounted(() => {
     </h1>
 
     <div class="catalog-hero__left">
-      <p>Precision Engineering. Crafting export-quality accessories for the global apparel industry.</p>
+      <p>
+        Precision Engineering. Crafting export-quality accessories for the global apparel
+        industry.
+      </p>
       <a class="tiny-link" href="#collections">
         <span>Explore Catalog</span>
         <i>
@@ -50,8 +55,10 @@ onMounted(() => {
       <span>From raw yarn to finished accessories</span>
       <div>
         <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
-        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
-          alt="Close-up of greige pocketing fabric on the loom" />
+        <img
+          src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
+          alt="Close-up of greige pocketing fabric on the loom"
+        />
       </div>
     </div>
 
