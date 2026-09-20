@@ -533,14 +533,14 @@ p {
 
 .catalog-hero__image {
   opacity: 0;
-  scale: 1.035;
+  scale: 1.35;
   transition: opacity 0.8s var(--ease), scale 1.25s var(--ease);
 }
 
 .catalog-hero__veil {
   opacity: 0;
   transition: opacity 0.75s var(--ease) 0.08s;
-  background: linear-gradient(0deg, rgb(15 27 28 / 0.66), transparent 48%), linear-gradient(90deg, rgb(15 27 28 / 0.42), transparent 42%);
+  background: linear-gradient(0deg, rgba(2, 65, 2, 0.955), transparent 48%), linear-gradient(90deg, rgb(15 27 28 / 0.42), transparent 42%);
 }
 
 .catalog-hero--ready .catalog-hero__image {
@@ -927,8 +927,8 @@ p {
 /* ─── Why It Matters — Horizontal Cards ─── */
 .why-matters {
   padding: clamp(80px, 10vw, 160px) 0;
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--warm-ivory);
+  /* color: var(--paper); */
   overflow: hidden;
 }
 
