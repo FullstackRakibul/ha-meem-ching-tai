@@ -51,10 +51,23 @@ onBeforeUnmount(() => {
       <span style="--letter: 5">L</span>
     </h1>
 
+    <!-- Rotating product line, sat under the wordmark -->
+    <div class="catalog-hero__lines" aria-live="off">
+      <span
+        v-for="(line, index) in productLines"
+        :key="line"
+        :class="['catalog-hero__line', { 'is-active': index === lineIndex }]"
+        aria-hidden="true"
+      >
+        {{ line }}
+      </span>
+      <span class="sr-only">{{ productLines.join(", ") }}</span>
+    </div>
+
     <div class="catalog-hero__left">
       <p>
-        Precision Engineering. Crafting export-quality accessories for the global apparel
-        industry.
+        Garment construction components, made in Bangladesh. Pocketing, interlining,
+        lining and waistband — in commercial production at Narsingdi.
       </p>
       <a class="tiny-link" href="#collections">
         <span>Explore Catalog</span>
@@ -72,8 +85,8 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="hero-object" data-parallax="0.06">
-      <p>Integrated Supply Chain</p>
-      <span>From raw yarn to finished accessories</span>
+      <p>Six Decades of Componentry</p>
+      <span>Ching Tai, Hong Kong — established 1965</span>
       <div>
         <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
         <img
@@ -84,8 +97,14 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="catalog-hero__footer">
-      <span>Ghorashal, Narsingdi · Bangladesh</span>
-      <span>Pocketing & Accessories Division</span>
+      <!-- TODO(confirm: exact plant address — sources say Narsingdi; "Ghorashal" unconfirmed) -->
+      <span>Narsingdi · Bangladesh</span>
+      <span>Pocketing &amp; Accessories Division</span>
     </div>
+
+    <a class="catalog-hero__scroll" href="#collections" aria-label="Scroll to products">
+      <span class="catalog-hero__scroll-line" aria-hidden="true" />
+      <span class="catalog-hero__scroll-text">Scroll</span>
+    </a>
   </section>
 </template>

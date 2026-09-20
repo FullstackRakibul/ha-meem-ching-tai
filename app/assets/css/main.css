@@ -732,6 +732,124 @@ p {
   text-transform: uppercase;
 }
 
+/* Visually hidden, still read aloud — the rotating line is decorative, so the
+   full list is exposed to assistive tech in one static string. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Hero: rotating product line ─── */
+.catalog-hero__lines {
+  position: absolute;
+  top: clamp(150px, 19vw, 320px);
+  left: max(12px, 1.1vw);
+  z-index: 3;
+  display: grid;
+  height: 1.4em;
+  font-size: clamp(0.75rem, 1.15vw, 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.catalog-hero--ready .catalog-hero__lines {
+  animation: hero-content-in 0.7s 0.74s var(--ease) forwards;
+}
+
+/* All four stack in one grid cell; only the active one is shown. */
+.catalog-hero__line {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(0.5em);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+
+.catalog-hero__line.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Hero: slow drift on the backdrop ─── */
+.catalog-hero--ready .catalog-hero__image img {
+  animation: hero-drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: scale(1.11) translate3d(-1.2%, -1.6%, 0);
+  }
+}
+
+/* ─── Hero: scroll cue ─── */
+.catalog-hero__scroll {
+  position: absolute;
+  right: max(12px, 1.1vw);
+  bottom: clamp(52px, 8vh, 96px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+}
+
+.catalog-hero--ready .catalog-hero__scroll {
+  animation: hero-content-in 0.6s 0.95s var(--ease) forwards;
+}
+
+.catalog-hero__scroll-line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: clamp(34px, 5vh, 54px);
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 25%, transparent);
+}
+
+/* A short segment falling down the rail, rather than the whole line pulsing. */
+.catalog-hero__scroll-line::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  content: "";
+  background: currentColor;
+  animation: hero-scroll-cue 2.1s var(--ease) infinite;
+}
+
+.catalog-hero__scroll-text {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+}
+
+@keyframes hero-scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+
+  60%,
+  100% {
+    transform: translateY(250%);
+  }
+}
+
 /* ─── Intro Collage Section ─── */
 .editorial-intro {
   display: grid;
@@ -1982,5 +2100,20 @@ p {
   .js [data-reveal] {
     opacity: 1;
     transform: none;
+  }
+
+  /* Ambient hero motion is removed outright rather than run at 0.01ms, which
+     would otherwise strand the drift and scroll cue mid-keyframe. */
+  .catalog-hero--ready .catalog-hero__image img,
+  .catalog-hero__scroll-line::after {
+    animation: none !important;
+  }
+
+  .catalog-hero__image img {
+    transform: scale(1.04);
+  }
+
+  .catalog-hero__scroll-line::after {
+    transform: translateY(0);
   }
 }
