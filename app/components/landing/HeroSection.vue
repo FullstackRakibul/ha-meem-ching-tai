@@ -1,13 +1,34 @@
 <!-- components/landing/HeroSection.vue -->
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, onBeforeUnmount, ref } from "vue";
 
 const ready = ref(false);
+
+// The four verified product lines, cycled one at a time under the wordmark.
+const productLines = [
+  "Pocketing",
+  "Interlining",
+  "Lining / Taffeta",
+  "Waistband / Elastic",
+];
+const lineIndex = ref(0);
+let lineTimer: ReturnType<typeof setInterval> | undefined;
 
 onMounted(() => {
   setTimeout(() => {
     ready.value = true;
   }, 100);
+
+  // Ambient motion is opt-out: hold on the first line under reduced-motion.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  lineTimer = setInterval(() => {
+    lineIndex.value = (lineIndex.value + 1) % productLines.length;
+  }, 2600);
+});
+
+onBeforeUnmount(() => {
+  clearInterval(lineTimer);
 });
 </script>
 

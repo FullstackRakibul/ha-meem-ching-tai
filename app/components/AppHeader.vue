@@ -27,14 +27,14 @@ const emit = defineEmits<{
       aria-label="Ha-Meem Ching Tai Pocketing & Accessories Ltd. — home"
     >
       <span
-        class="block font-serif font-bold text-primary text-md sm:text-xl md:text-xl lg:text-2xl tracking-tight transition-all duration-700 ease-out group-hover:tracking-normal motion-reduce:transition-none"
+        class="block font-serif font-bold text-primary text-md sm:text-xl md:text-xl lg:text-xl tracking-tight transition-all duration-700 ease-out group-hover:tracking-normal motion-reduce:transition-none uppercase"
       >
         Ha-Meem Ching Tai
       </span>
 
       <!-- Always visible: a hover-gated subtitle is unreachable on touch. -->
       <span
-        class="text-[6px] sm:text-[8px] md:text-[9px] text-gray-500 group-hover:text-primary uppercase tracking-[0.2em] sm:tracking-[0.3em] group-hover:tracking-[0.25em] sm:group-hover:tracking-[0.35em] whitespace-nowrap transition-all duration-700 delay-100 motion-reduce:transition-none"
+        class="text-[6px] sm:text-[8px] md:text-[8.3px] text-gray-500 group-hover:text-primary uppercase tracking-[0.2em] sm:tracking-[0.3em] group-hover:tracking-[0.25em] sm:group-hover:tracking-[0.35em] whitespace-nowrap transition-all duration-700 delay-100 motion-reduce:transition-none"
       >
         Pocketing &amp; Accessories Ltd.
       </span>

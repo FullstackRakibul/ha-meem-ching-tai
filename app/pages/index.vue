@@ -281,6 +281,7 @@ onMounted(() => {
       :nav-items="navItems"
       @close-menu="menuOpen = false"
     />
+    <ScrollTracer />
 
     <main id="main-content">
       <HeroSection />
