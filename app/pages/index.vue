@@ -15,6 +15,7 @@ import SustainabilityCTA from "~/components/landing/SustainabilityCTA.vue";
 import AppFooter from "~/components/AppFooter.vue";
 import SustainabilitySection from "~/components/landing/SustainabilitySection.vue";
 import App from "~/app.vue";
+import FabricIndexDirectory from "~/components/landing/FabricIndexDirectory.vue";
 const loaded = ref(false);
 const loadingProgress = ref(0);
 const menuOpen = ref(false);
@@ -265,6 +266,7 @@ onMounted(() => {
 
 <template>
   <div>
+    <ScrollTracer />
     <a class="skip-link" href="#main-content">Skip to content</a>
 
     <!-- <Loader :loaded="loaded" :loading-progress="loadingProgress" /> -->
@@ -281,11 +283,11 @@ onMounted(() => {
       :nav-items="navItems"
       @close-menu="menuOpen = false"
     />
-    <ScrollTracer />
 
     <main id="main-content">
       <HeroSection />
       <IntroSection :service-points="servicePoints" />
+      <FabricIndexDirectory />
       <WhyMatters />
       <VentureStats />
       <FactoryAbout />
