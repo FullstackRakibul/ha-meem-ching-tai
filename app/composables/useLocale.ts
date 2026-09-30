@@ -16,7 +16,7 @@
  *
  * This is intentional. The copy is customer-facing marketing for a real
  * manufacturer and carries domain terms (pocketing, interlinings, backward
- * linkage, caustic recovery, Oeko-Tex) that are easy to get subtly wrong.
+ * linkage, caustic recovery) that are easy to get subtly wrong.
  * A native speaker should replace the values below; no code changes are
  * needed when they do — only this file is edited.
  *
@@ -38,92 +38,121 @@ export type Messages = typeof en
 const en = {
   // ── Chrome ──────────────────────────────────────────────
   inquire: 'Inquire',
+  contactCta: 'Contact us',
   menu: 'Menu',
   close: 'Close',
   language: 'Language',
-  contactSupport: 'Contact Support',
+  contactSupport: 'Contact',
   companyName: 'Ha-Meem Ching Tai Pocketing & Accessories Ltd.',
   skipToContent: 'Skip to content',
+  whatsappLabel: 'Chat with HCTPAL on WhatsApp',
+  railLabel: 'Chapters',
+  railOpen: 'Show all chapters',
 
-  // ── Nav ─────────────────────────────────────────────────
+  // ── Nav / chapters (the status rail and the menu share these) ─
   navHome: 'Home',
   navWhyMatters: 'Why It Matters',
-  navProducts: 'Products',
+  navMilestones: 'Milestones',
   navFactory: 'Factory',
+  navProducts: 'Products',
+  navSustainability: 'Sustainability',
+  navPartnership: 'Partnership',
   navContact: 'Contact',
+  navIndex: 'Product lines',
 
-  // ── Hero ────────────────────────────────────────────────
+  // ── Hero (boot) ─────────────────────────────────────────
+  heroEyebrow: 'Ha-Meem × Ching Tai · Pocketing & Accessories',
+  heroTitleA: 'Garment accessories,',
+  heroTitleB: 'made in Bangladesh.',
   heroLede:
-    'Precision Engineering. Crafting export-quality accessories for the global apparel industry.',
-  heroCta: 'Explore Catalog',
-  heroStatementLabel: 'Strategic Partnership',
-  heroStatementTitle: 'Ha-Meem × Ching Tai',
+    'Pocketing fabrics, interlinings, waistbands, labels, tapes and packaging accessories — built to Japan and China quality benchmarks in Ghorashal, Narsingdi.',
+  heroCta: 'Explore collections',
+  heroSecondaryCta: 'Why it matters',
+  heroLocation: 'Ghorashal, Narsingdi · Bangladesh',
+  heroDivision: 'Pocketing & Accessories',
 
-  // ── Intro ───────────────────────────────────────────────
-  introTitle: "Built to Strengthen Bangladesh's Manufacturing Future",
+  // ── Intro (index) ───────────────────────────────────────
+  introTitle: "Built to strengthen Bangladesh's manufacturing future",
   introBody:
-    'Ha-Meem Ching Tai Pocketing & Accessories Ltd. (HCTPAL) supplies global garment brands with high-performance pocketing, interlinings, waistbands, and custom accessory trims — manufactured locally using advanced Chinese technology.',
-  introCta: 'Why It Matters',
+    'Ha-Meem Ching Tai Pocketing & Accessories Ltd. (HCTPAL) manufactures pocketing, interlinings, waistbands and garment trims for global apparel brands — locally, with technology from joint-venture partner Ching Tai.',
+  introCta: 'Why it matters',
+  introTableLabel: 'Product lines',
+  introImageAlt: 'A pocket pattern being marked out on denim',
+  service1: 'Pocketing fabrics',
+  service2: 'Interlinings',
+  service3: 'Waistbands',
+  service4: 'Garment trims',
+  service5: 'Labels & tapes',
+  service6: 'Packaging accessories',
+  service7: 'Quality benchmark: Japan & China standards',
+  service8: 'Clients include American Eagle',
 
-  // ── Service ticker ──────────────────────────────────────
-  service1: 'OEKO-TEX Standard 100 Certified',
-  service2: 'High-Speed Air-Jet Looms',
-  service3: 'Custom Color Matching & Dyeing',
-  service4: 'Strict Tensile & Wash Fastness',
-  service5: 'Bulk Supply for Global Brands',
-  service6: 'In-House Testing Facility',
-  service7: 'Fast Turnaround Times',
-  service8: 'American Eagle Partner',
-
-  // ── Why It Matters ──────────────────────────────────────
+  // ── Why It Matters (the Short Thread) ───────────────────
   whyEyebrow: 'Why It Matters',
   whyHeadline: "Lead time is the industry's weakness. This is the answer.",
+  whyLongLabel: 'Imported',
+  whyLongNote: 'Accessories shipped in from abroad — the long way round.',
+  whyShortLabel: 'Made in Ghorashal',
+  whyShortNote: 'Made where the garments are made — the short thread.',
   why1Title: 'Reducing Lead Time',
   why1Text:
-    'Fabrics are mostly local, but imported accessories delay production. Making them at home closes the gap.',
+    'Fabrics are mostly local, but imported accessories delay production and shipment. Making them at home closes the gap.',
   why2Title: 'Saving Foreign Currency',
   why2Text:
     'Lower import dependency keeps earnings inside Bangladesh, strengthening the national economy.',
-  why3Title: 'Integrated Supply Chain',
+  why3Title: 'Backward Linkage',
   why3Text:
-    'One step toward a fully integrated backward linkage chain — from raw fiber to finished garment accessory.',
-  why4Title: 'Export Growth',
+    "One step toward a fully integrated backward-linkage chain — strengthening Bangladesh's own supply of garment accessories.",
+  why4Title: 'Export Confidence',
   why4Text:
-    "Faster turnarounds increase buyers' confidence in placing export orders with Bangladesh.",
+    "Shorter lead times increase buyers' confidence in placing export orders with Bangladesh.",
 
-  // ── Venture stats ───────────────────────────────────────
+  // ── Venture stats (telemetry) ───────────────────────────
   ventureEyebrow: 'The Venture at a Glance',
   ventureHeadline: 'A new era in garment accessories manufacturing.',
   stat1Label: 'Initial Investment',
-  stat1Desc: 'Phase one capital expenditure',
+  stat1Desc: 'Phase one',
   stat2Label: 'Monthly Output (yd)',
-  stat2Desc: 'Initial phase: sizing & weaving',
+  stat2Desc: 'Sizing & weaving phase',
   stat3Label: 'Future Capacity (yd)',
-  stat3Desc: 'Per month at full scale',
-  stat4Label: 'Employment Target',
+  stat3Desc: 'Per month',
+  stat4Label: 'Jobs',
   stat4Desc: '90% local hiring mandate',
   stat5Label: 'Solar Investment',
-  stat5Desc: '16.9 MW capacity across Textile Zone',
+  stat5Desc: '16.9 MW of solar capacity',
   stat6Label: 'Water Discharge',
-  stat6Desc: 'Goal by 2030 with caustic recovery',
+  stat6Desc: 'Target by 2030, with a caustic recovery plant',
   stat7Label: 'Ching Tai Stake',
-  stat7Desc: 'Chinese JV partner equity',
+  stat7Desc: 'Joint-venture partner equity',
+  weaveCaption:
+    "Woven area: today's 500,000 yd monthly output as a share of the 2M yd future capacity — 25%.",
+  milestonesTitle: 'Development milestones',
+  milestone1Label: 'Phase one',
+  milestone1Text: 'Tk 100 crore investment · sizing & weaving · 500,000 yd a month',
+  milestone2Label: 'Future capacity',
+  milestone2Text: '2M yd a month',
+  milestone3Label: '2030',
+  milestone3Text: 'Zero water discharge, with a caustic recovery plant',
 
-  // ── Factory ─────────────────────────────────────────────
+  // ── Factory (dawn) ──────────────────────────────────────
   factoryEyebrow: 'About the Factory',
-  factoryTitle: "Built to strengthen Bangladesh's manufacturing future",
+  factoryTitle: '52 acres in Ghorashal.',
+  factorySite: 'On the former Fawzia Jute Mill site, Ghorashal, Narsingdi.',
   factory1Title: 'Made Locally',
   factory1Text:
-    'Accessories that once had to be imported from China are now produced in Bangladesh — cutting delays and keeping value within the national supply chain.',
-  factory2Title: 'Advanced Technology',
+    'Accessories that once had to be imported are now produced in Bangladesh — cutting delays and keeping value within the national supply chain.',
+  factory2Title: 'Joint-Venture Technology',
   factory2Text:
-    'Advanced Chinese technology and modern machinery manufacture accessories at scale, delivering consistent quality that meets international specifications.',
+    "Ching Tai's manufacturing expertise and modern machinery, run to Japan and China quality benchmarks.",
   factory3Title: 'Built for Export',
   factory3Text:
     'Every product line is engineered to satisfy the compliance and quality thresholds of international apparel buyers.',
+  factoryPointLabel: 'No.',
+  factoryImageAlt: 'Invitation to the Ha-Meem Group inauguration ceremony',
 
   // ── Products ────────────────────────────────────────────
   featuredTitle: 'Featured Accessories',
+  catalogueHint: 'Scroll sideways',
   catPocketing: 'Pocketing Fabrics',
   catInterlinings: 'Interlinings',
   catWaistbands: 'Waistbands',
@@ -135,9 +164,12 @@ const en = {
   product6: 'Stretch Trouser Waistband',
 
   // ── Category theatre ────────────────────────────────────
+  sceneLabel: 'Scene',
+  sceneCta: 'Request specs',
+  sceneView: 'View image',
   scene1Title: 'Pocketing',
   scene1Desc:
-    'Crafted to meet international specifications, competing with markets like Japan and China. High-density cotton, TC blended, and twill pocketings engineered for strength.',
+    'Crafted to meet international specifications, benchmarked against Japan and China. High-density cotton, TC blended, and twill pocketings engineered for strength.',
   scene2Title: 'Interlinings',
   scene2Desc:
     'High-quality shape retention for premium manufacturing. Fusible, non-fusible, woven, and non-woven interlinings tailored for garment stability.',
@@ -146,48 +178,48 @@ const en = {
     'Precision-engineered for long-lasting wear and consistent tension. Pre-constructed jacket and trouser waistbands with custom rubberized grip tape.',
   scene4Title: 'Trims',
   scene4Desc:
-    'A comprehensive suite of export-quality trims. Custom brand labels, seam tapes, and accessories meeting international Oeko-Tex standards.',
+    'Export-quality trims: custom brand labels, seam tapes and packaging accessories, built to Japan and China quality benchmarks.',
 
-  // ── Sustainability ──────────────────────────────────────
+  // ── Sustainability (dusk) ───────────────────────────────
   sustainEyebrow: 'Solar-Powered Manufacturing',
-  sustainHeadline: 'Harnessing the sun to build the future of textiles.',
+  sustainHeadline: 'Powered by the sun. Closing the water loop.',
   sustainStat1Value: '16.9 MW',
-  sustainStat1Label: 'Solar Power Capacity',
-  sustainStat1Desc: 'Driving our high-speed weaving and automated units.',
+  sustainStat1Label: 'Solar capacity',
+  sustainStat1Desc: 'From a $9M solar investment.',
   sustainStat2Value: 'Zero',
-  sustainStat2Label: 'Water Discharge by 2030',
-  sustainStat2Desc: 'Achieved through advanced closed-loop caustic recovery.',
-  sustainCta: 'Explore Development Milestones',
+  sustainStat2Label: 'Water discharge by 2030',
+  sustainStat2Desc: 'The target, supported by a caustic recovery plant.',
+  sustainCta: 'Development milestones',
 
-  // ── Sustainability section ──────────────────────────────
-  visionEyebrow: 'Our Vision',
-  visionTitle: 'Sustainability & Environmental Initiatives',
-  visionBody:
-    'Weaving nature into every thread. We are committed to green manufacturing, integrating advanced technology with holistic environmental stewardship to drive systemic change.',
-  pillar1Title: 'Environmental Initiatives',
-  pillar1Desc: 'Strategic partnerships driving systemic change and protecting ecosystems.',
-  pillar2Title: 'UN SDG Alignment',
-  pillar2Desc: 'Global goals addressed through tangible, verifiable, and targeted action.',
-  pillar3Title: 'Green Manufacturing',
-  pillar3Desc: 'Where technology, circularity, and operational efficiency converge flawlessly.',
+  // ── Partnership (ply) ───────────────────────────────────
+  originEyebrow: 'The Partnership',
+  originLineA: 'A manufacturing partner,',
+  originLineB: 'not a supplier.',
+  originJv:
+    'A joint venture of Ha-Meem Group (Bangladesh) and Ching Tai (China), which holds a 25% stake.',
+  originJobs: '12,000 jobs, with a 90% local hiring mandate.',
+  originStandards: 'Quality benchmarked to Japan and China standards.',
+  originPlyCaption: 'Two plies, one yarn: Ha-Meem Group in navy, Ching Tai in gold.',
+  originCta: 'Request samples',
 
-  // ── Footer ──────────────────────────────────────────────
+  // ── Footer (contact) ────────────────────────────────────
   footerVisitEyebrow: 'Factory & Headquarters',
   footerVisitTitle: 'Schedule a Technical Facility Tour',
-  footerVisitBody:
-    'Explore our high-speed weaving looms, coating units, and automated packaging lines in person.',
+  footerVisitBody: 'See the sizing and weaving floor in person, on the 52-acre Ghorashal site.',
   footerVisitCta: 'Book Visit',
   footerSpecLocationLabel: 'Location',
   footerSpecLocationValue: 'Ghorashal, Narsingdi',
-  footerSpecLeadLabel: 'Lead time',
-  footerSpecLeadValue: 'Two weeks notice',
-  footerSpecFloorsLabel: 'Floors',
-  footerSpecFloorsValue: 'Weaving · Coating · Packing',
-  footerContactEyebrow: 'Custom Orders & Bulk Supply',
+  footerSpecSiteLabel: 'Site',
+  footerSpecSiteValue: '52 acres · former Fawzia Jute Mill',
+  footerSpecPhaseLabel: 'Phase one',
+  footerSpecPhaseValue: 'Sizing & weaving',
+  footerContactEyebrow: 'Custom & Bulk Orders',
   footerContactTitle: 'Work with HCTPAL',
   footerContactBody:
-    'Tell us the construction, the width, and the volume. We come back with a swatch, a price, and a date we can actually hold.',
-  footerContactCta: 'Get in Touch',
+    'Tell us the construction, the width, and the volume. We come back with a swatch and a price.',
+  footerContactCta: 'Email us',
+  footerWhatsapp: 'WhatsApp',
+  footerCall: 'Call',
   footerPlateLabel: 'Plate 01',
   footerPlateCaption: 'Tool belt, cut from a single leg — sample room, Ghorashal',
   footerInsetCaption: 'Off-cut denim, re-stitched into shop-floor storage.',
@@ -197,7 +229,7 @@ const en = {
   footerHeadOfficeValue: 'Times Media Limited Building, 387, Dhaka 1208',
   footerContactLabel: 'Contact',
   footerMission:
-    '"For decades, mills waited on imports. We built the alternative in Bangladesh — pocketing, interlinings, labels, and the care that ships with them."',
+    '"Fabrics are mostly made in Bangladesh; accessories were not. We make them here — pocketing, interlinings, labels and tapes."',
   footerTrustedBy: 'Trusted By',
   footerRights: 'All rights reserved',
   footerBackToTop: 'Back to top ↑',
