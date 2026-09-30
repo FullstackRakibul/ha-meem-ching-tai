@@ -1,6 +1,6 @@
 <!-- components/landing/SiteMenu.vue -->
 <script setup lang="ts">
-import { ref, watch, onBeforeUnmount } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import WavyPreview from "./WavyPreview.vue";
 
 const props = defineProps<{
@@ -18,6 +18,18 @@ const hoveredItem = ref<string | null>(null);
 // frozen by stopping Lenis itself; the overflow lock covers the touch/reduced-
 // motion case where the plugin bails out and never provides $lenis.
 const { $lenis } = useNuxtApp();
+
+// Warms WavyPreview's per-URL texture cache ahead of the first hover, so
+// switching between preview images has no network stutter.
+onMounted(() => {
+  if (typeof window === "undefined") return;
+  props.navItems.forEach((item) => {
+    if (item.image) {
+      const img = new Image();
+      img.src = item.image;
+    }
+  });
+});
 
 const onKeydown = (event: KeyboardEvent) => {
   if (event.key === "Escape") emit("closeMenu");
@@ -95,7 +107,7 @@ onBeforeUnmount(() => {
       </a>
       <button
         type="button"
-        class="site-menu__close text-sm uppercase tracking-widest font-semibold hover:text-red-600 transition-colors"
+        class="site-menu__close text-sm uppercase tracking-widest font-semibold hover:text-[#C25934] transition-colors"
         @click="emit('closeMenu')"
       >
         <span>Close</span>
@@ -117,14 +129,16 @@ onBeforeUnmount(() => {
             v-for="(item, index) in navItems"
             :key="item.label"
             :href="item.href"
-            class="site-menu__nav-link group flex items-start gap-4 md:gap-6 outline-none"
+            class="site-menu__nav-link group flex items-start gap-4 md:gap-6 outline-none transition-all duration-500 ease-out"
+            :class="menuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'"
+            :style="{ transitionDelay: `${menuOpen ? 150 + index * 80 : 0}ms` }"
             @mouseenter="hoveredItem = item.image"
             @mouseleave="hoveredItem = null"
             @click="onNavigate($event, item.href)"
           >
             <!-- Index Number -->
             <span
-              class="site-menu__nav-index text-sm md:text-base font-medium text-slate-400 mt-2 md:mt-4 transition-colors group-hover:text-primary"
+              class="site-menu__nav-index text-sm md:text-base font-medium text-slate-400 mt-2 md:mt-4 transition-colors group-hover:text-[#C25934]"
             >
               0{{ index + 1 }}
             </span>
