@@ -10,11 +10,11 @@
  * This page owns no scroll code. Each section registers its own GSAP work
  * through `useScrollScene`; `LoomStage` is the single WebGL canvas.
  */
-import SiteHeader from "~/components/landing/SiteHeader.vue";
+
 import SiteMenu from "~/components/landing/SiteMenu.vue";
 import LoomStage from "~/components/landing/LoomStage.vue";
 import StatusRail from "~/components/landing/StatusRail.vue";
-import WhatsAppButton from "~/components/landing/WhatsAppButton.vue";
+// import WhatsAppButton from "~/components/landing/WhatsAppButton.vue";
 import HeroSection from "~/components/landing/HeroSection.vue";
 import IntroSection from "~/components/landing/IntroSection.vue";
 import WhyMatters from "~/components/landing/WhyMatters.vue";
@@ -70,30 +70,75 @@ const featuredProducts = computed<Array<[string, string, string]>>(() => [
 ]);
 
 const categoryScenes = computed(() => [
-  { id: "01", title: t("scene1Title"), description: t("scene1Desc"), image: `${IMG}19.jpeg`, type: "contain" },
-  { id: "02", title: t("scene2Title"), description: t("scene2Desc"), image: `${IMG}17.jpeg`, type: "cover" },
-  { id: "03", title: t("scene3Title"), description: t("scene3Desc"), image: `${IMG}13.jpeg`, type: "cover" },
-  { id: "04", title: t("scene4Title"), description: t("scene4Desc"), image: `${IMG}11.jpeg`, type: "contain" },
+  {
+    id: "01",
+    title: t("scene1Title"),
+    description: t("scene1Desc"),
+    image: `${IMG}19.jpeg`,
+    type: "contain",
+  },
+  {
+    id: "02",
+    title: t("scene2Title"),
+    description: t("scene2Desc"),
+    image: `${IMG}17.jpeg`,
+    type: "cover",
+  },
+  {
+    id: "03",
+    title: t("scene3Title"),
+    description: t("scene3Desc"),
+    image: `${IMG}13.jpeg`,
+    type: "cover",
+  },
+  {
+    id: "04",
+    title: t("scene4Title"),
+    description: t("scene4Desc"),
+    image: `${IMG}11.jpeg`,
+    type: "contain",
+  },
 ]);
 
 const servicePoints = computed(() => [
-  t("service1"), t("service2"), t("service3"), t("service4"),
-  t("service5"), t("service6"), t("service7"), t("service8"),
+  t("service1"),
+  t("service2"),
+  t("service3"),
+  t("service4"),
+  t("service5"),
+  t("service6"),
+  t("service7"),
+  t("service8"),
 ]);
 </script>
 
 <template>
   <div>
     <a class="skip-link" href="#main-content">{{ t("skipToContent") }}</a>
+    <ScrollTracer :nav-items="navItems" />
 
-    <SiteHeader :menu-open="menuOpen" @toggle-menu="menuOpen = !menuOpen" @close-menu="menuOpen = false" />
-    <SiteMenu :menu-open="menuOpen" :nav-items="navItems" @close-menu="menuOpen = false" />
+    <!-- <SiteHeader
+      :menu-open="menuOpen"
+      @toggle-menu="menuOpen = !menuOpen"
+      @close-menu="menuOpen = false"
+    /> -->
+    <AppHeader
+      :menu-open="menuOpen"
+      @toggle-menu="menuOpen = !menuOpen"
+      @close-menu="menuOpen = false"
+    />
+    <SiteMenu
+      :menu-open="menuOpen"
+      :nav-items="navItems"
+      @close-menu="menuOpen = false"
+    />
 
     <ClientOnly>
       <LoomStage :menu-open="menuOpen" />
     </ClientOnly>
 
     <main id="main-content">
+      <MainHeroSectionContainer />
       <HeroSection />
       <IntroSection :service-points="servicePoints" />
       <WhyMatters />
@@ -107,6 +152,6 @@ const servicePoints = computed(() => [
     </main>
 
     <StatusRail />
-    <WhatsAppButton />
+    <!-- <WhatsAppButton /> -->
   </div>
 </template>

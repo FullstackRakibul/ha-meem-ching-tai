@@ -1,151 +1,225 @@
 <template>
-  <!-- Scroll progress tracer: replaces the native scrollbar (hidden globally
-       in main.css). A faint full-height rail, a brighter trail showing how far
-       you've read, and a glowing dot at the head. Purely decorative —
-       pointer-events:none so it never intercepts clicks or the custom cursor. -->
-  <div class="scroll-tracer" :class="{ 'scroll-tracer--on-dark': onDark }" aria-hidden="true">
-    <div class="scroll-tracer__rail"></div>
-    <div class="scroll-tracer__trail" :style="{ height: `${progress}%` }"></div>
-    <div class="scroll-tracer__dot" :style="{ top: `${progress}%` }"></div>
+  <!-- Scroll progress tracer: replaces the native scrollbar. 
+       Now styled as a garment stitch (Mustard Gold thread on a dashed rail)
+       with an integrated Back to Top button. -->
+  <div
+    class="scroll-tracer"
+    :class="{ 'scroll-tracer--on-dark': onDark }"
+    aria-hidden="true"
+  >
+    <!-- The Sewing Track -->
+    <div class="scroll-tracer__track">
+      <!-- The fabric guideline (Unread dashed line) -->
+      <div class="scroll-tracer__rail"></div>
+
+      <!-- The gold thread (Read dashed line) -->
+      <div class="scroll-tracer__trail" :style="{ height: `${progress}%` }"></div>
+
+      <!-- The needle/knot (Leading edge) -->
+      <div class="scroll-tracer__dot" :style="{ top: `${progress}%` }"></div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button
+      type="button"
+      class="back-to-top"
+      :class="{ 'is-visible': showTopBtn }"
+      @click="scrollToTop"
+      aria-label="Back to top"
+    >
+      <svg
+        class="w-5 h-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+    </button>
   </div>
 </template>
 
 <script setup>
-import { useWindowScroll, useWindowSize, useDebounceFn } from '@vueuse/core'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useWindowScroll, useWindowSize, useDebounceFn } from "@vueuse/core";
+import { useRoute, useNuxtApp } from "#app";
 
-const { y } = useWindowScroll()
-const { height: viewportHeight } = useWindowSize()
+const { y } = useWindowScroll();
+const { height: viewportHeight } = useWindowSize();
+const nuxtApp = useNuxtApp();
 
-// Full document height changes as images load and sections mount, so it can't
-// be captured once — recompute it on resize and on a debounced scroll tick.
-const docHeight = ref(0)
-
+// Document height calculation
+const docHeight = ref(0);
 const measure = () => {
-  docHeight.value = document.documentElement.scrollHeight
-}
-
-const debouncedMeasure = useDebounceFn(measure, 100)
+  docHeight.value = document.documentElement.scrollHeight;
+};
+const debouncedMeasure = useDebounceFn(measure, 100);
 
 onMounted(() => {
-  measure()
-  // Late-loading imagery changes the page height after mount; observing the
-  // body keeps the tracer honest without polling.
-  const observer = new ResizeObserver(debouncedMeasure)
-  observer.observe(document.body)
-  onBeforeUnmount(() => observer.disconnect())
-})
+  measure();
+  const observer = new ResizeObserver(debouncedMeasure);
+  observer.observe(document.body);
+  onBeforeUnmount(() => observer.disconnect());
+});
 
-watch(viewportHeight, measure)
+watch(viewportHeight, measure);
 
-// The only dark backdrop is the homepage's sticky hero carousel, which owns
-// roughly the first viewport. `fullBleed` is the same flag the layout uses to
-// decide a page runs edge-to-edge, so it identifies hero pages without this
-// component needing to know about routes.
-const route = useRoute()
-
+// Dark mode check for hero section overlap
+const route = useRoute();
 const onDark = computed(
-  () => route.meta.fullBleed === true && y.value < viewportHeight.value * 0.85,
-)
+  () => route.meta.fullBleed === true && y.value < viewportHeight.value * 0.85
+);
 
+// Scroll progress calculation (0 to 100)
 const progress = computed(() => {
-  const scrollable = docHeight.value - viewportHeight.value
-  if (scrollable <= 0) return 0
-  return Math.min(100, Math.max(0, (y.value / scrollable) * 100))
-})
+  const scrollable = docHeight.value - viewportHeight.value;
+  if (scrollable <= 0) return 0;
+  return Math.min(100, Math.max(0, (y.value / scrollable) * 100));
+});
+
+// Show the Back to Top button only after scrolling down one viewport height
+const showTopBtn = computed(() => y.value > viewportHeight.value * 0.5);
+
+// Smooth scroll to top using Lenis if available, fallback to native
+const scrollToTop = () => {
+  if (nuxtApp.$lenis) {
+    nuxtApp.$lenis.scrollTo(0, { immediate: false, duration: 1.2 });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+};
 </script>
 
 <style scoped>
 .scroll-tracer {
   position: fixed;
   top: 0;
-  right: 14px;
+  right: 12px;
   bottom: 0;
-  width: 2px;
+  width: 48px;
+  /* Widened to contain the button */
   z-index: 60;
   pointer-events: none;
+  /* Let clicks pass through the container... */
 }
 
-/* The unread track — barely there, just enough to imply a path. */
+/* ─── The Sewing Track ─── */
+.scroll-tracer__track {
+  position: absolute;
+  top: 0;
+  bottom: 85px;
+  /* Stop before the button */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+}
+
+/* Unread Track: Faint dashed guideline */
 .scroll-tracer__rail {
   position: absolute;
   inset: 0;
-  width: 1px;
-  margin: 0 auto;
-  background: linear-gradient(
+  width: 2px;
+  /* Dashed gradient to mimic a stitch path */
+  background-image: linear-gradient(
     to bottom,
-    transparent 0%,
-    rgba(20, 46, 83, 0.18) 12%,
-    rgba(20, 46, 83, 0.18) 88%,
-    transparent 100%
+    rgba(39, 66, 87, 0.2) 50%,
+    transparent 50%
   );
+  background-size: 2px 14px;
 }
 
-/* The read portion, in brand navy, fading in from the top. */
+/* Read Track: Mustard Gold thread */
 .scroll-tracer__trail {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  width: 1.5px;
-  margin: 0 auto;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    var(--color-navy-400) 40%,
-    var(--color-navy-500) 100%
-  );
+  width: 2px;
+  background-image: linear-gradient(to bottom, #e8b938 50%, transparent 50%);
+  background-size: 2px 14px;
 }
 
-/* The head of the trail. Two shadows: a tight ring and a wide glow. */
+/* The Needle / Knot */
 .scroll-tracer__dot {
   position: absolute;
   left: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #fff;
-  transform: translate(-50%, -50%);
-  box-shadow:
-    0 0 0 2px var(--color-navy-500),
-    0 0 12px 2px rgba(20, 46, 83, 0.5),
-    0 0 24px 6px rgba(20, 46, 83, 0.25);
+  width: 4px;
+  height: 18px;
+  /* Elongated to look like a needle weaving the thread */
+  border-radius: 4px;
+  background: #e8b938;
+  transform: translate(-50%, -100%);
+  box-shadow: 0 2px 8px rgba(39, 66, 87, 0.5);
 }
 
-/* Over the dark hero carousel the navy rail is invisible, so lift the whole
-   tracer to white while the page is still on the hero. */
+/* ─── Over Dark Backgrounds (Hero Section) ─── */
 .scroll-tracer--on-dark .scroll-tracer__rail {
-  background: linear-gradient(
+  background-image: linear-gradient(
     to bottom,
-    transparent 0%,
-    rgba(255, 255, 255, 0.22) 12%,
-    rgba(255, 255, 255, 0.22) 88%,
-    transparent 100%
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 50%
   );
 }
 
 .scroll-tracer--on-dark .scroll-tracer__trail {
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 255, 255, 0.7) 40%,
-    #fff 100%
-  );
+  background-image: linear-gradient(to bottom, #ffffff 50%, transparent 50%);
 }
 
 .scroll-tracer--on-dark .scroll-tracer__dot {
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.9),
-    0 0 12px 2px rgba(255, 255, 255, 0.6),
-    0 0 24px 6px rgba(255, 255, 255, 0.3);
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* Colour swap shouldn't snap when the hero scrolls away. */
-.scroll-tracer__rail,
+/* ─── Back to Top Button ─── */
+.back-to-top {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  /* Matches your reference image: Gold core, heavy dark ring */
+  background-color: #948fc8;
+  border: 4px solid #142e53;
+  color: #142e53;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* ...re-enable clicks for the button specifically */
+  pointer-events: auto;
+  cursor: pointer;
+
+  /* Hidden state */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(15px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.back-to-top:hover {
+  background-color: #f1ca58;
+  transform: translateX(-50%) translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 20px -5px rgba(20, 46, 83, 0.3);
+}
+
+/* ─── Transitions & Hardware Acceleration ─── */
 .scroll-tracer__trail,
 .scroll-tracer__dot {
-  transition-property: height, top, background, box-shadow;
-  transition-duration: 120ms, 120ms, 400ms, 400ms;
-  transition-timing-function: linear, linear, ease, ease;
+  transition-property: height, top, background-image, background, box-shadow;
+  transition-duration: 120ms, 120ms, 400ms, 400ms, 400ms;
+  transition-timing-function: linear, linear, ease, ease, ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -153,10 +227,18 @@ const progress = computed(() => {
   .scroll-tracer__dot {
     transition: none;
   }
+
+  .back-to-top {
+    transition: opacity 0.2s;
+    transform: translateX(-50%);
+  }
+
+  .back-to-top:hover {
+    transform: translateX(-50%);
+  }
 }
 
-/* Touch devices scroll without a visible scrollbar anyway — the tracer is
-   desktop chrome, and on narrow screens it just crowds the edge. */
+/* Hide on touch devices — they handle their own scrollbars/momentum natively */
 @media (max-width: 640px) {
   .scroll-tracer {
     display: none;
