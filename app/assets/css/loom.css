@@ -12,6 +12,11 @@
   --fs-m: clamp(1.75rem, 1rem + 3vw, 3.75rem);
   --fs-body-l: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
   --gutter: max(16px, 4vw);
+
+  /* The yarn — light greens, mirrored in lib/loom/stage.ts. */
+  --loom-thread-pale: #c4e4cf;
+  --loom-thread: #86c09c;
+  --loom-thread-deep: #6fae88;
 }
 
 /* ── Lenis (desktop smooth scroll) ───────────────────────── */
@@ -321,8 +326,8 @@ html.lenis {
 
 .loom-poster__thread {
   fill: none;
-  stroke: var(--gold);
-  stroke-width: 2.2;
+  stroke: var(--loom-thread);
+  stroke-width: 2.6;
 }
 
 .loom-poster__thread--bold {
@@ -337,7 +342,7 @@ html.lenis {
 }
 
 .loom-poster__fibre {
-  stroke: var(--gold-soft);
+  stroke: var(--loom-thread-pale);
   stroke-width: 3;
   opacity: 0.55;
 }
@@ -361,7 +366,7 @@ html.lenis {
 
 /* Pattern cells are green; the ghost rect (future capacity) shows them at 14%. */
 #loomPlainWeave rect {
-  fill: var(--navy);
+  fill: var(--loom-thread);
   stroke: none;
 }
 
@@ -381,7 +386,7 @@ html.lenis {
 }
 
 .loom-poster__sun {
-  fill: var(--gold);
+  fill: var(--loom-thread-pale);
   stroke: none;
 }
 
@@ -394,18 +399,41 @@ html.lenis {
 
 .loom-poster__node {
   fill: none;
-  stroke: var(--gold);
+  stroke: var(--loom-thread-deep);
   stroke-width: 2;
 }
 
 .loom-poster__ply-navy {
   fill: none;
-  stroke: var(--navy-tint);
+  stroke: var(--loom-thread-deep);
   stroke-width: 3;
 }
 
 .loom-poster--ply .loom-poster__thread {
   stroke-width: 3;
+}
+
+/* Same depth cue as the 3D cast shadow: the pale yarn floats above the page.
+   On the <svg> root — Chrome ignores CSS filter functions on inner shapes. */
+.loom-poster {
+  filter: drop-shadow(-4px 10px 6px rgb(20 83 45 / 0.14));
+}
+
+/* While posters stand in for WebGL, they breathe. Never under reduced motion,
+   and never once the stage is live — anchored 3D reads their position. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.loom-live) .loom-poster {
+    animation: loom-poster-float 7s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes loom-poster-float {
+  from {
+    translate: 0 -5px;
+  }
+  to {
+    translate: 0 5px;
+  }
 }
 
 /* Once WebGL is drawing, it replaces the posters (boot only on full tier). */

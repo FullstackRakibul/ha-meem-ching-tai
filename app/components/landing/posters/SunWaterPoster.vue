@@ -15,9 +15,9 @@ const node = { cx: (RECOVERY_NODE[0] * 100).toFixed(2), cy: (-RECOVERY_NODE[1] *
     preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <defs>
       <radialGradient id="loomSunGlow">
-        <stop offset="0" stop-color="#1f6b3c" stop-opacity="0.35" />
-        <stop offset="0.45" stop-color="#1f6b3c" stop-opacity="0.1" />
-        <stop offset="1" stop-color="#1f6b3c" stop-opacity="0" />
+        <stop offset="0" stop-color="#86c09c" stop-opacity="0.5" />
+        <stop offset="0.45" stop-color="#86c09c" stop-opacity="0.16" />
+        <stop offset="1" stop-color="#86c09c" stop-opacity="0" />
       </radialGradient>
     </defs>
     <circle cx="0" cy="-34" r="34" fill="url(#loomSunGlow)" stroke="none" />
