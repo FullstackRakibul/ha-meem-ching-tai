@@ -1,27 +1,25 @@
 <!-- AppFooter.vue -->
 <template>
-  <footer id="contact" class="footer-root relative w-full  overflow-hidden">
+  <footer id="contact" class="footer-root relative w-full overflow-hidden">
     <!-- ================= Background Art Layer ================= -->
     <!-- Bottom-anchored garment line-art with gradient fade overlay -->
     <div class="footer-bg" aria-hidden="true" />
     <div class="footer-gradient" aria-hidden="true" />
 
     <!-- ================= Content Layer ================= -->
-    <div class="relative z-10 ">
+    <div class="relative z-10">
       <UContainer>
         <!-- 3-Column Grid -->
-        <div class="h-screen grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pt-16 pb-24 md:pt-20 md:pb-32">
-
+        <div
+          class="h-screen grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pt-16 pb-24 md:pt-20 md:pb-32"
+        >
           <!-- Column 1 — Brand -->
           <div class="col-brand">
-            <h3 class="footer-brand-name">
-              HA-MEEM<br />CHING TAI
-            </h3>
+            <h3 class="footer-brand-name">HA-MEEM<br />CHING TAI</h3>
             <div class="footer-brand-rule" />
             <p class="footer-brand-mission">
-              For decades, mills waited on imports. We built the alternative
-              in Bangladesh — pocketing, interlining, lining and waistband,
-              made where the garments are.
+              For decades, mills waited on imports. We built the alternative in Bangladesh
+              — pocketing, interlining, lining and waistband, made where the garments are.
             </p>
           </div>
 
@@ -44,7 +42,9 @@
                 <div>
                   <span class="footer-contact-label">Head Office</span>
                   <!-- TODO(confirm: head-office address to publish alongside CT sales contacts) -->
-                  <span class="footer-contact-text">Times Media Bhaban, 387 Tejgaon I/A, Dhaka 1208</span>
+                  <span class="footer-contact-text"
+                    >Times Media Bhaban, 387 Tejgaon I/A, Dhaka 1208</span
+                  >
                 </div>
               </li>
               <!-- Phone -->
@@ -57,7 +57,10 @@
               <!-- Email -->
               <li>
                 <UIcon name="heroicons:envelope" class="footer-icon" />
-                <a href="mailto:sharif.ershad@ctcloth.hk" class="footer-contact-text footer-link">
+                <a
+                  href="mailto:sharif.ershad@ctcloth.hk"
+                  class="footer-contact-text footer-link"
+                >
                   sharif.ershad@ctcloth.hk
                 </a>
               </li>
@@ -70,9 +73,16 @@
 
             <!-- Social Icons -->
             <div class="footer-social-row">
-              <a v-for="social in socials" :key="social.label" :href="social.href" :aria-label="social.label"
-                target="_blank" rel="noopener noreferrer" class="footer-social-icon">
-                <UIcon :name="social.icon" class="size-[18px]" />
+              <a
+                v-for="social in socials"
+                :key="social.label"
+                :href="social.href"
+                :aria-label="social.label"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-social-icon"
+              >
+                <UIcon :name="social.icon" class="size-4.5" />
               </a>
             </div>
 
@@ -88,7 +98,6 @@
               </a>
             </div>
           </div>
-
         </div>
       </UContainer>
 
@@ -97,7 +106,8 @@
         <UContainer>
           <div class="footer-bottom-inner">
             <p class="footer-copyright">
-              &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories Ltd.
+              &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp;
+              Accessories Ltd.
             </p>
             <div class="footer-legal-links">
               <a href="#">Privacy</a>
@@ -114,7 +124,11 @@
 // TODO(confirm: real HCTPAL LinkedIn/Facebook profile URLs, then re-add them here.
 // Generic platform homepages were removed rather than shipped as our profiles.)
 const socials = [
-  { label: "Email Us", icon: "heroicons:envelope", href: "mailto:sharif.ershad@ctcloth.hk" },
+  {
+    label: "Email Us",
+    icon: "heroicons:envelope",
+    href: "mailto:sharif.ershad@ctcloth.hk",
+  },
 ];
 </script>
 
@@ -130,10 +144,11 @@ const socials = [
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image: url('~/assets/img/HCTPAL.svg');
+  background-image: url("~/assets/img/HCTPAL.svg");
   background-position: bottom center;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: #1d3426;
 }
 
 @media (max-width: 768px) {
@@ -148,18 +163,20 @@ const socials = [
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: linear-gradient(to bottom,
-      #f5f5f0 0%,
-      #f5f5f0 25%,
-      rgba(245, 245, 240, 0.92) 40%,
-      rgba(245, 245, 240, 0.6) 60%,
-      rgba(245, 245, 240, 0.25) 78%,
-      rgba(245, 245, 240, 0) 100%);
+  background: linear-gradient(
+    to bottom,
+    #f5f5f0 0%,
+    #f5f5f0 25%,
+    rgba(245, 245, 240, 0.92) 40%,
+    rgba(245, 245, 240, 0.6) 60%,
+    rgba(245, 245, 240, 0.25) 78%,
+    rgba(245, 245, 240, 0) 100%
+  );
 }
 
 /* ─── Brand Column ─── */
 .footer-brand-name {
-  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-family: var(--font-serif, "Playfair Display", Georgia, serif);
   font-size: clamp(1.5rem, 2.2vw, 2rem);
   font-weight: 500;
   line-height: 1.15;
