@@ -1,49 +1,58 @@
 <!-- components/landing/IntroSection.vue -->
 <script setup lang="ts">
-defineProps<{
-  servicePoints: string[]
-}>()
+/**
+ * Scene 02 — Index (night). The product lines as an OS process table.
+ * Deliberately still: the yarn from the boot scene holds in place behind it.
+ * Only motion: copy blocks wipe in as they reach the reading area.
+ */
+import { trackPresence } from "~/composables/useLoomStage";
+
+defineProps<{ servicePoints: string[] }>();
+
+const { t } = useLocale();
+const section = ref<HTMLElement | null>(null);
+
+useScrollScene(section, (ctx) => {
+  if (ctx.mode !== "reduced") trackPresence(ctx.ScrollTrigger, ctx.root, "index");
+  revealBlocks(ctx);
+});
 </script>
 
 <template>
-  <section id="studio">
-    <div class="editorial-intro" data-reveal>
-      <div class="editorial-intro__collage">
-        <div class="intro-image intro-image--main" data-parallax="0.04">
-          <img src="https://api.hameemgroup.com:9012/Resources/HCTPALc/HameemChingTai40.jpeg"
-            alt="Textile weaving loom at HCTPAL factory" />
-        </div>
-        <div class="intro-image intro-image--small" data-parallax="-0.03">
-          <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai34.jpeg"
-            alt="Close-up of woven interlining and pocketing fabric" />
+  <section
+    id="studio"
+    ref="section"
+    class="loom-night loom-grain loom-index"
+    data-chapter="index"
+  >
+    <div class="loom-layer loom-wrap loom-index__grid">
+      <div class="flex flex-col gap-8" data-reveal-block>
+        <p class="loom-label loom-muted">
+          <span class="loom-gold">02</span>{{ t("navIndex") }}
+        </p>
+        <h2 class="loom-display loom-display--m">{{ t("introTitle") }}</h2>
+        <p class="loom-body loom-muted max-w-[52ch]">{{ t("introBody") }}</p>
+        <a class="loom-ghost self-start" href="#why-matters">{{ t("introCta") }}</a>
+        <div class="loom-plate mt-4 hidden aspect-4/3 lg:block">
+          <img
+            src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai40.jpeg"
+            :alt="t('introImageAlt')"
+            loading="lazy"
+            decoding="async"
+            width="800"
+            height="600"
+          />
         </div>
       </div>
 
-      <div class="editorial-intro__copy">
-        <h2>Built to Strengthen Bangladesh's Manufacturing Future</h2>
-        <div>
-          <p>
-            Ha-Meem Ching Tai Pocketing &amp; Accessories Ltd. (HCTPAL) manufactures pocketing,
-            interlining, lining and waistband in Narsingdi, Bangladesh — produced locally on
-            advanced weaving technology and imported machinery.
-          </p>
-          <a class="tiny-link" href="#why-matters">
-            <span>Why It Matters</span>
-            <i>
-              <svg width="12" height="12" viewBox="0 0 20 20">
-                <path d="M3 10h13M11 5l5 5-5 5" />
-              </svg>
-            </i>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <div class="service-ticker" aria-hidden="true">
-      <div>
-        <span v-for="(point, i) in [...servicePoints, ...servicePoints]" :key="i">
-          <i>/</i> {{ point }}
-        </span>
+      <div data-reveal-block>
+        <p class="loom-label loom-muted mb-4">{{ t("introTableLabel") }}</p>
+        <ol class="loom-table loom-body-l">
+          <li v-for="(point, i) in servicePoints" :key="i">
+            <span class="loom-label loom-gold">{{ String(i + 1).padStart(2, "0") }}</span>
+            <span>{{ point }}</span>
+          </li>
+        </ol>
       </div>
     </div>
   </section>

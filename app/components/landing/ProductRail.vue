@@ -1,96 +1,35 @@
 <!-- components/landing/ProductRail.vue -->
 <script setup lang="ts">
-import { ref } from 'vue'
-
+/**
+ * Scene 07 — Catalogue (day). Deliberately motionless: after the pinned
+ * theatre, stillness is the edit. A native scroll-snap rail on small
+ * screens (keyboard-scrollable, no drag JS), a plain grid on wide ones.
+ */
 defineProps<{
-  title: string
-  items: Array<[string, string, string]>
-  tone?: string
-  variant?: string
-}>()
+  title: string;
+  items: Array<[string, string, string]>;
+}>();
 
-const trackRef = ref<HTMLDivElement | null>(null)
-const isDragging = ref(false)
-let startX = 0
-let startOffset = 0
-
-const beginDrag = (event: PointerEvent) => {
-  if (event.pointerType === 'mouse' && event.button !== 0) return
-  const track = trackRef.value
-  if (!track) return
-
-  const offset = Number(track.dataset.dragOffset || 0)
-  startX = event.clientX
-  startOffset = offset
-  isDragging.value = true
-  track.style.animationPlayState = 'paused'
-  ;(event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId)
-}
-
-const drag = (event: PointerEvent) => {
-  if (!isDragging.value || !trackRef.value) return
-  event.preventDefault()
-  const offset = startOffset + event.clientX - startX
-  trackRef.value.dataset.dragOffset = String(offset)
-  trackRef.value.style.translate = `${offset}px`
-}
-
-const endDrag = (event: PointerEvent) => {
-  if (!isDragging.value) return
-  isDragging.value = false
-  if (trackRef.value) {
-    trackRef.value.style.removeProperty('animation-play-state')
-  }
-  const el = event.currentTarget as HTMLElement
-  if (el.hasPointerCapture?.(event.pointerId)) {
-    el.releasePointerCapture(event.pointerId)
-  }
-}
+const { t } = useLocale();
 </script>
 
 <template>
-  <section
-    :class="['product-strip', `product-strip--${tone || 'cream'}`, `product-strip--${variant || 'product'}`]"
-    data-reveal
-  >
-    <div class="product-strip__heading page-gutter">
-      <h2>{{ title }}</h2>
-      <p>Drag to explore <span>→</span></p>
+  <section class="loom-day loom-catalogue" data-chapter="catalogue" aria-labelledby="catalogue-title">
+    <div class="loom-wrap mb-8 flex flex-wrap items-end justify-between gap-4">
+      <h2 id="catalogue-title" class="loom-display loom-display--m">{{ title }}</h2>
+      <p class="loom-label loom-muted xl:hidden" aria-hidden="true">{{ t("catalogueHint") }} →</p>
     </div>
 
-    <div
-      :class="['product-rail', { 'is-dragging': isDragging }, 'hide-native-cursor']"
-      aria-label="Product rail"
-      data-cursor-text="DRAG"
-      @pointerdown="beginDrag"
-      @pointermove="drag"
-      @pointerup="endDrag"
-      @pointercancel="endDrag"
-    >
-      <div ref="trackRef" class="product-rail__track">
-        <div v-for="copy in 3" :key="copy" class="product-rail__group" :aria-hidden="copy !== 1">
-          <article v-for="([name, meta, image], idx) in items" :key="`${name}-${idx}`" class="product-tile">
-            <div class="product-tile__image">
-              <img :src="image" :alt="name" draggable="false" />
-              <span>{{ String(idx + 1).padStart(2, '0') }}</span>
-            </div>
-            <div class="product-tile__meta">
-              <p>{{ name }}</p>
-              <p>{{ meta }}</p>
-            </div>
-          </article>
+    <div class="loom-rail" tabindex="0" :aria-label="title">
+      <article v-for="([name, meta, image], idx) in items" :key="`${name}-${idx}`">
+        <figure>
+          <img :src="image" :alt="name" loading="lazy" decoding="async" width="600" height="600" />
+        </figure>
+        <div class="flex justify-between gap-3 border-b border-(--line) py-3">
+          <p class="font-semibold">{{ name }}</p>
+          <p class="text-right text-gray-600">{{ meta }}</p>
         </div>
-      </div>
+      </article>
     </div>
   </section>
 </template>
-
-<style scoped>
-/* Hides the default mouse cursor so only your custom one shows */
-.hide-native-cursor {
-  cursor: none !important;
-}
-.hide-native-cursor * {
-  cursor: none !important; 
-}
-</style>

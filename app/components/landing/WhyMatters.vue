@@ -1,145 +1,100 @@
 <!-- components/landing/WhyMatters.vue -->
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+/**
+ * Scene 03 — The Short Thread (night). The site's signature move.
+ *
+ * The yarn's length stands for lead time. Pinned for 120% of a viewport, the
+ * long import loop contracts — scrubbed to scroll — into one short straight
+ * stitch between "Imported" and "Made in Ghorashal". The words never move;
+ * only the thread does. No lead-time number is shown because none is
+ * published: the claim is carried by the comparison, not by a statistic.
+ *
+ * Pinning is the one justified scroll-coupled scene besides the collections
+ * theatre. It never intercepts the wheel — ScrollTrigger pins against the
+ * real scroll position, so anchors and the scrollbar stay truthful.
+ */
+import ShortThreadPoster from "~/components/landing/posters/ShortThreadPoster.vue";
+import { setUniform, trackPresence } from "~/composables/useLoomStage";
+import { EASE, SCRUB } from "~/utils/motion";
 
-// Process content
-const cards = [
-  {
-    number: "01",
-    title: "Reducing Lead Time",
-    text:
-      "Fabrics are mostly local, but imported accessories delay production. Making them at home closes the gap.",
-  },
-  {
-    number: "02",
-    title: "Saving Foreign Currency",
-    text:
-      "Lower import dependency keeps earnings inside Bangladesh, strengthening the national economy.",
-  },
-  {
-    number: "03",
-    title: "Integrated Supply Chain",
-    text:
-      "One step toward a fully integrated backward linkage chain — from raw fiber to finished garment accessory.",
-  },
-  {
-    number: "04",
-    title: "Export Growth",
-    text:
-      "Faster turnarounds increase buyers' confidence in placing export orders with Bangladesh.",
-  },
-];
+const { t } = useLocale();
+const section = ref<HTMLElement | null>(null);
+const stage = ref<HTMLElement | null>(null);
 
-// Intersection Observer for fast-loading scroll animations
-const sectionRef = ref<HTMLElement | null>(null);
-const isVisible = ref(false);
-let observer: IntersectionObserver;
+const cards = computed(() => [
+  { number: "01", title: t("why1Title"), text: t("why1Text") },
+  { number: "02", title: t("why2Title"), text: t("why2Text") },
+  { number: "03", title: t("why3Title"), text: t("why3Text") },
+  { number: "04", title: t("why4Title"), text: t("why4Text") },
+]);
 
-onMounted(() => {
-  observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry?.isIntersecting) {
-        isVisible.value = true;
-        observer.disconnect(); // Only animate once
-      }
-    },
-    { threshold: 0.15 } // Triggers when 15% of section is visible
-  );
+useScrollScene(section, (ctx) => {
+  const { gsap, ScrollTrigger, mode, root } = ctx;
+  revealBlocks(ctx);
+  if (mode === "reduced" || !stage.value) return;
+  trackPresence(ScrollTrigger, root, "why");
 
-  if (sectionRef.value) {
-    observer.observe(sectionRef.value);
-  }
-});
-
-onUnmounted(() => {
-  if (observer) observer.disconnect();
+  const thread = { morph: 0 };
+  const pinned = mode === "full";
+  gsap.to(thread, {
+    morph: 1,
+    ease: EASE.scrub,
+    onUpdate: () => setUniform("morph", thread.morph),
+    scrollTrigger: pinned
+      ? { trigger: stage.value, start: "top top", end: "+=120%", pin: true, scrub: SCRUB }
+      : { trigger: stage.value, start: "top 70%", end: "bottom 40%", scrub: SCRUB },
+  });
+  return () => setUniform("morph", 0);
 });
 </script>
 
 <template>
-  <!--
-    Theme mapped:
-    var(--warm-ivory) -> bg-[#F5F2EB]
-    var(--rust) -> text-[#C25934]
-  -->
-  <section id="why-matters" ref="sectionRef" class="relative overflow-hidden bg-[#F5F2EB] py-20 md:py-28 lg:py-40">
-    <!-- Header Reveal -->
-    <div class="mb-12 px-4 sm:mb-16 lg:mb-20 lg:px-10 transition-all duration-1000 ease-out transform"
-      :class="isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'">
-      <p class="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#C25934] mb-4">
-        Why It Matters
-      </p>
-      <!-- Assuming generic serif font, apply your var(--font-serif) via Tailwind config -->
-      <h2
-        class="font-serif text-[clamp(28px,4vw,64px)] font-normal tracking-[-0.04em] leading-none text-gray-900 max-w-225">
-        Lead time is the industry's weakness. <br class="hidden md:block" />This is the
-        answer.
-      </h2>
+  <section
+    id="why-matters"
+    ref="section"
+    class="loom-night loom-grain"
+    data-chapter="why"
+  >
+    <div ref="stage" class="loom-layer loom-wrap loom-why__stage">
+      <header class="flex flex-col gap-6">
+        <p class="loom-label loom-muted">
+          <span class="loom-gold">03</span>{{ t("whyEyebrow") }}
+        </p>
+        <h2 class="loom-display loom-display--m max-w-[24ch]">{{ t("whyHeadline") }}</h2>
+      </header>
+
+      <div class="loom-why__band">
+        <div class="loom-why__word loom-why__word--long">
+          <p class="loom-display loom-display--m loom-muted">{{ t("whyLongLabel") }}</p>
+          <p class="loom-body loom-muted max-w-[28ch]">{{ t("whyLongNote") }}</p>
+        </div>
+        <div class="loom-why__track" aria-hidden="true">
+          <ShortThreadPoster />
+        </div>
+        <div class="loom-why__word loom-why__word--short">
+          <p class="loom-display loom-display--m loom-gold">{{ t("whyShortLabel") }}</p>
+          <p class="loom-body max-w-[28ch]">{{ t("whyShortNote") }}</p>
+        </div>
+      </div>
     </div>
 
-    <!-- Scroll Track with 'group' for the hover-defocus effect -->
-    <div class="group flex gap-1 px-4 lg:px-10 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-8"
-      style="-ms-overflow-style: none; scrollbar-width: none">
-      <article v-for="(card, index) in cards" :key="card.number"
-        class="group/card relative flex-[0_0_clamp(280px,28vw,420px)] snap-start p-[clamp(28px,3vw,48px)] border border-gray-300/50 bg-black/2 transition-all duration-500 ease-out hover:-translate-y-2 hover:border-transparent group-hover:opacity-50 hover:opacity-100! cursor-pointer overflow-hidden transform"
-        :class="isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'"
-        :style="{ transitionDelay: `${isVisible ? index * 150 : 0}ms` }">
-        <!-- Animated gradient border (draws in on hover) -->
-        <span aria-hidden="true"
-          class="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 group-hover/card:opacity-100 motion-reduce:transition-none"
-          style="
-            padding: 1px;
-            background: linear-gradient(120deg, transparent, #c25934, transparent);
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            mask-composite: exclude;
-          "></span>
-
-        <!-- Hover glow that eases in from the corner -->
-        <div aria-hidden="true"
-          class="pointer-events-none absolute -inset-px -z-10 opacity-0 transition-opacity duration-700 ease-out group-hover/card:opacity-100 motion-reduce:transition-none"
-          style="
-            background: radial-gradient(
-              120% 120% at 100% 0%,
-              rgba(194, 89, 52, 0.1),
-              transparent 60%
-            );
-          "></div>
-
-        <!-- Background decorative process line -->
-        <div
-          class="absolute top-[clamp(28px,3vw,48px)] left-0 w-full h-px bg-linear-to-r from-transparent via-[#C25934]/20 to-transparent -z-10">
-        </div>
-
-        <!-- Number (Rust colored) -->
-        <p class="text-[10px] font-semibold tracking-widest text-[#C25934] mb-[clamp(20px,3vw,40px)]">
-          {{ card.number }}
-        </p>
-
-        <!-- Title -->
-        <h3
-          class="font-serif text-[clamp(22px,2.4vw,36px)] font-normal tracking-[-0.03em] leading-[1.1] text-gray-900 mb-4">
-          {{ card.title }}
-        </h3>
-
-        <!-- Text -->
-        <p class="text-[13px] leading-[1.55] text-gray-600/80">
-          {{ card.text }}
-        </p>
-
-        <!-- Bottom accent line -->
-        <div
-          class="absolute bottom-0 left-0 w-full h-0.5 bg-[#C25934] scale-x-0 origin-left transition-transform duration-500 ease-out group-hover/card:scale-x-100 motion-reduce:transition-none">
-        </div>
+    <div class="loom-layer loom-wrap loom-why__cards">
+      <article v-for="card in cards" :key="card.number" data-reveal-block>
+        <p class="loom-label loom-gold">{{ card.number }}</p>
+        <h3 class="text-xl font-bold">{{ card.title }}</h3>
+        <p class="loom-body loom-muted">{{ card.text }}</p>
       </article>
     </div>
 
     <!-- Interactive Scroll Hint (Only visible on desktop) -->
-    <div class="hidden lg:flex items-center gap-3 px-10 mt-8 transition-opacity duration-1000 delay-800"
-      :class="isVisible ? 'opacity-100' : 'opacity-0'">
+    <div
+      class="hidden lg:flex items-center gap-3 px-10 mt-8 transition-opacity duration-1000 delay-800"
+      :class="isVisible ? 'opacity-100' : 'opacity-0'"
+    >
       <div class="w-12 h-px bg-gray-400"></div>
-      <span class="text-[10px] uppercase tracking-widest text-gray-500 font-medium">Drag to explore</span>
+      <span class="text-[10px] uppercase tracking-widest text-gray-500 font-medium"
+        >Drag to explore</span
+      >
     </div>
   </section>
 </template>

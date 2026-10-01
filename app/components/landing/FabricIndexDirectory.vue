@@ -155,268 +155,353 @@ const catalogData = [
 const displayedFabrics = computed(() => {
   return catalogData.filter((item) => item.type === activeCategory.value);
 });
+
+const activeIndex = computed(() =>
+  categories.findIndex((c) => c.id === activeCategory.value)
+);
+
+// Weight bars are scaled against the heaviest article in the whole catalog,
+// so bars stay comparable when switching weight class.
+const maxWeight = Math.max(...catalogData.map((f) => Number(f.weight)));
+const weightPct = (w: string) => `${(Number(w) / maxWeight) * 100}%`;
+
+const weightRange = computed(() => {
+  const weights = displayedFabrics.value.map((f) => Number(f.weight));
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  return min === max ? `${min}` : `${min}–${max}`;
+});
+
+// Arrow keys move between tabs, per the WAI-ARIA tabs pattern.
+const tabRefs = ref<HTMLButtonElement[]>([]);
+const onTabKey = (e: KeyboardEvent) => {
+  const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+  if (!step) return;
+  e.preventDefault();
+  const next = (activeIndex.value + step + categories.length) % categories.length;
+  activeCategory.value = categories[next]!.id;
+  tabRefs.value[next]?.focus();
+};
+
+const columns = [
+  { label: "Art #" },
+  { label: "Weaving" },
+  { label: "Weight", unit: "g/m²" },
+  { label: "Yarn Count" },
+  { label: "Density" },
+  { label: "Content" },
+  { label: "Width" },
+];
 </script>
 
 <template>
-  <section class="fabric-index" data-reveal>
-    <div class="fabric-index__container page-gutter">
+  <section class="loom-day overflow-hidden py-[clamp(80px,10vw,150px)]" data-reveal>
+    <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 bg-[radial-gradient(rgb(20_83_45/0.1)_1px,transparent_1px)] bg-size-[22px_22px] mask-[linear-gradient(to_bottom,black,transparent_60%)]"
+    />
+
+    <div class="page-gutter relative mx-auto max-w-350">
       <!-- Section Header -->
-      <div class="fabric-index__header">
-        <div class="fabric-index__title-group">
-          <p class="fabric-index__eyebrow">Technical Specifications</p>
-          <h2 class="fabric-index__title">Fabric Index Directory</h2>
+      <div class="mb-10 grid gap-6 md:mb-14 lg:grid-cols-12 lg:items-end">
+        <div class="lg:col-span-7">
+          <p
+            class="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-(--navy)"
+          >
+            <span class="h-px w-8 bg-(--navy)" aria-hidden="true" />
+            Technical Specifications
+          </p>
+          <h2
+            class="font-serif text-[clamp(32px,4.4vw,64px)] font-normal leading-[1.02] tracking-[-0.03em] text-(--navy)"
+          >
+            Fabric Index <span class="loom-serif text-(--gold)">Directory</span>
+          </h2>
         </div>
-        <p class="fabric-index__description">
-          Engineered to precise tolerances. Explore our export-quality pocketing and
-          lining configurations sorted by weight class.
-        </p>
+
+        <div class="lg:col-span-5 lg:justify-self-end">
+          <p class="max-w-md text-sm leading-relaxed text-(--muted)">
+            Engineered to precise tolerances. Explore our export-quality pocketing and
+            lining configurations sorted by weight class.
+          </p>
+        </div>
       </div>
 
-      <!-- Interactive Category Toggles -->
-      <div class="fabric-index__controls">
-        <button
-          v-for="cat in categories"
-          :key="cat.id"
-          class="category-btn"
-          :class="{ 'is-active': activeCategory === cat.id }"
-          @click="activeCategory = cat.id"
+      <!-- One panel: toolbar (tabs + summary) over the spec table -->
+      <div
+        class="overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-30px_rgb(20_83_45/0.25)] ring-1 ring-(--line)"
+      >
+        <div
+          class="flex flex-col gap-4 border-b border-(--line) p-3 sm:p-4 md:flex-row md:items-center md:justify-between"
         >
-          <span class="category-btn__label">{{ cat.label }}</span>
-          <span class="category-btn__badge">{{ cat.badge }}</span>
-        </button>
-      </div>
+          <!-- Weight-class tabs: one sliding indicator under three equal columns -->
+          <div
+            role="tablist"
+            aria-label="Weight class"
+            class="relative grid w-full grid-cols-3 rounded-full bg-(--paper-soft) p-1 ring-1 ring-(--line) md:w-auto md:min-w-150"
+            @keydown="onTabKey"
+          >
+            <span
+              aria-hidden="true"
+              class="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-(--navy) shadow-[0_6px_16px_-6px_rgb(20_83_45/0.6)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"
+              :style="{ transform: `translateX(${activeIndex * 100}%)` }"
+            />
+            <!--
+              The global `button` reset in main.css is unlayered, so it beats
+              Tailwind utilities for color / padding / background on <button>.
+              All of those live on the inner span instead.
+            -->
+            <button
+              v-for="(cat, i) in categories"
+              :key="cat.id"
+              :ref="(el) => { if (el) tabRefs[i] = el as HTMLButtonElement }"
+              type="button"
+              role="tab"
+              :aria-selected="activeCategory === cat.id"
+              aria-controls="fabric-index-panel"
+              :tabindex="activeCategory === cat.id ? 0 : -1"
+              class="fabric-tab relative z-1 rounded-full"
+              @click="activeCategory = cat.id"
+            >
+              <span
+                class="flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-full px-2 py-2 transition-colors duration-300 sm:flex-row sm:gap-2.5 sm:px-5"
+                :class="
+                  activeCategory === cat.id
+                    ? 'text-white'
+                    : 'text-(--navy) hover:bg-white/80'
+                "
+              >
+                <span
+                  class="text-[11px] font-bold uppercase tracking-[0.06em] sm:text-xs"
+                >
+                  {{ cat.label }}
+                </span>
+                <span
+                  class="rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors duration-300"
+                  :class="
+                    activeCategory === cat.id
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white text-(--muted) ring-1 ring-(--line)'
+                  "
+                >
+                  {{ cat.badge }}
+                </span>
+              </span>
+            </button>
+          </div>
 
-      <!-- Data Table -->
-      <div class="table-wrapper hide-native-cursor" data-cursor-text="DRAG">
-        <table class="spec-table">
-          <thead>
-            <tr>
-              <th>Art #</th>
-              <th>Weaving</th>
-              <th>Weight <span class="unit">(g/m²)</span></th>
-              <th>Yarn Count</th>
-              <th>Density</th>
-              <th>Content</th>
-              <th>Width</th>
-            </tr>
-          </thead>
+          <p
+            class="px-2 text-xs font-semibold uppercase tracking-[0.12em] text-(--muted)"
+            aria-live="polite"
+          >
+            <span class="text-(--navy) tabular-nums">{{ displayedFabrics.length }}</span>
+            {{ displayedFabrics.length === 1 ? "article" : "articles" }}
+            <span class="mx-2 text-(--navy-tint)" aria-hidden="true">/</span>
+            <span class="text-(--navy) tabular-nums">{{ weightRange }}</span>
+            <span class="normal-case tracking-normal"> g/m²</span>
+          </p>
+        </div>
 
-          <TransitionGroup name="stagger" tag="tbody" class="spec-table__body">
-            <tr
+        <div id="fabric-index-panel" role="tabpanel">
+          <!-- Desktop / tablet: spec table -->
+          <div
+            class="hide-native-cursor hidden overflow-x-auto md:block"
+            data-cursor-text="DRAG"
+          >
+            <table class="w-full min-w-190 border-collapse text-left">
+              <thead>
+                <tr class="border-b border-(--line) bg-(--paper-soft)/60">
+                  <th
+                    v-for="col in columns"
+                    :key="col.label"
+                    scope="col"
+                    class="px-6 py-5 text-[11px] font-bold uppercase tracking-widest text-(--muted)"
+                  >
+                    {{ col.label }}
+                    <span v-if="col.unit" class="text-[9px] normal-case tracking-normal">
+                      ({{ col.unit }})
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+
+              <!-- Keyed by category: switching remounts the rows, replaying the stagger. -->
+              <tbody :key="activeCategory">
+                <tr
+                  v-for="(fabric, index) in displayedFabrics"
+                  :key="fabric.serial"
+                  class="fabric-row group border-b border-(--line) transition-colors duration-300 last:border-b-0 hover:bg-(--paper-soft)/70"
+                  :style="{ '--i': index }"
+                >
+                  <td class="relative px-6 py-5">
+                    <span
+                      aria-hidden="true"
+                      class="absolute inset-y-3 left-0 w-0.5 origin-center scale-y-0 rounded-full bg-(--navy) transition-transform duration-300 group-hover:scale-y-100"
+                    />
+                    <span class="font-bold tracking-wide text-(--navy)">{{
+                      fabric.art
+                    }}</span>
+                  </td>
+                  <td class="px-6 py-5 text-[13px] text-(--brown)">
+                    {{ fabric.weaving }}
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="flex items-center gap-3">
+                      <span class="w-8 font-mono text-[13px] tabular-nums text-(--brown)">
+                        {{ fabric.weight }}
+                      </span>
+                      <span
+                        class="h-1 w-16 overflow-hidden rounded-full bg-(--line)"
+                        aria-hidden="true"
+                      >
+                        <span
+                          class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
+                          :style="{ width: weightPct(fabric.weight) }"
+                        />
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-5 font-mono text-[13px] tabular-nums text-(--muted)">
+                    {{ fabric.yarn }}
+                  </td>
+                  <td class="px-6 py-5 font-mono text-[13px] tabular-nums text-(--muted)">
+                    {{ fabric.density }}
+                  </td>
+                  <td class="px-6 py-5">
+                    <span
+                      class="inline-block rounded-full bg-(--paper-soft) px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line) transition-colors duration-300 group-hover:bg-white"
+                    >
+                      {{ fabric.content }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-5 font-mono text-[13px] tabular-nums text-(--brown)">
+                    {{ fabric.width }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile: one card per article instead of a sideways-scrolling table -->
+          <ul :key="activeCategory" class="grid gap-3 p-3 md:hidden">
+            <li
               v-for="(fabric, index) in displayedFabrics"
               :key="fabric.serial"
-              class="spec-row"
-              :style="{ '--delay': `${index * 0.05}s` }"
+              class="fabric-row rounded-2xl bg-(--paper-soft)/60 p-5 ring-1 ring-(--line)"
+              :style="{ '--i': index }"
             >
-              <td class="font-bold text-primary">{{ fabric.art }}</td>
-              <td>{{ fabric.weaving }}</td>
-              <td class="font-mono">{{ fabric.weight }}</td>
-              <td class="font-mono text-gray-500">{{ fabric.yarn }}</td>
-              <td class="font-mono text-gray-500">{{ fabric.density }}</td>
-              <td>
-                <span class="content-pill">{{ fabric.content }}</span>
-              </td>
-              <td class="font-mono">{{ fabric.width }}</td>
-            </tr>
-          </TransitionGroup>
-        </table>
+              <div class="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-bold tracking-wide text-(--navy)">{{ fabric.art }}</p>
+                  <p class="mt-0.5 text-[13px] text-(--muted)">{{ fabric.weaving }}</p>
+                </div>
+                <span
+                  class="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line)"
+                >
+                  {{ fabric.content }}
+                </span>
+              </div>
+
+              <div class="mb-4 flex items-center gap-3">
+                <span
+                  class="h-1 flex-1 overflow-hidden rounded-full bg-(--line)"
+                  aria-hidden="true"
+                >
+                  <span
+                    class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
+                    :style="{ width: weightPct(fabric.weight) }"
+                  />
+                </span>
+                <span class="font-mono text-[13px] tabular-nums text-(--brown)">
+                  {{ fabric.weight }} <span class="text-[10px] text-(--muted)">g/m²</span>
+                </span>
+              </div>
+
+              <dl class="grid grid-cols-3 gap-3 border-t border-(--line) pt-4">
+                <div>
+                  <dt
+                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
+                  >
+                    Yarn
+                  </dt>
+                  <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
+                    {{ fabric.yarn }}
+                  </dd>
+                </div>
+                <div>
+                  <dt
+                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
+                  >
+                    Density
+                  </dt>
+                  <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
+                    {{ fabric.density }}
+                  </dd>
+                </div>
+                <div>
+                  <dt
+                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
+                  >
+                    Width
+                  </dt>
+                  <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
+                    {{ fabric.width }}
+                  </dd>
+                </div>
+              </dl>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
-<style scoped>
-.fabric-index {
-  padding-block: clamp(80px, 10vw, 150px);
-  background-color: #f5f5f0;
-  /* Light Beige background */
-  color: #274257;
-  /* Deep Navy */
-}
-
-.fabric-index__container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Header Styling */
-.fabric-index__header {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 48px;
-}
-
-@media (min-width: 768px) {
-  .fabric-index__header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-end;
+<!--
+  Keyframes only. Unscoped (and prefixed) because Vue renames scoped
+  keyframes, which would break the names the rows reference.
+-->
+<style>
+@keyframes fabric-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-.fabric-index__eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #e8b938;
-  /* Mustard Gold */
-  margin-bottom: 12px;
+@keyframes fabric-bar-in {
+  from {
+    transform: scaleX(0);
+  }
 }
 
-.fabric-index__title {
-  font-family: var(--font-serif);
-  font-size: clamp(32px, 4vw, 56px);
-  line-height: 1.1;
-  font-weight: 400;
+@media (prefers-reduced-motion: no-preference) {
+  .fabric-row {
+    animation: fabric-row-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+
+  .fabric-row .fabric-bar {
+    animation: fabric-bar-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 55ms + 150ms);
+  }
 }
 
-.fabric-index__description {
-  max-width: 400px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(39, 66, 87, 0.7);
+/* The global :focus-visible ring is offset 4px outward, which spills past the
+   tab track. Pull it inside the pill; white on the active (green) tab. */
+.fabric-tab:focus-visible {
+  outline-offset: -4px;
 }
 
-/* Controls */
-.fabric-index__controls {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 32px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-}
-
-.fabric-index__controls::-webkit-scrollbar {
-  display: none;
-}
-
-.category-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  border-radius: 99px;
-  border: 1px solid rgba(39, 66, 87, 0.15);
-  background: transparent;
-  color: #274257;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-}
-
-.category-btn:hover {
-  border-color: #274257;
-}
-
-.category-btn.is-active {
-  background: #274257;
-  color: #ffffff;
-  border-color: #274257;
-}
-
-.category-btn__label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.category-btn__badge {
-  font-size: 10px;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  font-family: monospace;
-}
-
-.category-btn:not(.is-active) .category-btn__badge {
-  background: rgba(39, 66, 87, 0.08);
-}
-
-/* Table Design */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid rgba(39, 66, 87, 0.08);
-  box-shadow: 0 20px 40px -12px rgba(39, 66, 87, 0.05);
-}
-
-.spec-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 900px;
-}
-
-.spec-table th {
-  padding: 24px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: rgba(39, 66, 87, 0.5);
-  border-bottom: 1px solid rgba(39, 66, 87, 0.1);
-  background: #ffffff;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.spec-table .unit {
-  text-transform: none;
-  font-size: 9px;
-  letter-spacing: 0;
-}
-
-.spec-table td {
-  padding: 20px 24px;
-  font-size: 13px;
-  border-bottom: 1px solid rgba(39, 66, 87, 0.05);
-  transition: background-color 0.2s ease;
-}
-
-.spec-row:hover td {
-  background-color: rgba(245, 245, 240, 0.5);
-}
-
-.spec-row:last-child td {
-  border-bottom: none;
-}
-
-.content-pill {
-  display: inline-block;
-  padding: 4px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  background: #f5f5f0;
-  border-radius: 4px;
-  color: #274257;
-}
-
-/* Staggered Row Animation */
-.stagger-enter-active {
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) var(--delay);
-}
-
-.stagger-leave-active {
-  transition: all 0.2s ease;
-  position: absolute;
-}
-
-.stagger-enter-from {
-  opacity: 0;
-  transform: translateY(15px);
-}
-
-.stagger-leave-to {
-  opacity: 0;
+.fabric-tab[aria-selected="true"]:focus-visible {
+  outline-color: #fff;
 }
 
 .hide-native-cursor {
-  cursor: none !important;
+  cursor: none;
 }
 </style>
