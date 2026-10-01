@@ -13,6 +13,7 @@
  * theatre. It never intercepts the wheel — ScrollTrigger pins against the
  * real scroll position, so anchors and the scrollbar stay truthful.
  */
+import { useElementVisibility } from "@vueuse/core";
 import ShortThreadPoster from "~/components/landing/posters/ShortThreadPoster.vue";
 import { setUniform, trackPresence } from "~/composables/useLoomStage";
 import { EASE, SCRUB } from "~/utils/motion";
@@ -20,6 +21,9 @@ import { EASE, SCRUB } from "~/utils/motion";
 const { t } = useLocale();
 const section = ref<HTMLElement | null>(null);
 const stage = ref<HTMLElement | null>(null);
+
+// The scroll hint fades in once the pinned stage is on screen.
+const isVisible = useElementVisibility(stage);
 
 const cards = computed(() => [
   { number: "01", title: t("why1Title"), text: t("why1Text") },
@@ -76,6 +80,21 @@ useScrollScene(section, (ctx) => {
           <p class="loom-body max-w-[28ch]">{{ t("whyShortNote") }}</p>
         </div>
       </div>
+
+      <!--
+        Scroll hint (desktop only). Lives inside the pinned stage, in the empty
+        third grid row, so it's on screen while scrolling drives the thread.
+      -->
+      <div
+        class="hidden items-center gap-3 self-end transition-opacity delay-800 duration-1000 motion-reduce:transition-none lg:flex"
+        :class="isVisible ? 'opacity-100' : 'opacity-0'"
+        aria-hidden="true"
+      >
+        <span class="h-px w-12 bg-(--navy-tint)" />
+        <span class="text-[10px] font-medium uppercase tracking-widest text-(--muted)">
+          Scroll to explore
+        </span>
+      </div>
     </div>
 
     <div class="loom-layer loom-wrap loom-why__cards">
@@ -84,17 +103,6 @@ useScrollScene(section, (ctx) => {
         <h3 class="text-xl font-bold">{{ card.title }}</h3>
         <p class="loom-body loom-muted">{{ card.text }}</p>
       </article>
-    </div>
-
-    <!-- Interactive Scroll Hint (Only visible on desktop) -->
-    <div
-      class="hidden lg:flex items-center gap-3 px-10 mt-8 transition-opacity duration-1000 delay-800"
-      :class="isVisible ? 'opacity-100' : 'opacity-0'"
-    >
-      <div class="w-12 h-px bg-gray-400"></div>
-      <span class="text-[10px] uppercase tracking-widest text-gray-500 font-medium"
-        >Drag to explore</span
-      >
     </div>
   </section>
 </template>

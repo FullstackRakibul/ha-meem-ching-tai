@@ -81,7 +81,7 @@ onBeforeUnmount(() => {
 
     <div class="catalog-hero__statement">
       <p>Strategic Partnership</p>
-      <h2>Ha-Meem × Ching Tai</h2>
+      <h2>Ha-Meem . Ching Tai</h2>
     </div>
 
     <div class="hero-object" data-parallax="0.06">
