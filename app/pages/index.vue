@@ -61,12 +61,18 @@ const navItems = computed(() => [
 ]);
 
 const featuredProducts = computed<Array<[string, string, string]>>(() => [
-  [t("product1"), t("catPocketing"), `${IMG}05.jpeg`],
-  [t("product2"), t("catInterlinings"), `${IMG}05.jpeg`],
-  [t("product3"), t("catInterlinings"), `${IMG}15.jpeg`],
-  [t("product4"), t("catInterlinings"), `${IMG}18.jpeg`],
-  [t("product5"), t("catPocketing"), `${IMG}19.jpeg`],
-  [t("product6"), t("catWaistbands"), `${IMG}18.jpeg`],
+  [t("product1"), t("catPocketing"), `${IMG}5001.jpeg`],
+  [t("product1"), t("catPocketing"), `${IMG}5002.jpeg`],
+  [t("product2"), t("catInterlinings"), `${IMG}5003.jpeg`],
+  [t("product3"), t("catInterlinings"), `${IMG}5004.jpeg`],
+  [t("product4"), t("catInterlinings"), `${IMG}5005.jpeg`],
+  [t("product5"), t("catPocketing"), `${IMG}5006.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5007.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5008.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5009.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5010.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5011.jpeg`],
+  [t("product6"), t("catWaistbands"), `${IMG}5012.jpeg`],
 ]);
 
 const categoryScenes = computed(() => [
