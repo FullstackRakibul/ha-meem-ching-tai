@@ -6,14 +6,14 @@ const { t } = useLocale();
 
 const facilitySpecs = computed(() => [
   { label: t('footerSpecLocationLabel'), value: t('footerSpecLocationValue') },
-  { label: t('footerSpecLeadLabel'), value: t('footerSpecLeadValue') },
-  { label: t('footerSpecFloorsLabel'), value: t('footerSpecFloorsValue') },
+  { label: t('footerSpecSiteLabel'), value: t('footerSpecSiteValue') },
+  { label: t('footerSpecPhaseLabel'), value: t('footerSpecPhaseValue') },
 ]);
 
 const footerBlocks = computed(() => [
   { label: t('footerFactoryHq'), lines: [t('footerFactoryHqValue')] },
   { label: t('footerHeadOffice'), lines: [t('footerHeadOfficeValue')] },
-  { label: t('footerContactLabel'), lines: ['+880 131 9320527'], email: 'info@hameemchingtai.com' },
+  { label: t('footerContactLabel'), lines: [], phone: '+880 131 9320527', email: 'info@hameemchingtai.com' },
 ]);
 
 const trustedBrands = ["H&M", "Zara", "Uniqlo", "C&A", "American Eagle"];
@@ -58,7 +58,7 @@ const measure = () => {
   if (!plateRef.value) return;
   // `offsetLeft` is a layout-box quantity — it ignores CSS transforms
   // entirely (transforms are paint-time only). That matters here because
-  // `measure` re-runs on every Lenis scroll frame: reading
+  // `measure` re-runs whenever the grid resizes: reading
   // `getBoundingClientRect()` instead would, once the swap has applied its
   // own translateX, measure the plate's already-shifted paint position as
   // if it were the untransformed one, corrupting `travel` a little more on
@@ -69,7 +69,6 @@ const measure = () => {
   travel.value = Math.round(plateRef.value.offsetLeft);
 };
 
-let stopLenis;
 let observer;
 let resizeObserver;
 let mq;
@@ -107,8 +106,7 @@ onMounted(async () => {
   }
 
   // IntersectionObserver is driven by the compositor, not the scroll thread,
-  // so it fires correctly under Lenis without any scroll subscription. Lenis
-  // is only consulted below, to keep the measurement in step with its rAF.
+  // so it fires correctly under Lenis without any scroll subscription.
   observer = new IntersectionObserver(
     ([entry]) => {
       // Latch: once swapped it stays swapped, so scrolling back up doesn't
@@ -122,22 +120,16 @@ onMounted(async () => {
     { rootMargin: "0px 0px -45% 0px", threshold: 0 }
   );
   observer.observe(tripwire.value);
-
-  // Lenis transforms scroll position on its own rAF loop. Sampling the box on
-  // that same loop keeps `travel` correct across momentum and resize-during-
-  // scroll; without it a mid-scroll resize would leave a stale offset.
-  const { $lenis } = useNuxtApp();
-  if ($lenis) {
-    stopLenis = $lenis.on("scroll", measure);
-  }
+  // No scroll subscription: the ResizeObserver above already re-measures
+  // whenever the grid box changes, and Lenis is not guaranteed to exist
+  // (touch devices and reduced motion scroll natively).
 });
 
 onBeforeUnmount(() => {
-  stopLenis?.();
   observer?.disconnect();
   resizeObserver?.disconnect();
   mq?.removeEventListener("change", onMqChange);
-  stopLenis = observer = resizeObserver = null;
+  observer = resizeObserver = null;
 });
 
 /** Copy slides right (+travel); plate slides left (−travel). Desktop only. */
@@ -281,14 +273,21 @@ const plateShift = computed(() =>
               </figcaption>
             </figure>
 
-            <a class="tiny-link" href="mailto:info@hameemchingtai.com">
-              <span>{{ t('footerContactCta') }}</span>
-              <i>
-                <svg width="12" height="12" viewBox="0 0 20 20">
-                  <path d="M3 10h13M11 5l5 5-5 5" />
-                </svg>
-              </i>
-            </a>
+            <!-- Every contact path, as large targets: email, WhatsApp, phone. -->
+            <div class="flex flex-wrap gap-3">
+              <a class="loom-cta" href="mailto:info@hameemchingtai.com">
+                <UIcon name="i-heroicons-envelope" class="h-4 w-4" />
+                {{ t('footerContactCta') }}
+              </a>
+              <a class="loom-ghost" href="https://wa.me/8801319320527" target="_blank" rel="noopener">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="h-4 w-4" />
+                {{ t('footerWhatsapp') }}
+              </a>
+              <a class="loom-ghost" href="tel:+8801319320527">
+                <UIcon name="i-heroicons-phone" class="h-4 w-4" />
+                {{ t('footerCall') }} +880 131 9320527
+              </a>
+            </div>
           </section>
         </div>
 
@@ -330,30 +329,31 @@ const plateShift = computed(() =>
 
       <!-- FIX: Explicitly closed div prevents DOM hierarchy bugs -->
       <div
-        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(15_27_28/0.78),rgb(15_27_28/0.18)_55%,rgb(15_27_28/0.62))]">
+        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(14_24_34/0.8),rgb(14_24_34/0.3)_55%,rgb(14_24_34/0.66))]">
       </div>
 
       <div
         class="relative z-1 grid grid-cols-1 gap-7.5 border-t border-(--light-line) pt-2.25 sm:grid-cols-2 md:grid-cols-[1.2fr_1.3fr_1fr]">
         <div v-for="block in footerBlocks" :key="block.label"
           class="flex flex-col items-start gap-1 text-[11px] uppercase leading-normal">
-          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-[rgba(245,242,235,0.6)]">
+          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-[rgba(245,245,240,0.74)]">
             {{ block.label }}
           </span>
           <p v-for="line in block.lines" :key="line" class="m-0">{{ line }}</p>
+          <a v-if="block.phone" href="tel:+8801319320527">{{ block.phone }}</a>
           <a v-if="block.email" :href="`mailto:${block.email}`">{{ block.email }}</a>
         </div>
       </div>
 
       <div
-        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-[rgba(245,242,235,0.7)]">{{ t('footerMission') }}</div>
+        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-[rgba(245,245,240,0.7)]">{{ t('footerMission') }}</div>
 
       <div class="relative z-1 pt-5 text-center">
-        <span class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-[rgba(245,242,235,0.4)]">
+        <span class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-[rgba(245,245,240,0.74)]">
           {{ t('footerTrustedBy') }}
         </span>
         <div
-          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-[rgba(245,242,235,0.5)]">
+          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-[rgba(245,245,240,0.74)]">
           <span v-for="brand in trustedBrands" :key="brand">{{ brand }}</span>
         </div>
       </div>
@@ -364,7 +364,7 @@ const plateShift = computed(() =>
       </div>
 
       <div
-        class="relative z-1 grid grid-cols-1 gap-2 border-t border-(--light-line) pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-[rgba(245,242,235,0.72)] sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left">
+        class="relative z-1 grid grid-cols-1 gap-2 border-t border-(--light-line) pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-[rgba(245,245,240,0.72)] sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left">
         <span>© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories
           Ltd.</span>
         <span class="sm:text-center">{{ t('footerRights') }}</span>

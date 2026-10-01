@@ -1,0 +1,1088 @@
+/* ─────────────────────────────────────────────────────────────
+   The Loom OS — landing page design system.
+   Tokens live in main.css :root. This file: type scale, surfaces,
+   the WebGL stage and posters, and section layouts.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  /* Fluid type scale. Minimums are sized so the longest English display
+     word fits at 360px; bn/zh adjust line-height and tracking below. */
+  --fs-xl: clamp(2.5rem, 0.9rem + 7.2vw, 9.5rem);
+  --fs-l: clamp(2.25rem, 1rem + 5vw, 6rem);
+  --fs-m: clamp(1.75rem, 1rem + 3vw, 3.75rem);
+  --fs-body-l: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
+  --gutter: max(16px, 4vw);
+}
+
+/* ── Lenis (desktop smooth scroll) ───────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis {
+  scroll-behavior: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Anchors land below the floating header, with or without Lenis. */
+[id] {
+  scroll-margin-top: calc(var(--header) + 16px);
+}
+
+/* ── Typography ──────────────────────────────────────────── */
+.loom-display {
+  font-family: var(--font);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  /* Headroom so tight Latin leading never clips Bengali matras. */
+  padding-block: 0.08em;
+}
+
+.loom-display--xl {
+  font-size: var(--fs-xl);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.loom-display--l {
+  font-size: var(--fs-l);
+}
+
+.loom-display--m {
+  font-size: var(--fs-m);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* The counter-voice: one Playfair italic phrase per headline. */
+.loom-serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.loom-body-l {
+  font-size: var(--fs-body-l);
+  line-height: 1.5;
+}
+
+.loom-body {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* System labels: SYS·03 — WHY IT MATTERS */
+.loom-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.75em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.loom-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Headlines are measure-limited in Latin only; bn/zh wrap on their own. */
+:root:lang(en) .loom-measure {
+  max-width: 14ch;
+}
+
+:root:lang(bn) .loom-display,
+:root:lang(zh) .loom-display,
+:root:lang(bn) .loom-label,
+:root:lang(zh) .loom-label {
+  letter-spacing: 0;
+}
+
+:root:lang(bn) .loom-display {
+  font-family: var(--font-bn);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+:root:lang(bn) .loom-display--xl {
+  line-height: 1.18;
+}
+
+:root:lang(bn) .loom-body,
+:root:lang(bn) .loom-body-l {
+  line-height: 1.75;
+}
+
+:root:lang(zh) body {
+  font-family: "Manrope", var(--font-zh);
+}
+
+:root:lang(zh) .loom-display {
+  font-family: "Manrope", var(--font-zh);
+  line-height: 1.1;
+}
+
+:root:lang(zh) .loom-display--xl {
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+:root:lang(zh) .loom-body,
+:root:lang(zh) .loom-body-l {
+  line-height: 1.75;
+}
+
+/* Playfair has no Bengali or CJK glyphs; synthetic italics on those scripts
+   look broken, so the counter-voice keeps its colour and drops the slant. */
+:root:lang(bn) .loom-serif,
+:root:lang(zh) .loom-serif {
+  font-family: inherit;
+  font-style: normal;
+  letter-spacing: 0;
+}
+
+:root:lang(en) .loom-label,
+:root:lang(en) .loom-upper {
+  text-transform: uppercase;
+}
+
+:root:not(:lang(en)) .loom-label {
+  text-transform: none;
+}
+
+/* ── Surfaces ────────────────────────────────────────────── */
+/* Night: built from navy shades. Positioned but WITHOUT z-index, so its
+   background paints below the WebGL stage and its `.loom-layer` content
+   (z 10) paints above it. */
+.loom-night {
+  position: relative;
+  background-color: var(--night);
+  color: var(--on-night);
+}
+
+.loom-night--dusk {
+  background-color: var(--dusk);
+}
+
+/* Day: opaque and above the stage, which is paused behind it anyway. */
+.loom-day {
+  position: relative;
+  z-index: 6;
+  background-color: var(--beige);
+  color: var(--navy);
+}
+
+.loom-layer {
+  position: relative;
+  z-index: 10;
+}
+
+.loom-muted {
+  color: var(--on-night-muted);
+}
+
+.loom-day .loom-muted {
+  color: var(--gray-600);
+}
+
+.loom-gold {
+  color: var(--gold);
+}
+
+/* Static grain, night scenes only. Never animated. */
+.loom-grain::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='128' height='128'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .96 0 0 0 0 .96 0 0 0 0 .94 0 0 0 1 0'/></filter><rect width='128' height='128' filter='url(%23n)'/></svg>");
+}
+
+/* Soft on-palette glow, placed behind the thread end / sun only. */
+.loom-glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(232 185 56 / 0.22), transparent 60%);
+  filter: blur(60px);
+}
+
+/* A navy halo keeps night copy ≥ AA wherever the thread passes behind it. */
+.loom-night .loom-layer :is(h1, h2, h3, p, li, dd, dt) {
+  text-shadow: 0 0 1.2em rgb(14 24 34 / 0.85);
+}
+
+.loom-dawn {
+  height: clamp(160px, 38vh, 420px);
+  background: linear-gradient(var(--night), var(--navy) 42%, var(--beige));
+}
+
+.loom-dusk-in {
+  height: clamp(140px, 32vh, 360px);
+  background: linear-gradient(var(--beige), var(--navy) 58%, var(--dusk));
+}
+
+.loom-wrap {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+/* Gold fill + navy text: 5.7:1. */
+.loom-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: 44px;
+  padding-inline: 1.25rem;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+
+.loom-cta:hover {
+  background: var(--gold-soft);
+  box-shadow: 0 0 0 4px rgb(232 185 56 / 0.25);
+}
+
+.loom-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  min-height: 44px;
+  padding-inline: 1.25rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
+}
+
+.loom-night .loom-ghost:hover {
+  background: var(--beige);
+  color: var(--night);
+}
+
+.loom-day .loom-ghost:hover {
+  background: var(--navy);
+  color: var(--beige);
+}
+
+/* ── The WebGL stage ─────────────────────────────────────── */
+.loom-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+
+.loom-stage--live {
+  opacity: 1;
+}
+
+/* While the menu is open the stage draws only into the preview box, so it
+   can sit above the menu panel without covering anything else. */
+.loom-stage--menu {
+  z-index: 60;
+}
+
+/* ── Posters (the designed no-WebGL / reduced-motion state) ── */
+.loom-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.loom-poster__thread {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2.2;
+}
+
+.loom-poster__thread--bold {
+  stroke-width: 3.2;
+}
+
+.loom-poster__ghost {
+  fill: none;
+  stroke: rgb(245 245 240 / 0.24);
+  stroke-width: 1.4;
+  stroke-dasharray: 3 7;
+}
+
+.loom-poster__fibre {
+  stroke: var(--gold-soft);
+  stroke-width: 3;
+  opacity: 0.55;
+}
+
+/* Portrait screens: the boot yarn runs in a low band beneath the CTAs
+   instead of stretching through the copy. */
+@media (max-width: 767px) {
+  .loom-poster[data-poster="boot"] {
+    top: auto;
+    bottom: 11%;
+    height: 16%;
+  }
+}
+
+.loom-poster--weave {
+  position: relative;
+  inset: auto;
+  height: auto;
+  aspect-ratio: 2 / 1;
+}
+
+/* Pattern cells are beige; the ghost rect (future capacity) shows them at 14%. */
+#loomPlainWeave rect {
+  fill: var(--beige);
+  stroke: none;
+}
+
+.loom-poster__weave-ghost {
+  opacity: 0.14;
+}
+
+.loom-poster--dusk,
+.loom-poster--ply {
+  position: relative;
+  inset: auto;
+}
+
+.loom-poster--dusk {
+  height: auto;
+  aspect-ratio: 6 / 5;
+}
+
+.loom-poster__sun {
+  fill: var(--gold);
+  stroke: none;
+}
+
+.loom-poster__water {
+  fill: none;
+  stroke: var(--water);
+  stroke-width: 1.6;
+  stroke-dasharray: 1 5;
+}
+
+.loom-poster__node {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+}
+
+.loom-poster__ply-navy {
+  fill: none;
+  stroke: var(--navy-tint);
+  stroke-width: 3;
+}
+
+.loom-poster--ply .loom-poster__thread {
+  stroke-width: 3;
+}
+
+/* Once WebGL is drawing, it replaces the posters (boot only on full tier). */
+html.loom-live .loom-poster:not([data-poster="boot"]),
+html.loom-boot .loom-poster[data-poster="boot"],
+html.loom-live [data-menu-preview] img {
+  visibility: hidden;
+}
+
+/* ── Header (the pill) ───────────────────────────────────── */
+.loom-header .menu-button {
+  min-height: 40px;
+  padding-inline: 0.5rem;
+}
+
+/* ── Hero: Boot ──────────────────────────────────────────── */
+.loom-hero {
+  display: flex;
+  min-height: 100svh;
+  overflow: clip;
+}
+
+.loom-hero__inner {
+  display: grid;
+  width: 100%;
+  grid-template-rows: 1fr auto;
+  gap: 2.5rem;
+  padding-top: calc(var(--header) + clamp(24px, 6vh, 72px));
+  /* Clears the fixed status rail and WhatsApp button. */
+  padding-bottom: 88px;
+}
+
+.loom-hero__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(1.25rem, 3vh, 2rem);
+}
+
+.loom-hero__foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-hero .loom-glow {
+  top: 8%;
+  right: -10%;
+  width: min(60vw, 820px);
+  aspect-ratio: 1;
+}
+
+/* ── Intro: Index (process table) ────────────────────────── */
+.loom-index {
+  padding-block: clamp(96px, 14vw, 200px);
+}
+
+.loom-index__grid {
+  display: grid;
+  gap: clamp(40px, 6vw, 96px);
+}
+
+@media (min-width: 1024px) {
+  .loom-index__grid {
+    grid-template-columns: 5fr 7fr;
+    align-items: start;
+  }
+}
+
+.loom-table {
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-table li {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: baseline;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--light-line);
+}
+
+.loom-plate {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--dusk);
+}
+
+.loom-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.loom-plate::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(to top, rgb(14 24 34 / 0.55), transparent 60%);
+}
+
+/* ── Why: the Short Thread ───────────────────────────────── */
+/* Rows 1fr · auto · 1fr keep the word band centred on the viewport while
+   pinned — the same line the 3D stitch is drawn on. */
+.loom-why__stage {
+  display: grid;
+  gap: 3rem;
+  padding-top: calc(var(--header) + 24px);
+  padding-bottom: 48px;
+}
+
+.loom-why__band {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 1.5rem;
+  margin-inline: calc(-1 * var(--gutter));
+  padding-inline: var(--gutter);
+}
+
+.loom-why__track {
+  position: relative;
+  height: 34vh;
+}
+
+.loom-why__word {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 840px) {
+  .loom-why__stage {
+    min-height: 100svh;
+    grid-template-rows: 1fr auto 1fr;
+    gap: 0;
+  }
+
+  /* Columns mirror the stitch: it spans ±24% of the viewport around centre. */
+  .loom-why__band {
+    grid-template-columns: 26fr 48fr 26fr;
+    gap: 0;
+    min-height: 44vh;
+  }
+
+  .loom-why__track {
+    position: static;
+    height: auto;
+    align-self: stretch;
+  }
+
+  .loom-why__word--long {
+    padding-right: 1.5rem;
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .loom-why__word--short {
+    padding-left: 1.5rem;
+  }
+}
+
+.loom-why__cards {
+  display: grid;
+  gap: 1px;
+  padding-bottom: clamp(96px, 12vw, 180px);
+}
+
+@media (min-width: 768px) {
+  .loom-why__cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .loom-why__cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.loom-why__cards article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem 2rem 0;
+  border-top: 1px solid var(--light-line);
+}
+
+/* ── Stats: Telemetry + milestones ───────────────────────── */
+.loom-stats {
+  padding-block: clamp(96px, 12vw, 180px);
+}
+
+.loom-stats__grid {
+  display: grid;
+  gap: clamp(48px, 6vw, 96px);
+}
+
+@media (min-width: 1024px) {
+  .loom-stats__grid {
+    grid-template-columns: 6fr 6fr;
+    align-items: center;
+  }
+}
+
+.loom-stats__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem 1.5rem;
+}
+
+.loom-stats__list > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-stats__value {
+  font-size: clamp(1.75rem, 1.1rem + 2.2vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.loom-milestones {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: clamp(64px, 8vw, 128px);
+}
+
+@media (min-width: 768px) {
+  .loom-milestones {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.loom-milestones li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-milestones li::before {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  content: "";
+  background: var(--gold);
+}
+
+/* ── Factory: Dawn ───────────────────────────────────────── */
+.loom-factory {
+  padding-bottom: clamp(96px, 12vw, 180px);
+}
+
+.loom-factory__grid {
+  display: grid;
+  gap: clamp(40px, 5vw, 80px);
+  padding-top: clamp(48px, 6vw, 96px);
+}
+
+@media (min-width: 1024px) {
+  .loom-factory__grid {
+    grid-template-columns: 7fr 5fr;
+    align-items: start;
+  }
+}
+
+.loom-factory__image {
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+.loom-factory__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.loom-factory__points li {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 1rem;
+  padding-block: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+/* ── Collections: Category theatre ───────────────────────── */
+/* Base = stacked, readable with no JS. `.is-horizontal` is added only
+   while the GSAP pin is active (full motion, ≥ 840px). */
+.category-theatre {
+  position: relative;
+  z-index: 6;
+  background: var(--beige);
+  color: var(--navy);
+}
+
+.category-theatre__counter {
+  display: none;
+}
+
+.category-track {
+  display: grid;
+}
+
+.category-scene {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 34px;
+  min-height: 82svh;
+  padding: 82px var(--gutter);
+}
+
+.category-scene__visual {
+  position: relative;
+  display: block;
+  width: min(100%, 610px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--panel);
+  cursor: zoom-in;
+}
+
+.category-scene--cover .category-scene__visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-scene--contain .category-scene__visual img {
+  width: 100%;
+  height: 100%;
+  padding: 7%;
+  object-fit: contain;
+}
+
+.category-scene__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.category-scene__copy h2 {
+  max-width: 100%;
+  font-family: var(--font-serif);
+  font-size: var(--fs-l);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  padding-block: 0.06em;
+}
+
+:root:lang(bn) .category-scene__copy h2,
+:root:lang(zh) .category-scene__copy h2 {
+  font-family: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.category-scene__copy > p {
+  max-width: 44ch;
+}
+
+/* Unpinned on wide screens (reduced motion, or before GSAP loads): an
+   editorial two-column stack rather than one long column. */
+@media (min-width: 840px) {
+  .category-scene {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+    min-height: auto;
+    padding-block: clamp(72px, 8vw, 128px);
+  }
+}
+
+.category-theatre.is-horizontal .category-theatre__sticky {
+  display: flex;
+  align-items: center;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.category-theatre.is-horizontal .category-theatre__counter {
+  position: absolute;
+  top: calc(var(--header) + 13px);
+  right: 16px;
+  z-index: 5;
+  display: block;
+  writing-mode: vertical-rl;
+}
+
+.category-theatre.is-horizontal .category-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 4vw, 72px);
+  width: max-content;
+  padding-inline: 12vw 18vw;
+  will-change: transform;
+}
+
+.category-theatre.is-horizontal .category-scene {
+  display: grid;
+  flex: 0 0 min(90vw, 1420px);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(22px, 3vw, 58px);
+  min-height: 82vh;
+  padding: 0;
+}
+
+.category-theatre.is-horizontal .category-scene__copy h2 {
+  font-size: clamp(4rem, 8.8vw, 10rem);
+}
+
+.category-theatre.is-horizontal .category-scene:nth-child(even) {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.category-theatre.is-horizontal .category-scene:nth-child(even) .category-scene__visual {
+  order: 2;
+  margin-left: auto;
+}
+
+.category-theatre.is-horizontal .category-scene:nth-child(even) .category-scene__copy {
+  order: 1;
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* ── Catalogue rail ──────────────────────────────────────── */
+.loom-catalogue {
+  padding-block: clamp(80px, 9vw, 150px);
+}
+
+.loom-rail {
+  display: grid;
+  grid-auto-columns: minmax(240px, 78vw);
+  grid-auto-flow: column;
+  gap: 12px;
+  overflow-x: auto;
+  padding-inline: var(--gutter);
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  scrollbar-width: thin;
+}
+
+@media (min-width: 768px) {
+  .loom-rail {
+    grid-auto-columns: minmax(260px, 40vw);
+  }
+}
+
+@media (min-width: 1200px) {
+  .loom-rail {
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 1440px;
+    margin-inline: auto;
+    overflow: visible;
+  }
+}
+
+.loom-rail article {
+  scroll-snap-align: start;
+}
+
+.loom-rail figure {
+  margin: 0;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--panel);
+}
+
+.loom-rail img {
+  width: 100%;
+  height: 100%;
+  padding: 9%;
+  object-fit: contain;
+  transition: transform 0.75s var(--ease);
+}
+
+.loom-rail article:hover img {
+  transform: scale(1.04);
+}
+
+/* ── Sustainability: Dusk ────────────────────────────────── */
+.loom-dusk {
+  padding-bottom: clamp(96px, 12vw, 180px);
+}
+
+.loom-dusk__grid {
+  display: grid;
+  gap: clamp(48px, 6vw, 96px);
+}
+
+@media (min-width: 1024px) {
+  .loom-dusk__grid {
+    grid-template-columns: 6fr 6fr;
+    align-items: center;
+  }
+}
+
+.loom-dusk__stats {
+  display: grid;
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .loom-dusk__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.loom-dusk__stats article {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-dusk__figure {
+  width: min(100%, 560px);
+  justify-self: center;
+}
+
+/* ── Partnership: Ply ────────────────────────────────────── */
+.loom-ply {
+  padding-block: clamp(110px, 14vw, 220px);
+}
+
+.loom-ply__yarn {
+  position: relative;
+  height: clamp(56px, 9vw, 120px);
+  margin-block: clamp(32px, 5vw, 72px);
+}
+
+.loom-ply__facts {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .loom-ply__facts {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.loom-ply__facts li {
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-line);
+}
+
+.loom-trusted {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+}
+
+/* ── Chrome: status rail + WhatsApp ──────────────────────── */
+.loom-rail-status {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 40;
+}
+
+.loom-rail-status__button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: 0 8px 24px rgb(14 24 34 / 0.12);
+}
+
+.loom-rail-status__bar {
+  position: relative;
+  width: 64px;
+  height: 2px;
+  overflow: hidden;
+  background: var(--line);
+}
+
+.loom-rail-status__bar i {
+  position: absolute;
+  inset: 0;
+  background: var(--navy);
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left;
+}
+
+.loom-rail-status__list {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  min-width: 240px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: 0 12px 40px rgb(14 24 34 / 0.16);
+}
+
+.loom-rail-status__list a {
+  display: flex;
+  gap: 0.75rem;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 0.75rem;
+  border-radius: 10px;
+}
+
+.loom-rail-status__list a:hover,
+.loom-rail-status__list a[aria-current="true"] {
+  background: var(--beige);
+}
+
+.loom-whatsapp {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 40;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy);
+  box-shadow: 0 8px 24px rgb(14 24 34 / 0.2);
+  transition: box-shadow 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+
+.loom-whatsapp:hover {
+  background: var(--gold-soft);
+  box-shadow: 0 0 0 6px rgb(232 185 56 / 0.28), 0 8px 24px rgb(14 24 34 / 0.2);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .loom-stage {
+    display: none;
+  }
+}

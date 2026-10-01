@@ -1,63 +1,62 @@
 <!-- components/landing/HeroSection.vue -->
 <script setup lang="ts">
-const { t } = useLocale()
-import { onMounted, ref } from 'vue'
+/**
+ * Scene 01 — Boot (night).
+ *
+ * The headline is static HTML at first paint: it is the LCP element, never
+ * the canvas. The one move: loose cotton fibres spin into a single yarn,
+ * once (1.6s), then the scene holds still. The yarn follows the long import
+ * loop — the status quo the next scene shortens.
+ */
+import ThreadPoster from "~/components/landing/posters/ThreadPoster.vue";
+import { setUniform, trackPresence } from "~/composables/useLoomStage";
+import { DUR, EASE } from "~/utils/motion";
 
-const ready = ref(false)
+const { t } = useLocale();
+const section = ref<HTMLElement | null>(null);
 
-onMounted(() => {
-  setTimeout(() => {
-    ready.value = true
-  }, 100)
-})
+useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
+  if (mode === "reduced") return;
+  trackPresence(ScrollTrigger, root, "boot");
+  const yarn = { spin: 0 };
+  gsap.to(yarn, {
+    spin: 1,
+    duration: DUR.xl,
+    ease: EASE.inout,
+    delay: 0.2,
+    onUpdate: () => setUniform("spin", yarn.spin),
+  });
+});
 </script>
 
 <template>
-  <section id="top" :class="['catalog-hero', { 'catalog-hero--ready': ready }]">
-    <div class="catalog-hero__image" data-hero-image>
-      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai31.jpeg"
-        alt="Precision engineering — HCTPAL manufacturing floor" />
-    </div>
-    <div class="catalog-hero__veil" />
+  <section id="top" ref="section" class="loom-night loom-grain loom-hero" data-chapter="boot">
+    <div class="loom-glow" aria-hidden="true" />
+    <ThreadPoster />
 
-    <h1 class="catalog-hero__word" data-hero-word>
-      <span style="--letter: 0">H</span>
-      <span style="--letter: 1">C</span>
-      <span style="--letter: 2">T</span>
-      <span style="--letter: 3">P</span>
-      <span style="--letter: 4">A</span>
-      <span style="--letter: 5">L</span>
-    </h1>
-
-    <div class="catalog-hero__left">
-      <p>{{ t('heroLede') }}</p>
-      <a class="tiny-link" href="#collections">
-        <span>{{ t('heroCta') }}</span>
-        <i>
-          <svg width="12" height="12" viewBox="0 0 20 20">
-            <path d="M3 10h13M11 5l5 5-5 5" />
-          </svg>
-        </i>
-      </a>
-    </div>
-
-    <div class="catalog-hero__statement">
-      <p>{{ t('heroStatementLabel') }}</p>
-      <h2>{{ t('heroStatementTitle') }}</h2>
-    </div>
-
-    <div class="hero-object" data-parallax="0.06">
-      <p>Integrated Supply Chain</p>
-      <span>From raw materials to finished trims</span>
-      <div>
-        <img src="https://images.unsplash.com/photo-1605518216938-7c31b7b14ad0?auto=format&fit=crop&q=80&w=600"
-          alt="Fabric weave close-up" />
+    <div class="loom-layer loom-wrap loom-hero__inner">
+      <div class="loom-hero__copy">
+        <p class="loom-label loom-muted">
+          <span class="loom-gold">01</span>{{ t("heroEyebrow") }}
+        </p>
+        <h1 class="loom-display loom-display--xl">
+          <span class="block">{{ t("heroTitleA") }}</span>
+          <em class="loom-serif loom-gold block">{{ t("heroTitleB") }}</em>
+        </h1>
+        <p class="loom-body-l loom-muted max-w-[46ch]">{{ t("heroLede") }}</p>
+        <div class="flex flex-wrap gap-3">
+          <a class="loom-cta" href="#collections">
+            {{ t("heroCta") }}
+            <UIcon name="i-heroicons-arrow-down-right-20-solid" class="h-4 w-4" />
+          </a>
+          <a class="loom-ghost" href="#why-matters">{{ t("heroSecondaryCta") }}</a>
+        </div>
       </div>
-    </div>
 
-    <div class="catalog-hero__footer">
-      <span>Ghorashal, Narsingdi · Bangladesh</span>
-      <span>Pocketing & Accessories Division</span>
+      <div class="loom-hero__foot loom-label loom-muted">
+        <span>{{ t("heroLocation") }}</span>
+        <span>{{ t("heroDivision") }}</span>
+      </div>
     </div>
   </section>
 </template>

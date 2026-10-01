@@ -59,6 +59,18 @@ node -e "console.log(Object.keys(require('./node_modules/@iconify-json/heroicons
 ## Dev server
 Nuxt holds a dev lock; a stale server causes `Another Nuxt dev is already running (PID …)`. `kill`ing the npm wrapper does not stop the child — kill the reported PID (`taskkill /PID <pid> /F`), or find the listener with `Get-NetTCPConnection -LocalPort 3001`.
 
+## Landing page: "The Loom OS" (`pages/index.vue`)
+- **One scroll owner, one loop.** `plugins/motion.client.ts` lazy-loads GSAP + ScrollTrigger + Lenis after hydration; Lenis (`autoRaf: false`) is stepped from `gsap.ticker`, and the WebGL stage renders from the same ticker. Never add another `requestAnimationFrame` loop. `$lenis` is a `shallowRef` that stays `null` on touch / reduced motion — never depend on it; Lenis fires native `scroll` events.
+- **Sections** register GSAP work via `useScrollScene(ref, ctx => …)` (scoped `gsap.matchMedia`, auto-reverted; `ctx.mode` is `full | lite | reduced`). Motion tokens and the "never animated" contract live in `utils/motion.ts`.
+- **One WebGL context**: `components/landing/LoomStage.vue` + `lib/loom/stage.ts` (also draws the menu's wavy preview via scissor). Sections talk to it only through `composables/useLoomStage.ts` (`setUniform`, `trackPresence`). Tiers: `full` / `lite` / `poster`; Three.js never loads for `poster`.
+- **Posters** (`components/landing/posters/`) are SVGs sampled from the same `lib/loom/paths.ts` functions as the 3D — the designed no-WebGL/reduced-motion state. `html.loom-live` / `html.loom-boot` hide them. Weave, sun/water and ply are anchored to their poster via `data-loom-anchor`.
+- **Layering**: night sections (`.loom-night`) are positioned without z-index so their background sits under the stage (z 5) and `.loom-layer` content (z 10) above it. Day sections (`.loom-day`) are z 6 and opaque. Don't give `#main-content` a z-index.
+- **Palette** is navy / gold / beige only (tokens in `main.css :root`). Gold is never text on light grounds (1.7:1); muted text on beige is gray-600, not gray-500.
+- **Copy** must trace to verified client facts; `zh`/`bn` in `useLocale.ts` are still English placeholders.
+
+## Header behavior (`SiteHeader.vue` on the landing page)
+Solid white floating pill — no blur, never hides. Shrinks past 50px of scroll (debounced), classes only.
+
 ## Header behavior (`AppHeader.vue`)
 Fixed, centered pill header (`fixed top-4 left-1/2 -translate-x-1/2 z-50`) with `bg-white/80 backdrop-blur-md rounded-full shadow-lg`.
 

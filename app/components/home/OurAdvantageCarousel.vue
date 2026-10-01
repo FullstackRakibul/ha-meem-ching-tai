@@ -176,17 +176,11 @@ onMounted(async () => {
   measure();
   update();
 
-  const { $lenis } = useNuxtApp();
-
-  if ($lenis) {
-    // Lenis emits per animation frame with the eased scroll value, so the
-    // track moves in lockstep with the smooth scroll.
-    stopLenis = $lenis.on("scroll", update);
-  } else {
-    // Reduced-motion, or Lenis unavailable: fall back to native scroll.
-    window.addEventListener("scroll", update, { passive: true });
-    stopLenis = () => window.removeEventListener("scroll", update);
-  }
+  // Lenis (when active) drives the real window scroll, so the native scroll
+  // event fires on every smoothed frame — no Lenis-specific subscription is
+  // needed, and this works on touch / reduced motion where Lenis is absent.
+  window.addEventListener("scroll", update, { passive: true });
+  stopLenis = () => window.removeEventListener("scroll", update);
 
   // Card widths are viewport-relative and images load late, both of which
   // change the travel distance. Watch the frame too: its height drives the
