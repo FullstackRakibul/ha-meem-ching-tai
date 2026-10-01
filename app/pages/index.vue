@@ -15,6 +15,7 @@ import OriginPanel from "~/components/landing/OriginPanel.vue";
 import SustainabilityCTA from "~/components/landing/SustainabilityCTA.vue";
 import FooterSection from "~/components/landing/FooterSection.vue";
 import SustainabilitySection from "~/components/landing/SustainabilitySection.vue";
+import { useLocale } from "~/composables/useLocale";
 useHead({
   title: "Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing",
   meta: [
@@ -35,32 +36,106 @@ const sceneIndex = ref("01");
 const { t } = useLocale();
 
 const navItems = computed(() => [
-  { label: t("navHome"), href: "#top", image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai48.jpeg" },
-  { label: t("navWhyMatters"), href: "#why-matters", image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai50.jpeg" },
-  { label: t("navProducts"), href: "#collections", image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg" },
-  { label: t("navFactory"), href: "#factory", image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai52.jpeg" },
-  { label: t("navContact"), href: "#contact", image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai53.jpeg" },
+  {
+    label: t("navHome"),
+    href: "#top",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai48.jpeg",
+  },
+  {
+    label: t("navWhyMatters"),
+    href: "#why-matters",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai50.jpeg",
+  },
+  {
+    label: t("navProducts"),
+    href: "#collections",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg",
+  },
+  {
+    label: t("navFactory"),
+    href: "#factory",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai52.jpeg",
+  },
+  {
+    label: t("navContact"),
+    href: "#contact",
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai53.jpeg",
+  },
 ]);
 
 const featuredProducts = computed<Array<[string, string, string]>>(() => [
-  [t("product1"), t("catPocketing"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg"],
-  [t("product2"), t("catInterlinings"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg"],
-  [t("product3"), t("catInterlinings"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai15.jpeg"],
-  [t("product4"), t("catInterlinings"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg"],
-  [t("product5"), t("catPocketing"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg"],
-  [t("product6"), t("catWaistbands"), "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg"],
+  [
+    t("product1"),
+    t("catPocketing"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg",
+  ],
+  [
+    t("product2"),
+    t("catInterlinings"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg",
+  ],
+  [
+    t("product3"),
+    t("catInterlinings"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai15.jpeg",
+  ],
+  [
+    t("product4"),
+    t("catInterlinings"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg",
+  ],
+  [
+    t("product5"),
+    t("catPocketing"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg",
+  ],
+  [
+    t("product6"),
+    t("catWaistbands"),
+    "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai18.jpeg",
+  ],
 ]);
 
 const categoryScenes = computed(() => [
-  { id: "01", title: t("scene1Title"), description: t("scene1Desc"), image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg", type: "contain" },
-  { id: "02", title: t("scene2Title"), description: t("scene2Desc"), image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai17.jpeg", type: "cover" },
-  { id: "03", title: t("scene3Title"), description: t("scene3Desc"), image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai13.jpeg", type: "cover" },
-  { id: "04", title: t("scene4Title"), description: t("scene4Desc"), image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai11.jpeg", type: "contain" },
+  {
+    id: "01",
+    title: t("scene1Title"),
+    description: t("scene1Desc"),
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai19.jpeg",
+    type: "contain",
+  },
+  {
+    id: "02",
+    title: t("scene2Title"),
+    description: t("scene2Desc"),
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai17.jpeg",
+    type: "cover",
+  },
+  {
+    id: "03",
+    title: t("scene3Title"),
+    description: t("scene3Desc"),
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai13.jpeg",
+    type: "cover",
+  },
+  {
+    id: "04",
+    title: t("scene4Title"),
+    description: t("scene4Desc"),
+    image: "https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai11.jpeg",
+    type: "contain",
+  },
 ]);
 
 const servicePoints = computed(() => [
-  t("service1"), t("service2"), t("service3"), t("service4"),
-  t("service5"), t("service6"), t("service7"), t("service8"),
+  t("service1"),
+  t("service2"),
+  t("service3"),
+  t("service4"),
+  t("service5"),
+  t("service6"),
+  t("service7"),
+  t("service8"),
 ]);
 
 let animationFrame = 0;
@@ -199,14 +274,22 @@ onMounted(() => {
 
 <template>
   <div>
-    <a class="skip-link" href="#main-content">{{ t('skipToContent') }}</a>
+    <a class="skip-link" href="#main-content">{{ t("skipToContent") }}</a>
 
     <!-- <Loader :loaded="loaded" :loading-progress="loadingProgress" /> -->
 
-    <SiteHeader :header-hidden="headerHidden" :menu-open="menuOpen" @toggle-menu="menuOpen = !menuOpen"
-      @close-menu="menuOpen = false" />
+    <SiteHeader
+      :header-hidden="headerHidden"
+      :menu-open="menuOpen"
+      @toggle-menu="menuOpen = !menuOpen"
+      @close-menu="menuOpen = false"
+    />
 
-    <SiteMenu :menu-open="menuOpen" :nav-items="navItems" @close-menu="menuOpen = false" />
+    <SiteMenu
+      :menu-open="menuOpen"
+      :nav-items="navItems"
+      @close-menu="menuOpen = false"
+    />
 
     <main id="main-content">
       <HeroSection />
