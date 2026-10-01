@@ -143,6 +143,7 @@ const servicePoints = computed(() => [
       <IntroSection :service-points="servicePoints" />
       <WhyMatters />
       <VentureStats />
+      <FabricIndexDirectory />
       <FactoryAbout />
       <CategoryTheatre :category-scenes="categoryScenes" />
       <ProductRail :title="t('featuredTitle')" :items="featuredProducts" />

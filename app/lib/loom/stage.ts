@@ -62,12 +62,14 @@ import {
 } from './paths'
 
 // ── Palette: tokens and their tints only ──────────────────────────────────
-const NIGHT = 0x0e1822
-const NAVY = 0x274257
-const NAVY_TINT = 0x8897a3 // navy mixed 45% toward white — legible on night
-const WATER_TINT = 0xb4c0ca // navy mixed 65% toward white
-const GOLD = 0xe8b938
-const GOLD_SOFT = 0xf3dc9a
+// Light theme: names are historical — NIGHT is the light ground the fog
+// fades into, NAVY/GOLD are the deep greens the threads are drawn in.
+const NIGHT = 0xf4f7f2
+const NAVY = 0x14532d
+const NAVY_TINT = 0x5f7d69 // green-gray — legible on the light ground
+const WATER_TINT = 0x9db5a5
+const GOLD = 0x1f6b3c
+const GOLD_SOFT = 0x4f9a6a
 const BEIGE = 0xf5f5f0
 
 const FOV = 35
@@ -137,9 +139,9 @@ function glowTexture() {
   c.width = c.height = size
   const g = c.getContext('2d')!
   const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-  grad.addColorStop(0, 'rgba(232,185,56,0.9)')
-  grad.addColorStop(0.35, 'rgba(232,185,56,0.28)')
-  grad.addColorStop(1, 'rgba(232,185,56,0)')
+  grad.addColorStop(0, 'rgba(31,107,60,0.5)')
+  grad.addColorStop(0.35, 'rgba(31,107,60,0.16)')
+  grad.addColorStop(1, 'rgba(31,107,60,0)')
   g.fillStyle = grad
   g.fillRect(0, 0, size, size)
   const tex = new CanvasTexture(c)
@@ -273,14 +275,14 @@ export function createStage(
   const weave = new Group()
   const cellGeo = new BoxGeometry(1, 1, 1)
   const wovenMat = new MeshStandardMaterial({
-    color: BEIGE,
+    color: NAVY,
     emissive: GOLD,
     emissiveIntensity: 0.05,
     roughness: 0.8,
     transparent: true,
   })
   const ghostMat = new MeshBasicMaterial({
-    color: BEIGE,
+    color: NAVY,
     transparent: true,
     opacity: 0.08,
     depthWrite: false,

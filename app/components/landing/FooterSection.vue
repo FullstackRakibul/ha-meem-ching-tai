@@ -321,22 +321,22 @@ const plateShift = computed(() =>
 
     <!-- GROUP 2: Sticky Reveal Footer -->
     <div
-      class="sticky bottom-0 z-0 flex h-[max(1020px,70svh)] flex-col justify-between overflow-hidden bg-(--ink) px-[max(12px,1.1vw)] pb-3 pt-4.5 text-(--paper)">
+      class="sticky bottom-0 z-0 flex h-[max(1020px,70svh)] flex-col justify-between overflow-hidden bg-(--paper) px-[max(12px,1.1vw)] pb-3 pt-4.5 text-(--brown)">
       <div class="absolute inset-0">
         <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg"
-          alt="Fabric weave dark background" class="h-full w-full object-cover" />
+          alt="Fabric weave background" class="h-full w-full object-cover" />
       </div>
 
       <!-- FIX: Explicitly closed div prevents DOM hierarchy bugs -->
       <div
-        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(14_24_34/0.8),rgb(14_24_34/0.3)_55%,rgb(14_24_34/0.66))]">
+        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(245_245_240/0.94),rgb(245_245_240/0.8)_55%,rgb(245_245_240/0.9))]">
       </div>
 
       <div
         class="relative z-1 grid grid-cols-1 gap-7.5 border-t border-(--light-line) pt-2.25 sm:grid-cols-2 md:grid-cols-[1.2fr_1.3fr_1fr]">
         <div v-for="block in footerBlocks" :key="block.label"
           class="flex flex-col items-start gap-1 text-[11px] uppercase leading-normal">
-          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-[rgba(245,245,240,0.74)]">
+          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-(--muted)">
             {{ block.label }}
           </span>
           <p v-for="line in block.lines" :key="line" class="m-0">{{ line }}</p>
@@ -346,14 +346,14 @@ const plateShift = computed(() =>
       </div>
 
       <div
-        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-[rgba(245,245,240,0.7)]">{{ t('footerMission') }}</div>
+        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-(--muted)">{{ t('footerMission') }}</div>
 
       <div class="relative z-1 pt-5 text-center">
-        <span class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-[rgba(245,245,240,0.74)]">
+        <span class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-(--muted)">
           {{ t('footerTrustedBy') }}
         </span>
         <div
-          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-[rgba(245,245,240,0.74)]">
+          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-(--muted)">
           <span v-for="brand in trustedBrands" :key="brand">{{ brand }}</span>
         </div>
       </div>
@@ -364,7 +364,7 @@ const plateShift = computed(() =>
       </div>
 
       <div
-        class="relative z-1 grid grid-cols-1 gap-2 border-t border-(--light-line) pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-[rgba(245,245,240,0.72)] sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left">
+        class="relative z-1 grid grid-cols-1 gap-2 border-t border-(--light-line) pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-(--muted) sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left">
         <span>© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories
           Ltd.</span>
         <span class="sm:text-center">{{ t('footerRights') }}</span>
