@@ -61,7 +61,7 @@ const en = {
   navIndex: 'Product lines',
 
   // ── Hero (boot) ─────────────────────────────────────────
-  heroEyebrow: 'Ha-Meem × Ching Tai · Pocketing & Accessories',
+  heroEyebrow: 'Ha-Meem . Ching Tai · Pocketing & Accessories',
   heroTitleA: 'Garment accessories,',
   heroTitleB: 'made in Bangladesh.',
   heroLede:

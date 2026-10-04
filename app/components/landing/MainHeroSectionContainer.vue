@@ -80,7 +80,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="catalog-hero__statement">
-      <p>Strategic Partnership</p>
+      <p>Precision Engineering</p>
       <h2>Ha-Meem . Ching Tai</h2>
     </div>
 
