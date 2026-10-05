@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
 <template>
   <header
     :class="[
-      'loom-header fixed top-3 left-1/2 z-1500 flex w-[calc(100%-24px)] -translate-x-1/2 items-center  gap-3 rounded-full bg-white text-(--navy) shadow-lg transition-all duration-500 ease-in-out sm:gap-5',
+      'loom-header fixed top-3 left-1/2 z-[1500] flex w-[calc(100%-24px)] -translate-x-1/2 items-center  gap-3 rounded-full bg-white text-(--navy) shadow-lg transition-all duration-500 ease-in-out sm:gap-5',
       scrolled ? 'max-w-225 px-4 py-2 sm:px-6' : 'max-w-325 px-5 py-1 sm:px-10 sm:py-4',
     ]"
   >

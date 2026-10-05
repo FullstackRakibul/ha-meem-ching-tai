@@ -197,24 +197,24 @@ const columns = [
 <template>
   <section class="loom-day overflow-hidden py-[clamp(80px,10vw,150px)]" data-reveal>
     <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
-    <div
+    <!-- <div
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 bg-[radial-gradient(rgb(20_83_45/0.1)_1px,transparent_1px)] bg-size-[22px_22px] mask-[linear-gradient(to_bottom,black,transparent_60%)]"
-    />
+    /> -->
+
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 " />
+
 
     <div class="page-gutter relative mx-auto max-w-350">
       <!-- Section Header -->
       <div class="mb-10 grid gap-6 md:mb-14 lg:grid-cols-12 lg:items-end">
         <div class="lg:col-span-7">
-          <p
-            class="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-(--navy)"
-          >
+          <p class="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-(--navy)">
             <span class="h-px w-8 bg-(--navy)" aria-hidden="true" />
             Technical Specifications
           </p>
           <h2
-            class="font-serif text-[clamp(32px,4.4vw,64px)] font-normal leading-[1.02] tracking-[-0.03em] text-(--navy)"
-          >
+            class="font-serif text-[clamp(32px,4.4vw,64px)] font-normal leading-[1.02] tracking-[-0.03em] text-(--navy)">
             Fabric Index <span class="loom-serif text-(--gold)">Directory</span>
           </h2>
         </div>
@@ -229,71 +229,48 @@ const columns = [
 
       <!-- One panel: toolbar (tabs + summary) over the spec table -->
       <div
-        class="overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-30px_rgb(20_83_45/0.25)] ring-1 ring-(--line)"
-      >
+        class="overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-30px_rgb(20_83_45/0.25)] ring-1 ring-(--line)">
         <div
-          class="flex flex-col gap-4 border-b border-(--line) p-3 sm:p-4 md:flex-row md:items-center md:justify-between"
-        >
+          class="flex flex-col gap-4 border-b border-(--line) p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
           <!-- Weight-class tabs: one sliding indicator under three equal columns -->
-          <div
-            role="tablist"
-            aria-label="Weight class"
+          <div role="tablist" aria-label="Weight class"
             class="relative grid w-full grid-cols-3 rounded-full bg-(--paper-soft) p-1 ring-1 ring-(--line) md:w-auto md:min-w-150"
-            @keydown="onTabKey"
-          >
-            <span
-              aria-hidden="true"
+            @keydown="onTabKey">
+            <span aria-hidden="true"
               class="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-(--navy) shadow-[0_6px_16px_-6px_rgb(20_83_45/0.6)] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"
-              :style="{ transform: `translateX(${activeIndex * 100}%)` }"
-            />
+              :style="{ transform: `translateX(${activeIndex * 100}%)` }" />
             <!--
               The global `button` reset in main.css is unlayered, so it beats
               Tailwind utilities for color / padding / background on <button>.
               All of those live on the inner span instead.
             -->
-            <button
-              v-for="(cat, i) in categories"
-              :key="cat.id"
-              :ref="(el) => { if (el) tabRefs[i] = el as HTMLButtonElement }"
-              type="button"
-              role="tab"
-              :aria-selected="activeCategory === cat.id"
-              aria-controls="fabric-index-panel"
-              :tabindex="activeCategory === cat.id ? 0 : -1"
-              class="fabric-tab relative z-1 rounded-full"
-              @click="activeCategory = cat.id"
-            >
+            <button v-for="(cat, i) in categories" :key="cat.id"
+              :ref="(el) => { if (el) tabRefs[i] = el as HTMLButtonElement }" type="button" role="tab"
+              :aria-selected="activeCategory === cat.id" aria-controls="fabric-index-panel"
+              :tabindex="activeCategory === cat.id ? 0 : -1" class="fabric-tab relative z-1 rounded-full"
+              @click="activeCategory = cat.id">
               <span
                 class="flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-full px-2 py-2 transition-colors duration-300 sm:flex-row sm:gap-2.5 sm:px-5"
-                :class="
-                  activeCategory === cat.id
-                    ? 'text-white'
-                    : 'text-(--navy) hover:bg-white/80'
-                "
-              >
-                <span
-                  class="text-[11px] font-bold uppercase tracking-[0.06em] sm:text-xs"
-                >
+                :class="activeCategory === cat.id
+                  ? 'text-white'
+                  : 'text-(--navy) hover:bg-white/80'
+                  ">
+                <span class="text-[11px] font-bold uppercase tracking-[0.06em] sm:text-xs">
                   {{ cat.label }}
                 </span>
                 <span
                   class="rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors duration-300"
-                  :class="
-                    activeCategory === cat.id
-                      ? 'bg-white/20 text-white'
-                      : 'bg-white text-(--muted) ring-1 ring-(--line)'
-                  "
-                >
+                  :class="activeCategory === cat.id
+                    ? 'bg-white/20 text-white'
+                    : 'bg-white text-(--muted) ring-1 ring-(--line)'
+                    ">
                   {{ cat.badge }}
                 </span>
               </span>
             </button>
           </div>
 
-          <p
-            class="px-2 text-xs font-semibold uppercase tracking-[0.12em] text-(--muted)"
-            aria-live="polite"
-          >
+          <p class="px-2 text-xs font-semibold uppercase tracking-[0.12em] text-(--muted)" aria-live="polite">
             <span class="text-(--navy) tabular-nums">{{ displayedFabrics.length }}</span>
             {{ displayedFabrics.length === 1 ? "article" : "articles" }}
             <span class="mx-2 text-(--navy-tint)" aria-hidden="true">/</span>
@@ -304,19 +281,12 @@ const columns = [
 
         <div id="fabric-index-panel" role="tabpanel">
           <!-- Desktop / tablet: spec table -->
-          <div
-            class="hide-native-cursor hidden overflow-x-auto md:block"
-            data-cursor-text="DRAG"
-          >
+          <div class="hide-native-cursor hidden overflow-x-auto md:block" data-cursor-text="DRAG">
             <table class="w-full min-w-190 border-collapse text-left">
               <thead>
                 <tr class="border-b border-(--line) bg-(--paper-soft)/60">
-                  <th
-                    v-for="col in columns"
-                    :key="col.label"
-                    scope="col"
-                    class="px-6 py-5 text-[11px] font-bold uppercase tracking-widest text-(--muted)"
-                  >
+                  <th v-for="col in columns" :key="col.label" scope="col"
+                    class="px-6 py-5 text-[11px] font-bold uppercase tracking-widest text-(--muted)">
                     {{ col.label }}
                     <span v-if="col.unit" class="text-[9px] normal-case tracking-normal">
                       ({{ col.unit }})
@@ -327,17 +297,12 @@ const columns = [
 
               <!-- Keyed by category: switching remounts the rows, replaying the stagger. -->
               <tbody :key="activeCategory">
-                <tr
-                  v-for="(fabric, index) in displayedFabrics"
-                  :key="fabric.serial"
+                <tr v-for="(fabric, index) in displayedFabrics" :key="fabric.serial"
                   class="fabric-row group border-b border-(--line) transition-colors duration-300 last:border-b-0 hover:bg-(--paper-soft)/70"
-                  :style="{ '--i': index }"
-                >
+                  :style="{ '--i': index }">
                   <td class="relative px-6 py-5">
-                    <span
-                      aria-hidden="true"
-                      class="absolute inset-y-3 left-0 w-0.5 origin-center scale-y-0 rounded-full bg-(--navy) transition-transform duration-300 group-hover:scale-y-100"
-                    />
+                    <span aria-hidden="true"
+                      class="absolute inset-y-3 left-0 w-0.5 origin-center scale-y-0 rounded-full bg-(--navy) transition-transform duration-300 group-hover:scale-y-100" />
                     <span class="font-bold tracking-wide text-(--navy)">{{
                       fabric.art
                     }}</span>
@@ -350,14 +315,9 @@ const columns = [
                       <span class="w-8 font-mono text-[13px] tabular-nums text-(--brown)">
                         {{ fabric.weight }}
                       </span>
-                      <span
-                        class="h-1 w-16 overflow-hidden rounded-full bg-(--line)"
-                        aria-hidden="true"
-                      >
-                        <span
-                          class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
-                          :style="{ width: weightPct(fabric.weight) }"
-                        />
+                      <span class="h-1 w-16 overflow-hidden rounded-full bg-(--line)" aria-hidden="true">
+                        <span class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
+                          :style="{ width: weightPct(fabric.weight) }" />
                       </span>
                     </div>
                   </td>
@@ -369,8 +329,7 @@ const columns = [
                   </td>
                   <td class="px-6 py-5">
                     <span
-                      class="inline-block rounded-full bg-(--paper-soft) px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line) transition-colors duration-300 group-hover:bg-white"
-                    >
+                      class="inline-block rounded-full bg-(--paper-soft) px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line) transition-colors duration-300 group-hover:bg-white">
                       {{ fabric.content }}
                     </span>
                   </td>
@@ -384,33 +343,23 @@ const columns = [
 
           <!-- Mobile: one card per article instead of a sideways-scrolling table -->
           <ul :key="activeCategory" class="grid gap-3 p-3 md:hidden">
-            <li
-              v-for="(fabric, index) in displayedFabrics"
-              :key="fabric.serial"
-              class="fabric-row rounded-2xl bg-(--paper-soft)/60 p-5 ring-1 ring-(--line)"
-              :style="{ '--i': index }"
-            >
+            <li v-for="(fabric, index) in displayedFabrics" :key="fabric.serial"
+              class="fabric-row rounded-2xl bg-(--paper-soft)/60 p-5 ring-1 ring-(--line)" :style="{ '--i': index }">
               <div class="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <p class="font-bold tracking-wide text-(--navy)">{{ fabric.art }}</p>
                   <p class="mt-0.5 text-[13px] text-(--muted)">{{ fabric.weaving }}</p>
                 </div>
                 <span
-                  class="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line)"
-                >
+                  class="shrink-0 rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-(--navy) ring-1 ring-(--line)">
                   {{ fabric.content }}
                 </span>
               </div>
 
               <div class="mb-4 flex items-center gap-3">
-                <span
-                  class="h-1 flex-1 overflow-hidden rounded-full bg-(--line)"
-                  aria-hidden="true"
-                >
-                  <span
-                    class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
-                    :style="{ width: weightPct(fabric.weight) }"
-                  />
+                <span class="h-1 flex-1 overflow-hidden rounded-full bg-(--line)" aria-hidden="true">
+                  <span class="fabric-bar block h-full origin-left rounded-full bg-(--navy)"
+                    :style="{ width: weightPct(fabric.weight) }" />
                 </span>
                 <span class="font-mono text-[13px] tabular-nums text-(--brown)">
                   {{ fabric.weight }} <span class="text-[10px] text-(--muted)">g/m²</span>
@@ -419,9 +368,7 @@ const columns = [
 
               <dl class="grid grid-cols-3 gap-3 border-t border-(--line) pt-4">
                 <div>
-                  <dt
-                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
-                  >
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
                     Yarn
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
@@ -429,9 +376,7 @@ const columns = [
                   </dd>
                 </div>
                 <div>
-                  <dt
-                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
-                  >
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
                     Density
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
@@ -439,9 +384,7 @@ const columns = [
                   </dd>
                 </div>
                 <div>
-                  <dt
-                    class="text-[10px] font-bold uppercase tracking-widest text-(--muted)"
-                  >
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
                     Width
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
@@ -467,6 +410,7 @@ const columns = [
     opacity: 0;
     transform: translateY(14px);
   }
+
   to {
     opacity: 1;
     transform: none;

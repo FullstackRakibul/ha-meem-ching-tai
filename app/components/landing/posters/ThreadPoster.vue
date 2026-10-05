@@ -23,23 +23,9 @@ const fibres = Array.from({ length: 70 }, (_, i) => {
 </script>
 
 <template>
-  <svg
-    class="loom-poster"
-    data-poster="boot"
-    :viewBox="POSTER_VIEWBOX"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    focusable="false"
-  >
+  <svg class="loom-poster" data-poster="boot" :viewBox="POSTER_VIEWBOX" preserveAspectRatio="none" aria-hidden="true"
+    focusable="false">
     <path :d="d" class="loom-poster__thread" vector-effect="non-scaling-stroke" />
-    <path
-      v-for="(d, i) in fibres"
-      :key="i"
-      :d="d"
-      class="loom-poster__fibre"
-      vector-effect="non-scaling-stroke"
-    />
+    <path v-for="(d, i) in fibres" :key="i" :d="d" class="loom-poster__fibre" vector-effect="non-scaling-stroke" />
   </svg>
-
-  ki
 </template>

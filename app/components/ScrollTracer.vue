@@ -45,7 +45,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useWindowScroll, useWindowSize, useDebounceFn } from "@vueuse/core";
-import { useRoute, useNuxtApp } from "#app";
+import { useNuxtApp } from "#app";
 
 const { y } = useWindowScroll();
 const { height: viewportHeight } = useWindowSize();
@@ -67,11 +67,18 @@ onMounted(() => {
 
 watch(viewportHeight, measure);
 
-// Dark mode check for hero section overlap
-const route = useRoute();
-const onDark = computed(
-  () => route.meta.fullBleed === true && y.value < viewportHeight.value * 0.85
-);
+// Dark mode check — true while the hero (#top) is in view
+const onDark = ref(false);
+onMounted(() => {
+  const hero = document.querySelector('#top');
+  if (!hero) return;
+  const obs = new IntersectionObserver(
+    ([entry]) => { onDark.value = entry.isIntersecting; },
+    { threshold: 0.25 }
+  );
+  obs.observe(hero);
+  onBeforeUnmount(() => obs.disconnect());
+});
 
 // Scroll progress calculation (0 to 100)
 const progress = computed(() => {
@@ -95,7 +102,7 @@ const scrollToTop = () => {
 
 <style scoped>
 /* ─────────────── Running-stitch tracer ─────────────── */
-.stitch {
+.scroll-tracer {
   /* Stitch rhythm — tweak these to change the sewing look.
      --dash = length of one stitch, --gap = thread-under gap between stitches. */
   --dash: 7px;
@@ -231,16 +238,10 @@ const scrollToTop = () => {
 
 /* ─────────────── Reduced motion ─────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .stitch__thread,
-  .stitch__needle,
-  .to-top,
-  .to-top__ring-fill {
-    transition: none;
-  }
-
+  .scroll-tracer__trail,
+  .scroll-tracer__dot,
   .back-to-top {
-    transition: opacity 0.2s;
-    transform: translateX(-50%);
+    transition: none;
   }
 
   .back-to-top:hover {
@@ -250,11 +251,11 @@ const scrollToTop = () => {
 
 /* Hide on touch devices — they handle their own scrollbars/momentum natively */
 @media (max-width: 640px) {
-  .stitch {
+  .scroll-tracer {
     display: none;
   }
 
-  .to-top {
+  .back-to-top {
     right: 12px;
   }
 }
