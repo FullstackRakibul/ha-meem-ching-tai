@@ -153,6 +153,9 @@ const en = {
   // ── Products ────────────────────────────────────────────
   featuredTitle: 'Featured Accessories',
   catalogueHint: 'Scroll sideways',
+  catalogueDrag: 'Drag to browse',
+  carouselPause: 'Pause carousel',
+  carouselPlay: 'Play carousel',
   catPocketing: 'Pocketing Fabrics',
   catInterlinings: 'Interlinings',
   catWaistbands: 'Waistbands',

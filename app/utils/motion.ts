@@ -8,7 +8,9 @@
  *  - NEVER animated: numbers (no count-ups — a fact must always read
  *    correctly), body copy after it has revealed, the header's position, CTAs,
  *    form fields, focus rings. No per-character text splitting (it breaks
- *    Bengali conjuncts). No idle loops outside the sustainability water loop.
+ *    Bengali conjuncts). No idle loops outside the sustainability water loop
+ *    and the catalogue rail's drift (ProductRail — pausable, off in reduced
+ *    motion, idle while off-screen).
  */
 export const DUR = { xs: 0.2, sm: 0.45, md: 0.8, lg: 1.2, xl: 1.6 } as const
 

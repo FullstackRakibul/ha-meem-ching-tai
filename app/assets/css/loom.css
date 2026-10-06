@@ -859,59 +859,6 @@ html.loom-live [data-menu-preview] img {
   padding-block: clamp(80px, 9vw, 150px);
 }
 
-.loom-rail {
-  display: grid;
-  grid-auto-columns: minmax(240px, 78vw);
-  grid-auto-flow: column;
-  gap: 12px;
-  overflow-x: auto;
-  padding-inline: var(--gutter);
-  padding-bottom: 12px;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--gutter);
-  scrollbar-width: thin;
-}
-
-@media (min-width: 768px) {
-  .loom-rail {
-    grid-auto-columns: minmax(260px, 40vw);
-  }
-}
-
-@media (min-width: 1200px) {
-  .loom-rail {
-    grid-auto-columns: auto;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    max-width: 1440px;
-    margin-inline: auto;
-    overflow: visible;
-  }
-}
-
-.loom-rail article {
-  scroll-snap-align: start;
-}
-
-.loom-rail figure {
-  margin: 0;
-  overflow: hidden;
-  aspect-ratio: 1;
-  background: var(--panel);
-}
-
-.loom-rail img {
-  width: 100%;
-  height: 100%;
-  padding: 9%;
-  object-fit: contain;
-  transition: transform 0.75s var(--ease);
-}
-
-.loom-rail article:hover img {
-  transform: scale(1.04);
-}
-
 /* ── Sustainability: Dusk ────────────────────────────────── */
 .loom-dusk {
   padding-bottom: clamp(96px, 12vw, 180px);
