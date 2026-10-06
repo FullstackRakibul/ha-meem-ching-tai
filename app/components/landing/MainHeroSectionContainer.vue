@@ -35,10 +35,8 @@ onBeforeUnmount(() => {
 <template>
   <section id="top" :class="['catalog-hero', { 'catalog-hero--ready': ready }]">
     <div class="catalog-hero__image" data-hero-image>
-      <img
-        src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai60.jpeg"
-        alt="Precision engineering — HCTPAL manufacturing floor"
-      />
+      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai60.jpeg"
+        alt="Precision engineering — HCTPAL manufacturing floor" />
     </div>
     <div class="catalog-hero__veil" />
 
@@ -53,12 +51,8 @@ onBeforeUnmount(() => {
 
     <!-- Rotating product line, sat under the wordmark -->
     <div class="catalog-hero__lines" aria-live="off">
-      <span
-        v-for="(line, index) in productLines"
-        :key="line"
-        :class="['catalog-hero__line', { 'is-active': index === lineIndex }]"
-        aria-hidden="true"
-      >
+      <span v-for="(line, index) in productLines" :key="line"
+        :class="['catalog-hero__line', { 'is-active': index === lineIndex }]" aria-hidden="true">
         {{ line }}
       </span>
       <span class="sr-only">{{ productLines.join(", ") }}</span>
@@ -80,19 +74,17 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="catalog-hero__statement">
-      <p>Strategic Partnership</p>
-      <h2>Ha-Meem . Ching Tai</h2>
+      <p>Precision Engineering</p>
+      <h2>Ha-Meem * Ching Tai</h2>
     </div>
 
     <div class="hero-object" data-parallax="0.06">
-      <p>Six Decades of Componentry</p>
-      <span>Ching Tai, Hong Kong — established 1965</span>
+      <p>Sixty Years in Hong Kong. </p>
+      <span>Now in Bangladesh.</span>
       <div>
         <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
-        <img
-          src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
-          alt="Close-up of greige pocketing fabric on the loom"
-        />
+        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
+          alt="Close-up of greige pocketing fabric on the loom" />
       </div>
     </div>
 
@@ -238,7 +230,7 @@ onBeforeUnmount(() => {
   width: min(250px, 20vw);
 }
 
-.catalog-hero__left > p {
+.catalog-hero__left>p {
   max-width: 280px;
   margin-bottom: 22px;
   font-size: 12px;
@@ -257,7 +249,7 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
 }
 
-.catalog-hero__statement > p {
+.catalog-hero__statement>p {
   margin-bottom: 8px;
   font-size: 10px;
   font-weight: 600;
@@ -288,8 +280,8 @@ onBeforeUnmount(() => {
   will-change: transform;
 }
 
-.hero-object > p,
-.hero-object > span {
+.hero-object>p,
+.hero-object>span {
   display: block;
   font-size: 10px;
   font-weight: 600;
@@ -298,7 +290,7 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
-.hero-object > div {
+.hero-object>div {
   position: relative;
   aspect-ratio: 1.22;
   margin-block: clamp(16px, 1.8vw, 24px);
@@ -553,6 +545,7 @@ onBeforeUnmount(() => {
 
 /* Accessibility / Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   .catalog-hero--ready .catalog-hero__image img,
   .catalog-hero__scroll-line::after {
     animation: none !important;

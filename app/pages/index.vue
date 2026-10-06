@@ -25,6 +25,7 @@ import ProductRail from "~/components/landing/ProductRail.vue";
 import SustainabilitySection from "~/components/landing/SustainabilitySection.vue";
 import OriginPanel from "~/components/landing/OriginPanel.vue";
 import FooterSection from "~/components/landing/FooterSection.vue";
+import ScrollTracer from "~/components/ScrollTracer.vue";
 
 useHead({
   title: "Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing",

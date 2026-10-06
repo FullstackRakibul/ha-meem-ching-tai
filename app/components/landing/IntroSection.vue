@@ -19,12 +19,7 @@ useScrollScene(section, (ctx) => {
 </script>
 
 <template>
-  <section
-    id="studio"
-    ref="section"
-    class="loom-night loom-grain loom-index"
-    data-chapter="index"
-  >
+  <section id="studio" ref="section" class="loom-night loom-grain loom-index" data-chapter="index">
     <div class="loom-layer loom-wrap loom-index__grid">
       <div class="flex flex-col gap-8" data-reveal-block>
         <p class="loom-label loom-muted">
@@ -34,14 +29,8 @@ useScrollScene(section, (ctx) => {
         <p class="loom-body loom-muted max-w-[52ch]">{{ t("introBody") }}</p>
         <a class="loom-ghost self-start" href="#why-matters">{{ t("introCta") }}</a>
         <div class="loom-plate mt-4 hidden aspect-4/3 lg:block">
-          <img
-            src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai40.jpeg"
-            :alt="t('introImageAlt')"
-            loading="lazy"
-            decoding="async"
-            width="800"
-            height="600"
-          />
+          <img src="../../assets/img/denim-pocket.png" :alt="t('introImageAlt')" loading="lazy" decoding="async"
+            width="800" height="600" />
         </div>
       </div>
 

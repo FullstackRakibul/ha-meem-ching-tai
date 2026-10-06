@@ -30,20 +30,15 @@ useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
 </script>
 
 <template>
-  <section
-    id="top"
-    ref="section"
-    class="loom-night loom-grain loom-hero"
-    data-chapter="boot"
-  >
+  <section id="top" ref="section" class="loom-night loom-grain loom-hero" data-chapter="boot">
     <div class="loom-glow" aria-hidden="true" />
     <ThreadPoster />
 
     <div class="loom-layer loom-wrap loom-hero__inner">
       <div class="loom-hero__copy">
-        <p class="loom-label loom-muted">
+        <!-- <p class="loom-label loom-muted">
           <span class="loom-gold">01</span>{{ t("heroEyebrow") }}
-        </p>
+        </p> -->
         <h1 class="loom-display loom-display--xl">
           <span class="block">{{ t("heroTitleA") }}</span>
           <em class="loom-serif loom-gold block">{{ t("heroTitleB") }}</em>
@@ -58,10 +53,10 @@ useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
         </div>
       </div>
 
-      <div class="loom-hero__foot loom-label loom-muted">
+      <!-- <div class="loom-hero__foot loom-label loom-muted">
         <span>{{ t("heroLocation") }}</span>
         <span>{{ t("heroDivision") }}</span>
-      </div>
+      </div> -->
     </div>
   </section>
 </template>

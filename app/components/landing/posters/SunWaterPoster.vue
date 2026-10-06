@@ -15,9 +15,17 @@ const node = { cx: (RECOVERY_NODE[0] * 100).toFixed(2), cy: (-RECOVERY_NODE[1] *
     preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
     <defs>
       <radialGradient id="loomSunGlow">
-        <stop offset="0" stop-color="#1f6b3c" stop-opacity="0.35" />
-        <stop offset="0.45" stop-color="#1f6b3c" stop-opacity="0.1" />
-        <stop offset="1" stop-color="#1f6b3c" stop-opacity="0" />
+        <stop offset="0" stop-color="#FFF7CC" stop-opacity="0.7" />
+        <stop offset="0.25" stop-color="#FFD54F" stop-opacity="0.5" />
+        <stop offset="0.55" stop-color="#FF9800" stop-opacity="0.18" />
+        <stop offset="1" stop-color="#FF6D00" stop-opacity="0" />
+      </radialGradient>
+      <!-- Disc fill: bright gold centre → deep orange rim (like the real sun) -->
+      <radialGradient id="loomSunDisc">
+        <stop offset="0"    stop-color="#FFE082" />
+        <stop offset="0.35" stop-color="#FFB74D" />
+        <stop offset="0.7"  stop-color="#F57C00" />
+        <stop offset="1"    stop-color="#E65100" />
       </radialGradient>
     </defs>
     <circle cx="0" cy="-34" r="34" fill="url(#loomSunGlow)" stroke="none" />
