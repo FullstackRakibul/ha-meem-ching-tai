@@ -32,13 +32,38 @@ const props = withDefaults(
 const { t } = useLocale();
 const { $lenis } = useNuxtApp();
 
-/** Centre (|d| = 0) → edge (|d| = 1) ranges, interpolated linearly. */
-const SCALE = { edge: 0.55, centre: 1 } as const;
-const OPACITY = { edge: 0.35, centre: 1 } as const;
-/** Rendered radius in rem, i.e. after the card's own scale is applied. */
-const RADIUS = { edge: 0.5, centre: 1.25 } as const;
+/**
+ * How a card looks at closeness `v` (1 = centred, 0 = at/past the edge).
+ * Radius is the *rendered* corner in rem, i.e. after the card's own scale.
+ */
+type Curve = {
+  scale: (v: number) => number;
+  opacity: (v: number) => number;
+  radius: (v: number) => number;
+  /** Caption + index visibility, given how "lit" (centred) the card is. */
+  labels: (lit: number) => number;
+};
+
+// [ref-tune] Live stage — fitted to the reference: card heights there run
+// 1, .81, .64, .49, .36, .25, .16, .09 at even spacing, which `v^1.5` tracks
+// within ~0.02. Steep from the centre out, so the middle card dominates.
+const STAGE: Curve = {
+  scale: (v) => 0.06 + 0.94 * v ** 1.5,
+  opacity: (v) => 0.08 + 0.92 * v ** 1.5,
+  radius: (v) => 0.35 + 0.8 * v,
+  labels: (lit) => lit,
+};
+
+/** Reduced-motion strip — gentle and linear; every caption stays readable. */
+const STRIP: Curve = {
+  scale: (v) => 0.55 + 0.45 * v,
+  opacity: (v) => 0.35 + 0.65 * v,
+  radius: (v) => 0.5 + 0.75 * v,
+  labels: () => 1,
+};
+
 /** Share of the remaining distance the visual state closes per 60fps frame. */
-const LERP = 0.14;
+const LERP = 0.18; // [ref-tune] was 0.14 — snappier tracking
 /** How much page scroll (px) carries over into rail travel. */
 const NUDGE_GAIN = 0.35;
 /** Fastest fling a drag release may hand to the momentum tween (px/s). */
@@ -67,36 +92,43 @@ useScrollScene(section, (ctx) => (ctx.mode === "reduced" ? nativeRail(ctx) : liv
 type Gsap = SceneContext["gsap"];
 
 /** quickSetter-backed writes for every card; skips cards whose value hasn't moved. */
-function cardWriter(gsap: Gsap, els: HTMLElement[]) {
-  const { interpolate, mapRange, clamp, pipe } = gsap.utils;
-  const scaleAt = interpolate(SCALE.edge, SCALE.centre);
-  const opacityAt = interpolate(OPACITY.edge, OPACITY.centre);
-  const radiusAt = interpolate(RADIUS.edge, RADIUS.centre);
-  // The glow only belongs to the card that is (nearly) centred.
-  const glowAt = pipe(mapRange(0.6, 1, 0, 1), clamp(0, 1)) as (v: number) => number;
-
-  const glows = els.map((el) => el.querySelector<HTMLElement>("[data-glow]")!);
+function cardWriter(gsap: Gsap, els: HTMLElement[], curve: Curve) {
+  const part = (sel: string) => els.map((el) => el.querySelector<HTMLElement>(sel)!);
+  const glows = part("[data-glow]");
+  const accents = part("[data-accent]"); // [ref-tune]
+  const labels = part("[data-labels]"); // [ref-tune]
   const setters = els.map((el, i) => ({
     scale: gsap.quickSetter(el, "scale"),
     opacity: gsap.quickSetter(el, "opacity"),
     radius: gsap.quickSetter(el, "borderRadius", "rem"),
     glow: gsap.quickSetter(glows[i]!, "opacity"),
+    accent: gsap.quickSetter(accents[i]!, "opacity"), // [ref-tune]
+    labels: gsap.quickSetter(labels[i]!, "opacity"), // [ref-tune]
   }));
-  const written = new Float32Array(els.length).fill(-1);
+  const writtenV = new Float32Array(els.length).fill(-1);
+  const writtenF = new Float32Array(els.length).fill(-1);
   const zIndex = new Int16Array(els.length).fill(-1);
 
   return {
-    /** `v` is closeness to centre: 1 at the centre, 0 at (or past) the edge. */
-    write(i: number, v: number) {
-      if (Math.abs(v - written[i]!) < 5e-4) return;
-      written[i] = v;
+    /**
+     * `v` is closeness to centre: 1 at the centre, 0 at (or past) the edge.
+     * `focus` is the same idea measured in cards: 1 when centred, 0 once a
+     * full card-step away — so glow/accent/labels light only the centre card.
+     */
+    write(i: number, v: number, focus: number) {
+      if (Math.abs(v - writtenV[i]!) < 5e-4 && Math.abs(focus - writtenF[i]!) < 5e-4) return;
+      writtenV[i] = v;
+      writtenF[i] = focus;
       const s = setters[i]!;
-      const scale = scaleAt(v);
+      const scale = curve.scale(v);
       s.scale(scale);
-      s.opacity(opacityAt(v));
-      // Divide out the scale so the *rendered* corner matches RADIUS.
-      s.radius(radiusAt(v) / scale);
-      s.glow(glowAt(v));
+      s.opacity(curve.opacity(v));
+      // Divide out the scale so the *rendered* corner matches the curve.
+      s.radius(curve.radius(v) / scale);
+      const lit = focus * focus * (3 - 2 * focus); // smoothstep
+      s.glow(lit);
+      s.accent(lit * 0.85); // [ref-tune] gold tint rides the glow
+      s.labels(curve.labels(lit)); // [ref-tune] index + caption on the centre card only
       const z = Math.round(v * 100);
       if (z !== zIndex[i]) {
         zIndex[i] = z;
@@ -105,10 +137,13 @@ function cardWriter(gsap: Gsap, els: HTMLElement[]) {
     },
     clear() {
       gsap.set(els, { clearProps: "transform,opacity,borderRadius,zIndex" });
-      gsap.set(glows, { clearProps: "opacity" });
+      gsap.set([...glows, ...accents, ...labels], { clearProps: "opacity" });
     },
   };
 }
+
+/** Width of one card-step in normalised distance, for the `focus` band. */
+const focusOf = (v: number, band: number) => Math.max(0, (v - (1 - band)) / band);
 
 const cardsIn = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>("[data-card]"));
 /** Card centre x relative to the track (offsetLeft ignores transforms). */
@@ -140,21 +175,27 @@ function runNative(gsap: Gsap) {
   let writer: ReturnType<typeof cardWriter> | null = null;
   let centres: number[] = [];
   let railW = 0;
+  let band = 1;
 
   // Purpose: the centre-scale effect, driven by the user's own scroll — no loop.
   const paint = () => {
     if (!writer) return;
     const half = railW / 2;
     const left = railEl.scrollLeft;
-    centres.forEach((c, i) => writer!.write(i, 1 - Math.min(1, Math.abs((c - left - half) / half))));
+    centres.forEach((c, i) => {
+      const v = 1 - Math.min(1, Math.abs((c - left - half) / half));
+      writer!.write(i, v, focusOf(v, band));
+    });
   };
 
   const measure = () => {
     writer?.clear();
     els = cardsIn(trackEl);
-    writer = cardWriter(gsap, els);
+    writer = cardWriter(gsap, els, STRIP);
     centres = els.map(centreOf);
     railW = railEl.clientWidth;
+    const step = els.length > 1 ? els[1]!.offsetLeft - els[0]!.offsetLeft : railW;
+    band = Math.min(1, step / (railW / 2));
     paint();
   };
 
@@ -243,7 +284,7 @@ function runLive(gsap: Gsap) {
     }
 
     writer?.clear();
-    writer = cardWriter(gsap, els);
+    writer = cardWriter(gsap, els, STAGE);
     centres = els.map(centreOf);
     vis = new Float32Array(els.length).fill(-1);
     if (!positioned) {
@@ -273,15 +314,16 @@ function runLive(gsap: Gsap) {
     const offset = x - setW;
     trackEl.style.transform = `translate3d(${offset}px,0,0)`;
 
-    // Normalise against half the rail, but never fewer than ~2.5 cards so the
-    // falloff still reads on narrow phones.
-    const half = Math.max(railW / 2, step * 2.5);
+    // Normalise against half the rail, but never fewer than ~3.5 cards so the
+    // falloff still reads on narrow phones. [ref-tune] was step * 2.5
+    const half = Math.max(railW / 2, step * 3.5);
+    const band = Math.min(1, step / half);
     for (let i = 0; i < centres.length; i++) {
       const d = (centres[i]! + offset - railW / 2) / half;
       const target = 1 - Math.min(1, Math.abs(d));
       const cur = vis[i]!;
-      vis[i] = cur < 0 ? target : cur + (target - cur) * alpha;
-      writer.write(i, vis[i]!);
+      const v = (vis[i] = cur < 0 ? target : cur + (target - cur) * alpha);
+      writer.write(i, v, focusOf(v, band));
     }
   };
 
@@ -558,10 +600,13 @@ function runLive(gsap: Gsap) {
                 width="600"
                 height="800"
               />
-              <span class="product-rail__index" aria-hidden="true">{{ pad(i + 1) }}</span>
-              <figcaption class="product-rail__caption">
-                <span class="product-rail__name">{{ name }}</span>
-                <span class="product-rail__meta">{{ meta }}</span>
+              <span data-accent class="product-rail__accent" aria-hidden="true" />
+              <figcaption data-labels class="product-rail__labels">
+                <span class="product-rail__index" aria-hidden="true">{{ pad(i + 1) }}</span>
+                <span class="product-rail__caption">
+                  <span class="product-rail__name">{{ name }}</span>
+                  <span class="product-rail__meta">{{ meta }}</span>
+                </span>
               </figcaption>
             </figure>
           </article>
@@ -574,7 +619,10 @@ function runLive(gsap: Gsap) {
 <style scoped>
 /* Dark ground; still `.loom-day` so it stays opaque above the WebGL stage. */
 .product-rail-section {
-  background-color: var(--brown);
+  /* [ref-tune] near-black ground + gold accent, per the reference */
+  --rail-ground: #05070a;
+  --rail-accent: #e8b938;
+  background-color: var(--rail-ground);
   color: var(--beige);
   overflow-x: clip;
 }
@@ -652,7 +700,18 @@ function runLive(gsap: Gsap) {
 }
 
 .is-live .product-rail__track {
+  gap: 0;
   will-change: transform;
+}
+
+/*
+ * [ref-tune] Stacked deck, live only: card centres sit 0.4 × card width apart
+ * (as in the reference), so neighbours tuck behind the centre card. A
+ * negative `gap` is invalid CSS, hence the margin. The native strips keep
+ * their positive gap so nothing overlaps there.
+ */
+.is-live .product-rail__card {
+  margin-inline-start: calc(var(--card-w) * -0.6);
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
@@ -673,9 +732,9 @@ function runLive(gsap: Gsap) {
   opacity: 0;
   pointer-events: none;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--water) 55%, transparent),
-    0 0 48px -6px color-mix(in srgb, var(--gold-soft) 70%, transparent),
-    0 28px 70px -18px color-mix(in srgb, var(--gold-soft) 90%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--rail-accent) 70%, transparent),
+    0 0 48px -6px color-mix(in srgb, var(--rail-accent) 35%, transparent),
+    0 28px 70px -18px color-mix(in srgb, var(--rail-accent) 30%, transparent);
 }
 
 .product-rail__figure {
@@ -695,18 +754,36 @@ function runLive(gsap: Gsap) {
   -webkit-user-drag: none;
 }
 
+/* [ref-tune] Gold tint on the centred card; GSAP drives its opacity. */
+.product-rail__accent {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--rail-accent) 42%, transparent);
+  mix-blend-mode: overlay;
+}
+
+/* [ref-tune] Index + caption as one layer, so one setter fades both. */
+.product-rail__labels {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
 .product-rail__index {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
   padding: 0.25rem 0.55rem;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--brown) 72%, transparent);
+  background: color-mix(in srgb, var(--navy) 82%, transparent);
   color: var(--beige);
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   line-height: 1.2;
 }
 
@@ -717,7 +794,7 @@ function runLive(gsap: Gsap) {
   display: grid;
   gap: 0.15rem;
   padding: 2.75rem 0.9rem 0.9rem;
-  background: linear-gradient(to top, color-mix(in srgb, var(--brown) 92%, transparent) 35%, transparent);
+  background: linear-gradient(to top, color-mix(in srgb, var(--rail-ground) 90%, transparent) 35%, transparent);
   color: var(--beige);
 }
 
