@@ -53,6 +53,17 @@ const announce = computed(() => userPaused.value || focusHeld.value);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+// ── Image box (shared viewer) ──────────────────────────────────────────────
+/** Index of the item shown in the viewer, or null when closed. */
+const viewerItem = ref<number | null>(null);
+const viewerEntry = computed(() => (viewerItem.value === null ? null : props.items[viewerItem.value] ?? null));
+const openItem = (i: number) => {
+  if (props.items[i]) viewerItem.value = i;
+};
+/** A press counts as a tap under 6px of travel and 400ms. */
+const TAP_SLOP = 6;
+const TAP_MS = 400;
+
 useScrollScene(section, (ctx) => (ctx.mode === "reduced" ? nativeRail() : liveRail(ctx)));
 
 type Gsap = SceneContext["gsap"];
@@ -326,7 +337,8 @@ function runLive(gsap: Gsap) {
     render();
   };
 
-  const isHeld = () => hovered || focusHeld.value || dragging || coasting || userPaused.value;
+  const isHeld = () =>
+    hovered || focusHeld.value || dragging || coasting || userPaused.value || viewerItem.value !== null;
   const pause = (d: number = DUR.md) =>
     gsap.to(s, { factor: 0, duration: d, ease: "power2.out", overwrite: "auto" });
   const resume = () => {
@@ -349,6 +361,11 @@ function runLive(gsap: Gsap) {
   let lastX = 0;
   let lastT = 0;
   let dragVel = 0;
+  // Tap detection: the rail captures the pointer, so card clicks are unreliable.
+  let downX = 0;
+  let downY = 0;
+  let downT = 0;
+  let downCard: HTMLElement | null = null;
 
   const onDown = (e: PointerEvent) => {
     if (e.button !== 0 || dragging) return;
@@ -358,6 +375,10 @@ function runLive(gsap: Gsap) {
     lastX = e.clientX;
     lastT = e.timeStamp;
     dragVel = 0;
+    downX = e.clientX;
+    downY = e.clientY;
+    downT = e.timeStamp;
+    downCard = (e.target as Element).closest<HTMLElement>("[data-card]");
     gsap.killTweensOf(s);
     s.factor = 0;
     s.vel = 0;
@@ -372,6 +393,7 @@ function runLive(gsap: Gsap) {
     dragVel = dragVel * 0.6 + (dx / dtMs) * 1000 * 0.4;
     lastX = e.clientX;
     lastT = e.timeStamp;
+    if (downCard && Math.hypot(e.clientX - downX, e.clientY - downY) >= TAP_SLOP) downCard = null;
   };
   const onUp = (e: PointerEvent) => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -379,6 +401,15 @@ function runLive(gsap: Gsap) {
     pointerId = -1;
     if (railEl.hasPointerCapture(e.pointerId)) railEl.releasePointerCapture(e.pointerId);
     railEl.classList.remove("is-dragging");
+    const tapped =
+      e.type === "pointerup" &&
+      downCard &&
+      Math.hypot(e.clientX - downX, e.clientY - downY) < TAP_SLOP &&
+      e.timeStamp - downT < TAP_MS
+        ? downCard
+        : null;
+    downCard = null;
+    if (tapped) openItem(Number(tapped.dataset.index));
     if (e.timeStamp - lastT > 80) dragVel = 0;
     s.vel = gsap.utils.clamp(-MAX_FLING, MAX_FLING, dragVel);
     coasting = true;
@@ -406,6 +437,11 @@ function runLive(gsap: Gsap) {
 
   let glide: ReturnType<Gsap["to"]> | null = null;
   const onKey = (e: KeyboardEvent) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target === railEl) {
+      e.preventDefault();
+      openItem(activeItem.value);
+      return;
+    }
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir || !setW) return;
     e.preventDefault();
@@ -465,6 +501,8 @@ function runLive(gsap: Gsap) {
     () => nextTick(measure)
   );
   const stopPauseWatch = watch(userPaused, (p) => (p ? pause() : resume()));
+  // The drift is held while the viewer is open.
+  const stopViewerWatch = watch(viewerItem, (v) => (v !== null ? pause(DUR.sm) : resume()));
 
   railEl.addEventListener("pointerenter", onEnter);
   railEl.addEventListener("pointerleave", onLeave);
@@ -490,6 +528,7 @@ function runLive(gsap: Gsap) {
     ro.disconnect();
     stopItemsWatch();
     stopPauseWatch();
+    stopViewerWatch();
     railEl.removeEventListener("pointerenter", onEnter);
     railEl.removeEventListener("pointerleave", onLeave);
     railEl.removeEventListener("pointerdown", onDown);
@@ -552,6 +591,8 @@ function runLive(gsap: Gsap) {
             v-for="([name, meta, image], i) in items"
             :key="`${c}-${i}`"
             data-card
+            :data-index="i"
+            :data-cursor-text="t('sceneView')"
             class="product-rail__card"
             :role="c === realCopy ? 'group' : undefined"
             :aria-roledescription="c === realCopy ? 'slide' : undefined"
@@ -559,7 +600,14 @@ function runLive(gsap: Gsap) {
             :aria-hidden="c === realCopy ? undefined : 'true'"
           >
             <figure class="product-rail__figure">
-              <div class="product-rail__swatch">
+              <!-- Static/reduced: the swatch is a button. Live: taps and Enter/Space on the rail open it. -->
+              <component
+                :is="live ? 'div' : 'button'"
+                class="product-rail__swatch"
+                :type="live ? undefined : 'button'"
+                :aria-label="live ? undefined : `${t('sceneView')}: ${name}`"
+                @click="live ? undefined : openItem(i)"
+              >
                 <img
                   :src="image"
                   :alt="name"
@@ -569,7 +617,7 @@ function runLive(gsap: Gsap) {
                   width="800"
                   height="1200"
                 />
-              </div>
+              </component>
               <!-- Visible under each card when static/reduced; screen-reader only when live. -->
               <figcaption class="product-rail__caption">
                 <span class="product-rail__name">{{ name }}</span>
@@ -581,6 +629,12 @@ function runLive(gsap: Gsap) {
       </div>
     </div>
 
+    <ImageViewer
+      :src="viewerEntry ? viewerEntry[2] : null"
+      :alt="viewerEntry ? viewerEntry[0] : ''"
+      :caption="viewerEntry ? `${viewerEntry[0]} — ${viewerEntry[1]}` : undefined"
+      @close="viewerItem = null"
+    />
     <!-- Swatch ticket: the centred card's readout, pinned on a running stitch. -->
     <div v-if="live && activeEntry" class="product-rail__readout">
       <span class="product-rail__stitch" aria-hidden="true" />
@@ -739,6 +793,10 @@ function runLive(gsap: Gsap) {
 
 .product-rail__swatch {
   position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
   aspect-ratio: 2 / 3;
   overflow: hidden;
   /* ≈12% of card width. Fixed — never animated. */
@@ -747,6 +805,11 @@ function runLive(gsap: Gsap) {
 }
 
 /* 1px hairline drawn over the photo so light images keep their edge. */
+button.product-rail__swatch:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+
 .product-rail__swatch::after {
   content: "";
   position: absolute;

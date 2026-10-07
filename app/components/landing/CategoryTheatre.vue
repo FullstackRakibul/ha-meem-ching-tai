@@ -7,7 +7,12 @@
  * full motion at ≥ 840px, GSAP pins the stage and scrubs the track
  * sideways (`.is-horizontal`); the setup's cleanup removes the class again,
  * so reduced motion, small screens and breakpoint changes fall back cleanly.
+ *
+ * `status` is optional: "live" shows a sewn "In production" label, "soon" a
+ * basted "Coming soon" label (and the CTA reads "Register interest"); a
+ * scene without it shows no label.
  */
+import LoomSeam from "~/components/ui/LoomSeam.vue";
 import { SCRUB } from "~/utils/motion";
 
 defineProps<{
@@ -17,11 +22,11 @@ defineProps<{
     description: string;
     image: string;
     type: string;
+    status?: "live" | "soon";
   }>;
 }>();
 
 const { t } = useLocale();
-const { $lenis } = useNuxtApp();
 
 const section = ref<HTMLElement | null>(null);
 const sticky = ref<HTMLElement | null>(null);
@@ -56,31 +61,14 @@ useScrollScene(section, ({ gsap, mode, root }) => {
   return () => root.classList.remove("is-horizontal");
 });
 
-// Full-screen image viewer
+// Full-screen image viewer (shared: components/ui/ImageViewer.vue)
 const activeImage = ref<string | null>(null);
-const closeButton = ref<HTMLButtonElement | null>(null);
-let opener: HTMLElement | null = null;
+const activeAlt = ref("");
 
-const openViewer = (imageUrl: string, event: Event) => {
-  opener = event.currentTarget as HTMLElement;
-  activeImage.value = imageUrl;
-  $lenis.value?.stop();
-  document.body.style.overflow = "hidden";
-  nextTick(() => closeButton.value?.focus());
+const openViewer = (scene: { image: string; title: string }) => {
+  activeImage.value = scene.image;
+  activeAlt.value = scene.title;
 };
-
-const closeViewer = () => {
-  activeImage.value = null;
-  $lenis.value?.start();
-  document.body.style.overflow = "";
-  opener?.focus();
-};
-
-const onKey = (e: KeyboardEvent) => {
-  if (e.key === "Escape" && activeImage.value) closeViewer();
-};
-onMounted(() => document.addEventListener("keydown", onKey));
-onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
 </script>
 
 <template>
@@ -97,80 +85,36 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
         >
           <button
             type="button"
-            class="category-scene__visual"
+            class="category-scene__visual loom-seam"
             :aria-label="`${t('sceneView')}: ${scene.title}`"
-            @click="openViewer(scene.image, $event)"
+            @click="openViewer(scene)"
           >
             <img :src="scene.image" :alt="scene.title" loading="lazy" decoding="async" width="610" height="610" />
+            <LoomSeam :radius="0" />
           </button>
           <div class="category-scene__copy">
-            <span class="loom-label loom-muted">{{ t("sceneLabel") }} {{ scene.id }}</span>
+            <div class="category-scene__meta">
+              <span class="loom-label loom-muted">{{ t("sceneLabel") }} {{ scene.id }}</span>
+              <span v-if="scene.status" :class="['loom-badge', `loom-badge--${scene.status}`]">
+                <svg class="loom-badge__eyelet" viewBox="0 0 20 12" aria-hidden="true" focusable="false">
+                  <path d="M0.5 10.5C4 10.5 6.5 5.5 11 6" />
+                  <circle cx="14" cy="6" r="2.4" />
+                </svg>
+                <span v-if="scene.status === 'live'" class="loom-badge__dot" aria-hidden="true" />
+                {{ scene.status === "live" ? t("sceneStatusLive") : t("sceneStatusSoon") }}
+              </span>
+            </div>
             <h2>{{ scene.title }}</h2>
             <p class="loom-body loom-muted">{{ scene.description }}</p>
-            <a class="loom-ghost" href="#contact">{{ t("sceneCta") }}</a>
+            <a class="loom-ghost" href="#contact">{{
+              scene.status === "soon" ? t("sceneCtaSoon") : t("sceneCta")
+            }}</a>
           </div>
         </article>
       </div>
     </div>
 
-    <Teleport to="body">
-      <Transition name="fade">
-        <div
-          v-if="activeImage"
-          class="image-viewer"
-          role="dialog"
-          aria-modal="true"
-          :aria-label="t('sceneView')"
-          @click="closeViewer"
-        >
-          <button ref="closeButton" type="button" class="image-viewer__close" :aria-label="t('close')" @click.stop="closeViewer">
-            <UIcon name="i-heroicons-x-mark-20-solid" class="h-6 w-6" />
-          </button>
-          <img :src="activeImage" alt="" @click.stop />
-        </div>
-      </Transition>
-    </Teleport>
+    <ImageViewer :src="activeImage" :alt="activeAlt" @close="activeImage = null" />
   </section>
 </template>
 
-<style scoped>
-.image-viewer {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgb(245 245 240 / 0.97);
-}
-
-.image-viewer img {
-  max-width: 90%;
-  max-height: 90vh;
-  object-fit: contain;
-  box-shadow: 0 20px 50px rgb(14 24 34 / 0.12);
-}
-
-.image-viewer__close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--white);
-  color: var(--navy);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

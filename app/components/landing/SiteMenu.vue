@@ -8,6 +8,10 @@
  * <img>s below are the designed fallback (reduced motion, no WebGL, lite
  * tier before WebGL starts): a plain crossfade, hidden by `html.loom-live`.
  * They also warm the cache for the stage's textures.
+ *
+ * Layout: the scroll area centres its list with `margin-block: auto`, not
+ * `align-items: center`, so a list taller than the viewport starts at the
+ * top and scrolls fully instead of overflowing upwards out of reach.
  */
 import { setMenu } from "~/composables/useLoomStage";
 
@@ -21,41 +25,67 @@ const props = defineProps<{
 const emit = defineEmits<{ (e: "closeMenu"): void }>();
 
 const hoveredItem = ref<string | null>(null);
+const navRef = ref<HTMLElement | null>(null);
 
 watch(
   () => [props.menuOpen, hoveredItem.value] as const,
   ([open, image]) => setMenu(open, open ? image : null)
 );
+
+const onKey = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && props.menuOpen) emit("closeMenu");
+};
+
+// Focus follows the dialog: first link on open, the menu button on close.
+watch(
+  () => props.menuOpen,
+  async (open, was) => {
+    if (open) {
+      document.addEventListener("keydown", onKey);
+      await nextTick();
+      navRef.value?.querySelector<HTMLElement>("a")?.focus({ preventScroll: true });
+    } else {
+      document.removeEventListener("keydown", onKey);
+      if (was) {
+        document.querySelector<HTMLElement>('[aria-controls="site-menu"]')?.focus({ preventScroll: true });
+      }
+    }
+  }
+);
+
+onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
 </script>
 
 <template>
   <div
     id="site-menu"
     :class="[
-      'site-menu fixed inset-0 z-50 flex flex-col bg-white pt-(--header) text-(--navy) transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]',
+      'site-menu fixed inset-0 z-70 flex h-dvh flex-col bg-white pt-(--header) text-(--navy) transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] motion-reduce:transition-none',
       menuOpen ? 'translate-y-0' : '-translate-y-full',
     ]"
     aria-modal="true"
     role="dialog"
+    :aria-label="t('menu')"
     :aria-hidden="!menuOpen"
     :inert="!menuOpen"
   >
     <div
-      class="site-menu__nav flex w-full flex-1 items-center overflow-x-hidden overflow-y-auto"
+      class="site-menu__nav flex min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-auto"
       data-lenis-prevent
     >
       <div
-        class="mx-auto grid w-full max-w-350 grid-cols-1 items-center gap-8 px-6 lg:grid-cols-12 lg:gap-16 lg:px-12"
+        class="mx-auto my-auto grid w-full max-w-350 grid-cols-1 items-center gap-8 px-5 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-12"
       >
         <nav
-          class="flex flex-col gap-4 py-10 lg:col-span-7 lg:gap-6"
+          ref="navRef"
+          class="site-menu__list flex min-w-0 flex-col py-4 lg:col-span-7 lg:py-6"
           :aria-label="t('menu')"
         >
           <a
             v-for="(item, index) in navItems"
             :key="item.href"
             :href="item.href"
-            class="group flex items-start gap-4 md:gap-6"
+            class="group flex min-h-11 items-start gap-3 rounded-lg md:gap-6"
             @mouseenter="hoveredItem = item.image"
             @mouseleave="hoveredItem = null"
             @focus="hoveredItem = item.image"
@@ -63,12 +93,12 @@ watch(
             @click="emit('closeMenu')"
           >
             <span
-              class="loom-label mt-2 text-gray-600 transition-colors group-hover:text-(--navy) md:mt-4"
+              class="loom-label mt-[0.6em] shrink-0 text-gray-600 transition-colors group-hover:text-(--navy)"
             >
               {{ String(index + 1).padStart(2, "0") }}
             </span>
             <span
-              class="loom-display text-4xl transition-transform duration-500 ease-out group-hover:translate-x-4 sm:text-5xl md:text-6xl"
+              class="site-menu__label loom-display min-w-0 transition-transform duration-500 ease-out group-hover:translate-x-4 motion-reduce:transition-none"
             >
               {{ item.label }}
             </span>
@@ -76,7 +106,7 @@ watch(
         </nav>
 
         <div
-          class="site-menu__preview relative hidden h-[50vh] w-full overflow-hidden rounded-2xl lg:col-span-5 lg:block xl:h-[60vh]"
+          class="site-menu__preview relative hidden h-[50svh] w-full overflow-hidden rounded-2xl lg:col-span-5 lg:block xl:h-[60svh]"
           data-menu-preview
         >
           <img
@@ -96,12 +126,12 @@ watch(
     </div>
 
     <div
-      class="flex shrink-0 flex-col items-center justify-between gap-2 border-t border-(--line) p-6 text-sm text-gray-600 sm:flex-row lg:px-12 lg:py-8"
+      class="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-(--line) px-5 py-3 text-sm text-gray-600 sm:px-6 lg:px-12 lg:py-5"
     >
       <span>{{ t("companyName") }}</span>
       <a
         href="#contact"
-        class="font-semibold text-(--navy) hover:underline"
+        class="inline-flex min-h-11 items-center font-semibold text-(--navy) hover:underline"
         @click="emit('closeMenu')"
       >
         {{ t("contactSupport") }}
@@ -109,3 +139,20 @@ watch(
     </div>
   </div>
 </template>
+
+<style>
+/* Sized from both axes so all seven fit a 1280×720 laptop without scrolling. */
+.site-menu__label {
+  font-size: clamp(26px, min(7vw, 8svh), 64px);
+  overflow-wrap: anywhere;
+}
+
+.site-menu__list {
+  gap: clamp(2px, 1.2svh, 14px);
+}
+
+.site-menu__nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+</style>

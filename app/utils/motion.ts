@@ -8,9 +8,14 @@
  *  - NEVER animated: numbers (no count-ups — a fact must always read
  *    correctly), body copy after it has revealed, the header's position, CTAs,
  *    form fields, focus rings. No per-character text splitting (it breaks
- *    Bengali conjuncts). No idle loops outside the sustainability water loop
- *    and the catalogue rail's drift (ProductRail — pausable, off in reduced
- *    motion, idle while off-screen).
+ *    Bengali conjuncts). No idle loops outside the sustainability water loop,
+ *    the catalogue rail's drift (ProductRail — pausable, off in reduced
+ *    motion, idle while off-screen) and the "In production" badge's slow
+ *    opacity pulse (CategoryTheatre — off in reduced motion).
+ *
+ * CSS copies: DUR and EASE are mirrored as --dur-* / --ease-* custom
+ * properties in assets/css/loom.css (EASE.reveal is main.css's --ease).
+ * Change both together.
  */
 export const DUR = { xs: 0.2, sm: 0.45, md: 0.8, lg: 1.2, xl: 1.6 } as const
 

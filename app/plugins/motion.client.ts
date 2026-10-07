@@ -38,16 +38,16 @@ export default defineNuxtPlugin((nuxtApp) => {
 
       if (!reduced && !coarse) {
         const { default: LenisCtor } = await import('lenis')
-        const header = () =>
-          parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header')) || 80
         const instance = new LenisCtor({
           autoRaf: false,
           duration: 1.05,
           smoothWheel: true,
           wheelMultiplier: 0.82,
           easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-          // In-page anchor clicks go through Lenis so they land under the header.
-          anchors: { offset: -header() },
+          // In-page anchor clicks go through Lenis. Lenis honours each
+          // target's `scroll-margin-top` (loom.css), the same value native
+          // anchors use — an extra header offset here would apply it twice.
+          anchors: true,
         })
         instance.on('scroll', ScrollTrigger.update)
         gsap.ticker.add((time) => instance.raf(time * 1000))

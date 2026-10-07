@@ -39,6 +39,9 @@ const en = {
   // ── Chrome ──────────────────────────────────────────────
   inquire: 'Inquire',
   contactCta: 'Contact us',
+  brochure: 'Brochure',
+  brochureTag: 'PDF',
+  brochureDownload: 'Download brochure (PDF)',
   menu: 'Menu',
   close: 'Close',
   language: 'Language',
@@ -48,6 +51,7 @@ const en = {
   whatsappLabel: 'Chat with HCTPAL on WhatsApp',
   railLabel: 'Chapters',
   railOpen: 'Show all chapters',
+  backToTop: 'Back to top',
 
   // ── Nav / chapters (the status rail and the menu share these) ─
   navHome: 'Home',
@@ -169,6 +173,9 @@ const en = {
   // ── Category theatre ────────────────────────────────────
   sceneLabel: 'Scene',
   sceneCta: 'Request specs',
+  sceneCtaSoon: 'Register interest',
+  sceneStatusLive: 'In production',
+  sceneStatusSoon: 'Coming soon',
   sceneView: 'View image',
   scene1Title: 'Pocketing',
   scene1Desc:

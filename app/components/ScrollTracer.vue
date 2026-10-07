@@ -1,40 +1,143 @@
+<!-- components/ScrollTracer.vue -->
+<script setup lang="ts">
+/**
+ * Scroll tracer + back to top.
+ *
+ * The track is a running stitch down the right edge: a dashed ghost rail, the
+ * sewn thread (what has been read) and a needle at its leading edge. All
+ * three are driven by one CSS variable, --p (0–1), which a ScrollTrigger
+ * writes — transforms only, no transition, no scroll listener or layout read
+ * of our own. The track is decorative and hidden from assistive tech.
+ *
+ * The button is always reachable: fixed bottom-right at every width (only the
+ * track hides on phones), outside aria-hidden, labelled through t(), with a
+ * two-tone body and focus ring that read on light and dark grounds alike. It
+ * shares useScrollToTop() with the footer's "Back to top" link.
+ */
+import { useScrollToTop } from "~/composables/useScrollToTop";
+
+const { t } = useLocale();
+const scrollToTop = useScrollToTop();
+
+const tracer = ref<HTMLElement | null>(null);
+const sentinel = ref<HTMLElement | null>(null);
+const showTopBtn = ref(false);
+const onDark = ref(false);
+
+// Progress: ScrollTrigger already tracks the scroll (with or without Lenis).
+useScrollScene(tracer, ({ ScrollTrigger, root }) => {
+  const write = (p: number) => root.style.setProperty("--p", p.toFixed(4));
+  ScrollTrigger.create({
+    start: 0,
+    end: "max",
+    onUpdate: (self) => write(self.progress),
+    onRefresh: (self) => write(self.progress),
+  });
+  return () => root.style.removeProperty("--p");
+});
+
+/** Relative luminance (0–1) of a computed CSS colour. */
+function luminance(css: string) {
+  const n = css.match(/[\d.]+/g)?.map(Number) ?? [];
+  if (n.length < 3) return 0;
+  // oklch()/oklab(): lightness first; L³ approximates relative luminance.
+  if (css.startsWith("ok")) return (n[0]! > 1 ? n[0]! / 100 : n[0]!) ** 3;
+  const scale = css.startsWith("color(") ? 1 : 255;
+  const [r, g, b] = n.slice(0, 3).map((v) => {
+    const c = v / scale;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+}
+
+let showIO: IntersectionObserver | null = null;
+let groundIO: IntersectionObserver | null = null;
+
+onMounted(() => {
+  // The button appears half a viewport down: a sentinel at 50vh has left the
+  // top of the viewport. An observer, not a scroll listener.
+  if (sentinel.value) {
+    showIO = new IntersectionObserver(([entry]) => {
+      showTopBtn.value = !!entry && !entry.isIntersecting && entry.boundingClientRect.top < 0;
+    });
+    showIO.observe(sentinel.value);
+  }
+
+  // The ground behind the track: every section is classified once, from its
+  // own text colour (light text is only ever set on a dark ground), so this
+  // follows every section — not just the hero — and needs no hardcoded list.
+  // `data-ground="dark|light"` overrides. A thin band at mid-viewport then
+  // says which ground is current; overlaps resolve to the topmost (a sticky
+  // footer under its contact card).
+  const grounds = Array.from(
+    document.querySelectorAll<HTMLElement>(
+      "#main-content > section, #main-content > footer > div, [data-ground]"
+    )
+  );
+  const info = new Map(
+    grounds.map((el, order) => {
+      const cs = getComputedStyle(el);
+      const forced = el.dataset.ground;
+      const dark = forced ? forced === "dark" : luminance(cs.color) > 0.5;
+      return [el, { dark, z: Number.parseInt(cs.zIndex, 10) || 0, order }] as const;
+    })
+  );
+  const hits = new Set<Element>();
+  groundIO = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) hits.add(entry.target);
+        else hits.delete(entry.target);
+      }
+      let current: { dark: boolean; z: number; order: number } | undefined;
+      for (const el of hits) {
+        const g = info.get(el as HTMLElement);
+        if (g && (!current || g.z > current.z || (g.z === current.z && g.order > current.order))) {
+          current = g;
+        }
+      }
+      onDark.value = !!current?.dark;
+    },
+    { rootMargin: "-49.5% 0px -49.5% 0px" }
+  );
+  grounds.forEach((el) => groundIO?.observe(el));
+});
+
+onBeforeUnmount(() => {
+  showIO?.disconnect();
+  groundIO?.disconnect();
+});
+</script>
+
 <template>
-  <!-- Scroll progress tracer: replaces the native scrollbar. 
-       Now styled as a garment stitch (Mustard Gold thread on a dashed rail)
-       with an integrated Back to Top button. -->
-  <div
-    class="scroll-tracer"
-    :class="{ 'scroll-tracer--on-dark': onDark }"
-    aria-hidden="true"
-  >
-    <!-- The Sewing Track -->
-    <div class="scroll-tracer__track">
-      <!-- The fabric guideline (Unread dashed line) -->
-      <div class="scroll-tracer__rail"></div>
-
-      <!-- The gold thread (Read dashed line) -->
-      <div class="scroll-tracer__trail" :style="{ height: `${progress}%` }"></div>
-
-      <!-- The needle/knot (Leading edge) -->
-      <div class="scroll-tracer__dot" :style="{ top: `${progress}%` }"></div>
+  <div ref="sentinel" class="scroll-tracer__sentinel" aria-hidden="true" />
+  <div ref="tracer" class="scroll-tracer" :class="{ 'scroll-tracer--on-dark': onDark }">
+    <!-- The sewing track: decorative, so hidden from assistive tech. -->
+    <div class="scroll-tracer__track" aria-hidden="true">
+      <div class="scroll-tracer__rail" />
+      <div class="scroll-tracer__trail" />
+      <div class="scroll-tracer__needle-run">
+        <div class="scroll-tracer__needle" />
+      </div>
     </div>
 
-    <!-- Back to Top Button -->
     <button
       type="button"
       class="back-to-top"
       :class="{ 'is-visible': showTopBtn }"
+      :aria-label="t('backToTop')"
       @click="scrollToTop"
-      aria-label="Back to top"
     >
       <svg
-        class="w-5 h-5"
+        class="back-to-top__icon"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
+        aria-hidden="true"
+        focusable="false"
       >
         <path d="M12 19V5M5 12l7-7 7 7" />
       </svg>
@@ -42,221 +145,183 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import { useWindowScroll, useWindowSize, useDebounceFn } from "@vueuse/core";
-import { useNuxtApp } from "#app";
-
-const { y } = useWindowScroll();
-const { height: viewportHeight } = useWindowSize();
-const nuxtApp = useNuxtApp();
-
-// Document height calculation
-const docHeight = ref(0);
-const measure = () => {
-  docHeight.value = document.documentElement.scrollHeight;
-};
-const debouncedMeasure = useDebounceFn(measure, 100);
-
-onMounted(() => {
-  measure();
-  const observer = new ResizeObserver(debouncedMeasure);
-  observer.observe(document.body);
-  onBeforeUnmount(() => observer.disconnect());
-});
-
-watch(viewportHeight, measure);
-
-// Dark mode check — true while the hero (#top) is in view
-const onDark = ref(false);
-onMounted(() => {
-  const hero = document.querySelector('#top');
-  if (!hero) return;
-  const obs = new IntersectionObserver(
-    ([entry]) => { onDark.value = entry.isIntersecting; },
-    { threshold: 0.25 }
-  );
-  obs.observe(hero);
-  onBeforeUnmount(() => obs.disconnect());
-});
-
-// Scroll progress calculation (0 to 100)
-const progress = computed(() => {
-  const scrollable = docHeight.value - viewportHeight.value;
-  if (scrollable <= 0) return 0;
-  return Math.min(100, Math.max(0, (y.value / scrollable) * 100));
-});
-
-// Show the Back to Top button only after scrolling down one viewport height
-const showTopBtn = computed(() => y.value > viewportHeight.value * 0.5);
-
-// Smooth scroll to top using Lenis if available, fallback to native
-const scrollToTop = () => {
-  if (nuxtApp.$lenis) {
-    nuxtApp.$lenis.scrollTo(0, { immediate: false, duration: 1.2 });
-  } else {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-};
-</script>
-
 <style scoped>
 /* ─────────────── Running-stitch tracer ─────────────── */
 .scroll-tracer {
-  /* Stitch rhythm — tweak these to change the sewing look.
-     --dash = length of one stitch, --gap = thread-under gap between stitches. */
-  --dash: 7px;
-  --gap: 6px;
-  --thread: 2px;
+  /* Progress, 0–1, written by ScrollTrigger. */
+  --p: 0;
+  /* Stitch rhythm: one 7px stitch, one 7px gap. */
+  --stitch: 7px;
+  --tracer-thread: var(--gold);
+  --tracer-ghost: color-mix(in srgb, var(--ink) 22%, transparent);
 
   position: fixed;
   top: 0;
-  right: 12px;
+  right: max(12px, env(safe-area-inset-right, 0px));
   bottom: 0;
-  width: 48px;
-  /* Widened to contain the button */
   z-index: 60;
+  width: 48px;
+  /* The column itself never takes clicks; the button opts back in. */
   pointer-events: none;
-  /* Let clicks pass through the container... */
 }
 
-/* ─── The Sewing Track ─── */
+/* Dark ground under the track: the thread turns paper-light. */
+.scroll-tracer--on-dark {
+  --tracer-thread: var(--paper);
+  --tracer-ghost: color-mix(in srgb, var(--paper) 30%, transparent);
+}
+
+/* In the document flow at 50vh; observed, never painted. */
+.scroll-tracer__sentinel {
+  position: absolute;
+  top: 50vh;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+/* ─── The sewing track ─── */
 .scroll-tracer__track {
   position: absolute;
   top: 0;
-  bottom: 85px;
-  /* Stop before the button */
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: calc(24px + 44px + 16px + env(safe-area-inset-bottom, 0px));
+  left: 23px;
   width: 2px;
 }
 
-/* Unread Track: Faint dashed guideline */
-.scroll-tracer__rail {
+.scroll-tracer__rail,
+.scroll-tracer__trail,
+.scroll-tracer__needle-run {
   position: absolute;
   inset: 0;
-  width: 2px;
-  /* Dashed gradient to mimic a stitch path */
-  background-image: linear-gradient(
-    to bottom,
-    rgba(39, 66, 87, 0.2) 50%,
-    transparent 50%
-  );
-  background-size: 2px 14px;
 }
 
-/* Read Track: Mustard Gold thread */
+/* Unread: the faint dashed guideline. */
+.scroll-tracer__rail {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--tracer-ghost) 0 var(--stitch),
+    transparent var(--stitch) calc(2 * var(--stitch))
+  );
+}
+
+/* Read: an outer box slid up by (1 − p) and an inner stitch slid back down,
+   so the stitches stay registered with the rail and never stretch. */
 .scroll-tracer__trail {
+  overflow: hidden;
+  transform: translateY(calc((var(--p) - 1) * 100%));
+}
+
+.scroll-tracer__trail::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--tracer-thread) 0 var(--stitch),
+    transparent var(--stitch) calc(2 * var(--stitch))
+  );
+  transform: translateY(calc((1 - var(--p)) * 100%));
+}
+
+/* The needle rides the leading edge: its run box moves p of the track. */
+.scroll-tracer__needle-run {
+  transform: translateY(calc(var(--p) * 100%));
+}
+
+.scroll-tracer__needle {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  width: 2px;
-  background-image: linear-gradient(to bottom, #e8b938 50%, transparent 50%);
-  background-size: 2px 14px;
-}
-
-/* The Needle / Knot */
-.scroll-tracer__dot {
-  position: absolute;
-  left: 50%;
+  left: -1px;
   width: 4px;
   height: 18px;
-  /* Elongated to look like a needle weaving the thread */
   border-radius: 4px;
-  background: #e8b938;
-  transform: translate(-50%, -100%);
-  box-shadow: 0 2px 8px rgba(39, 66, 87, 0.5);
+  background: var(--tracer-thread);
+  transform: translateY(-100%);
 }
 
-/* ─── Over Dark Backgrounds (Hero Section) ─── */
-.scroll-tracer--on-dark .scroll-tracer__rail {
-  background-image: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.25) 50%,
-    transparent 50%
-  );
-}
-
-.scroll-tracer--on-dark .scroll-tracer__trail {
-  background-image: linear-gradient(to bottom, #ffffff 50%, transparent 50%);
-}
-
-.scroll-tracer--on-dark .scroll-tracer__dot {
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-/* ─── Back to Top Button ─── */
+/* ─── Back to top ─── */
+/* Two-tone: a deep core reads on light grounds, the paper ring on dark ones. */
 .back-to-top {
   position: absolute;
-  bottom: 24px;
-  left: 50%;
-  width: 42px;
-  height: 42px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  left: 2px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 2px solid var(--paper);
   border-radius: 50%;
-
-  /* Matches your reference image: Gold core, heavy dark ring */
-  background-color: #948fc8;
-  border: 4px solid #142e53;
-  color: #142e53;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* ...re-enable clicks for the button specifically */
-  pointer-events: auto;
+  background-color: var(--gold);
+  color: var(--paper);
   cursor: pointer;
-
-  /* Hidden state */
+  pointer-events: auto;
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-50%) translateY(15px) scale(0.9);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(12px);
+  transition: opacity var(--dur-sm) var(--ease), transform var(--dur-sm) var(--ease),
+    visibility 0s linear var(--dur-sm);
 }
 
 .back-to-top.is-visible {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: none;
+  transition-delay: 0s;
 }
 
-.back-to-top:hover {
-  background-color: #f1ca58;
-  transform: translateX(-50%) translateY(-3px) scale(1.05);
-  box-shadow: 0 10px 20px -5px rgba(20, 46, 83, 0.3);
+.back-to-top__icon {
+  width: 20px;
+  height: 20px;
 }
 
-/* ─── Transitions & Hardware Acceleration ─── */
-.scroll-tracer__trail,
-.scroll-tracer__dot {
-  transition-property: height, top, background-image, background, box-shadow;
-  transition-duration: 120ms, 120ms, 400ms, 400ms, 400ms;
-  transition-timing-function: linear, linear, ease, ease, ease;
+/* Focus ring: dark band inside a paper band, so it reads on any ground. */
+.back-to-top:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--paper);
+  background-color: var(--gold-soft);
 }
 
-/* ─────────────── Reduced motion ─────────────── */
+@media (hover: hover) {
+  .back-to-top:hover {
+    background-color: var(--gold-soft);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .back-to-top__icon {
+    transition: transform var(--dur-xs) var(--ease);
+  }
+
+  .back-to-top:focus-visible .back-to-top__icon {
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .back-to-top:hover .back-to-top__icon {
+    transform: translateY(-2px);
+  }
+}
+
+/* Reduced motion: the button simply appears and disappears. */
 @media (prefers-reduced-motion: reduce) {
-  .scroll-tracer__trail,
-  .scroll-tracer__dot,
   .back-to-top {
+    transform: none;
     transition: none;
   }
-
-  .back-to-top:hover {
-    transform: translateX(-50%);
-  }
 }
 
-/* Hide on touch devices — they handle their own scrollbars/momentum natively */
+/* Phones: only the track hides; the button stays, bottom-right. */
 @media (max-width: 640px) {
-  .scroll-tracer {
+  .scroll-tracer__track {
     display: none;
   }
 
   .back-to-top {
-    right: 12px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
 }
 </style>

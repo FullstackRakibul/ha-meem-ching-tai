@@ -22,6 +22,9 @@ const footerBlocks = computed(() => [
 
 const trustedBrands = ["H&M", "Zara", "Uniqlo", "C&A", "American Eagle"];
 
+// Same helper as ScrollTracer's button, so both behave the same.
+const scrollToTop = useScrollToTop();
+
 /** Finishing-footer nav. Each href must match a section id on the page. */
 const footerNav = computed(() => [
   { label: t("go To Top"), href: "#top" },
@@ -233,7 +236,7 @@ async function submit(e) {
       </svg>
 
       <div
-        class="relative mx-auto max-w-300 px-[max(16px,4vw)] py-[clamp(64px,10vw,160px)]"
+        class="relative mx-auto max-w-300 px-[max(16px,4vw)] py-(--section-y)"
       >
         <div class="relative">
           <!-- Tilted sheet underneath, like a pattern page slipped behind the card -->
@@ -514,7 +517,7 @@ async function submit(e) {
       class="relative z-0 overflow-hidden bg-(--ink) text-(--paper) lg:[@media(min-height:720px)]:sticky lg:[@media(min-height:720px)]:bottom-0"
     >
       <div
-        class="mx-auto flex max-w-360 flex-col px-[max(16px,4vw)] pb-4 pt-[clamp(48px,6vw,88px)]"
+        class="mx-auto flex max-w-360 flex-col px-[max(16px,4vw)] pb-4 pt-(--section-y)"
       >
         <!-- Brand block and the stitched world map -->
         <div
@@ -688,10 +691,13 @@ async function submit(e) {
             Accessories Ltd.</span
           >
           <span>{{ t("footerRights") }}</span>
+          <!-- href is the no-JS fallback; `.stop` keeps Lenis' own anchor
+               handler from scrolling a second time. -->
           <a
             href="#top"
             :class="footerLinkClass"
             class="group justify-self-center gap-1.5 md:justify-self-end"
+            @click.prevent.stop="scrollToTop"
           >
             {{ t("footerBackToTop") }}
             <UIcon

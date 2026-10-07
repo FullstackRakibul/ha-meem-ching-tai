@@ -63,14 +63,14 @@ useScrollScene(section, (ctx) => {
         <li data-reveal-block>{{ t("originStandards") }}</li>
       </ul>
 
-      <div class="mt-16 flex flex-col gap-4" data-reveal-block>
+      <div class="mt-(--section-gap) flex flex-col gap-4" data-reveal-block>
         <p class="loom-label loom-muted">{{ t("footerTrustedBy") }}</p>
         <p class="loom-trusted text-xl font-bold">
           <span v-for="brand in trustedBrands" :key="brand">{{ brand }}</span>
         </p>
       </div>
 
-      <div class="mt-16 flex flex-wrap gap-3">
+      <div class="mt-(--section-gap) flex flex-wrap gap-3">
         <a class="loom-cta" href="#contact">{{ t("originCta") }}</a>
         <a
           class="loom-ghost"

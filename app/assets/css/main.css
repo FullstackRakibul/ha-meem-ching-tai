@@ -53,13 +53,17 @@
   --font-bn: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
   --font-zh: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  /* Space the floating pill occupies: 12px offset + pill + breathing room. */
-  --header: 88px;
+  /* Space the floating pill occupies: 12px offset + 64px pill at rest. */
+  --header: 76px;
+  /* Vertical rhythm: section padding, and heading-to-content gaps. */
+  --section-y: clamp(48px, 6vw, 96px);
+  --section-gap: clamp(24px, 3vw, 48px);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 639.98px) {
   :root {
-    --header: 76px;
+    /* 12px offset + 56px pill. */
+    --header: 68px;
   }
 }
 
@@ -207,6 +211,12 @@ p {
   outline-color: var(--gold);
 }
 
+/* Programmatic focus targets (the page top after "Back to top") are not
+   controls; the scroll itself shows where focus went. */
+[data-focus-target]:focus {
+  outline: none;
+}
+
 /* Reveal Animations */
 .js [data-reveal] {
   opacity: 0;
@@ -224,10 +234,13 @@ p {
 
 
 .menu-button {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 7px;
-  justify-self: center;
+  min-height: 40px;
+  padding-inline: 12px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -235,8 +248,41 @@ p {
   transition: opacity 0.3s;
 }
 
-.menu-button:hover {
-  opacity: 0.6;
+/* 40px visual, 44px hit area. */
+.menu-button::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+}
+
+.menu-button:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+/* Below 380px the label would push the logo into clipping: icon only, label
+   kept as the accessible name. */
+@media (max-width: 379.98px) {
+  .menu-button {
+    width: 40px;
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  .menu-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (hover: hover) {
+  .menu-button:hover {
+    opacity: 0.6;
+  }
 }
 
 .menu-button>i {
@@ -497,10 +543,6 @@ p {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .loader {
-    display: none;
   }
 
   .js [data-reveal] {

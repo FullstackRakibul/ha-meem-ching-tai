@@ -25,7 +25,6 @@ import ProductRail from "~/components/landing/ProductRail.vue";
 import SustainabilitySection from "~/components/landing/SustainabilitySection.vue";
 import OriginPanel from "~/components/landing/OriginPanel.vue";
 import ScrollTracer from "~/components/ScrollTracer.vue";
-import App from "~/app.vue";
 
 useHead({
   title: "Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing",
@@ -76,6 +75,7 @@ const featuredProducts = computed<Array<[string, string, string]>>(() => [
   [t("product6"), t("catWaistbands"), `${IMG}5012.jpeg`],
 ]);
 
+// Status: Pocketing is in production; the other lines are coming soon.
 const categoryScenes = computed(() => [
   {
     id: "01",
@@ -83,6 +83,7 @@ const categoryScenes = computed(() => [
     description: t("scene1Desc"),
     image: `${IMG}19.jpeg`,
     type: "contain",
+    status: "live" as const,
   },
   {
     id: "02",
@@ -90,6 +91,7 @@ const categoryScenes = computed(() => [
     description: t("scene2Desc"),
     image: `${IMG}17.jpeg`,
     type: "cover",
+    status: "soon" as const,
   },
   {
     id: "03",
@@ -97,6 +99,7 @@ const categoryScenes = computed(() => [
     description: t("scene3Desc"),
     image: `${IMG}13.jpeg`,
     type: "cover",
+    status: "soon" as const,
   },
   {
     id: "04",
@@ -104,6 +107,7 @@ const categoryScenes = computed(() => [
     description: t("scene4Desc"),
     image: `${IMG}11.jpeg`,
     type: "contain",
+    status: "soon" as const,
   },
 ]);
 
@@ -122,7 +126,6 @@ const servicePoints = computed(() => [
 <template>
   <div>
     <a class="skip-link" href="#main-content">{{ t("skipToContent") }}</a>
-    <ScrollTracer :nav-items="navItems" />
 
     <!-- <SiteHeader
       :menu-open="menuOpen"
@@ -160,6 +163,8 @@ const servicePoints = computed(() => [
     </main>
 
     <StatusRail />
+    <!-- Last in the DOM, so "Back to top" is the last tab stop, after the page. -->
+    <ScrollTracer />
     <!-- <WhatsAppButton /> -->
   </div>
 </template>

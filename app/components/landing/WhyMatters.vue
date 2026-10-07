@@ -15,6 +15,7 @@
  */
 import { useElementVisibility } from "@vueuse/core";
 import ShortThreadPoster from "~/components/landing/posters/ShortThreadPoster.vue";
+import LoomSeam from "~/components/ui/LoomSeam.vue";
 import { setUniform, trackPresence } from "~/composables/useLoomStage";
 import { EASE, SCRUB } from "~/utils/motion";
 
@@ -101,16 +102,14 @@ useScrollScene(section, (ctx) => {
       <article
         v-for="card in cards"
         :key="card.number"
-        class="why-card"
+        class="why-card loom-seam"
         data-reveal-block
       >
         <!-- Seam: a running stitch just inside the edge. It runs on hover. -->
-        <svg class="why-card__seam loom-gold" aria-hidden="true" focusable="false">
-          <rect width="100%" height="100%" rx="8" />
-        </svg>
+        <LoomSeam />
 
         <!-- Hover lift lives here: GSAP owns the article's own transform. -->
-        <div class="why-card__body">
+        <div class="why-card__body loom-seam__body">
           <p class="loom-label loom-gold">{{ card.number }}</p>
           <h3 class="text-xl font-bold">{{ card.title }}</h3>
           <p class="loom-body loom-muted">{{ card.text }}</p>
@@ -130,11 +129,11 @@ useScrollScene(section, (ctx) => {
  * Card: a patch sewn onto the section's light ground. The fill IS the
  * section background (--night), so the cards read as stitched outlines on
  * the page rather than darker panels; only the hover state adds a tint.
- * Border and hover tint mix from `currentColor` (the section's text colour);
- * the seam takes its colour from `.loom-gold`.
+ * Border and hover tint mix from `currentColor` (the section's text colour).
+ * The stitch, its run and the body lift are the shared `.loom-seam` system
+ * (assets/css/loom.css); this file keeps only the card itself.
  */
 .why-card {
-  position: relative;
   padding: clamp(22px, 2.2vw, 32px);
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 14px;
@@ -144,30 +143,10 @@ useScrollScene(section, (ctx) => {
     border-color 0.4s var(--ease, ease);
 }
 
-.why-card__seam {
-  position: absolute;
-  inset: 7px;
-  width: calc(100% - 14px);
-  height: calc(100% - 14px);
-  overflow: visible;
-  pointer-events: none;
-  opacity: 0.3;
-  transition: opacity 0.4s var(--ease, ease);
-}
-
-.why-card__seam rect {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-dasharray: 7 6;
-}
-
 .why-card__body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  transition: transform 0.4s var(--ease, ease);
 }
 
 /* Hover only where a real pointer exists, so touch never leaves it stuck on. */
@@ -176,40 +155,11 @@ useScrollScene(section, (ctx) => {
     border-color: color-mix(in srgb, currentColor 26%, transparent);
     background-color: color-mix(in srgb, currentColor 3%, var(--night));
   }
-
-  .why-card:hover .why-card__seam {
-    opacity: 1;
-  }
-
-  .why-card:hover .why-card__seam rect {
-    animation: why-seam-run 0.9s linear infinite;
-  }
-
-  .why-card:hover .why-card__body {
-    transform: translateY(-2px);
-  }
-}
-
-/* One dash plus one gap, so the loop has no visible jump. */
-@keyframes why-seam-run {
-  to {
-    stroke-dashoffset: -13;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .why-card,
-  .why-card__seam,
-  .why-card__body {
+  .why-card {
     transition: none;
-  }
-
-  .why-card:hover .why-card__seam rect {
-    animation: none;
-  }
-
-  .why-card:hover .why-card__body {
-    transform: none;
   }
 }
 </style>

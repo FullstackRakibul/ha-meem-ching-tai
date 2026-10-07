@@ -17,6 +17,16 @@
   --loom-thread-pale: #FCE570;
   --loom-thread: #c4970b;
   --loom-thread-deep: #e7c42d;
+
+  /* Motion tokens for CSS: copies of utils/motion.ts (DUR, EASE). The main.css
+     `--ease` is EASE.reveal. Change both files together. */
+  --dur-xs: 0.2s;
+  --dur-sm: 0.45s;
+  --dur-md: 0.8s;
+  --dur-lg: 1.2s;
+  --dur-xl: 1.6s;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-inout: cubic-bezier(0.45, 0, 0.55, 1);
 }
 
 /* ── Lenis (desktop smooth scroll) ───────────────────────── */
@@ -176,6 +186,8 @@ html.lenis {
   position: relative;
   background-color: var(--night);
   color: var(--on-night);
+  /* Stitch colour for every .loom-seam inside (inherited). ≈15:1 on --night. */
+  --seam-color: var(--gold);
 }
 
 .loom-night--dusk {
@@ -188,6 +200,8 @@ html.lenis {
   z-index: 6;
   /* background-color: var(--beige); */
   color: var(--navy);
+  /* Stitch colour on day grounds: navy is ≈12:1 on --beige. */
+  --seam-color: var(--navy);
 }
 
 .loom-layer {
@@ -292,6 +306,88 @@ html.lenis {
   color: var(--beige);
 }
 
+/* ── Seam: the one stitched hover ────────────────────────── */
+/* A running stitch just inside its host's edge (components/ui/LoomSeam.vue).
+   The host adds `.loom-seam` and keeps its own padding, border, radius and
+   background; it may wrap its content in `.loom-seam__body` for the lift.
+   Knobs inherit, so set them on the host or any ancestor:
+     --seam-inset  distance from the host's edge (7px)
+     --seam-color  gold on night grounds, navy on day grounds (see surfaces)
+     --seam-idle   stitch opacity at rest (0.3)
+   0.4s fade/lift and 0.9s per stitch are the approved .why-card timings. */
+.loom-seam {
+  position: relative;
+}
+
+.loom-seam__stitch {
+  position: absolute;
+  inset: var(--seam-inset, 7px);
+  width: calc(100% - 2 * var(--seam-inset, 7px));
+  height: calc(100% - 2 * var(--seam-inset, 7px));
+  overflow: visible;
+  color: var(--seam-color, var(--gold));
+  pointer-events: none;
+  opacity: var(--seam-idle, 0.3);
+}
+
+.loom-seam__stitch rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 7 6;
+}
+
+/* Hover where a real pointer exists. On interactive hosts keyboard focus
+   mirrors it — the host itself, or a control inside it (the keyboard-only
+   form of focus-within). */
+@media (hover: hover) {
+  .loom-seam:hover > .loom-seam__stitch {
+    opacity: 1;
+  }
+}
+
+.loom-seam:is(:focus-visible, :has(:focus-visible)) > .loom-seam__stitch {
+  opacity: 1;
+}
+
+/* Motion only when allowed; reduced motion keeps the static final state
+   (stitch fully drawn on hover/focus, no run, no lift). */
+@media (prefers-reduced-motion: no-preference) {
+  .loom-seam__stitch {
+    transition: opacity 0.4s var(--ease);
+  }
+
+  .loom-seam__body {
+    transition: transform 0.4s var(--ease);
+  }
+
+  .loom-seam:is(:focus-visible, :has(:focus-visible)) > .loom-seam__stitch rect {
+    animation: loom-seam-run 0.9s linear infinite;
+  }
+
+  .loom-seam:is(:focus-visible, :has(:focus-visible)) > .loom-seam__body {
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .loom-seam:hover > .loom-seam__stitch rect {
+    animation: loom-seam-run 0.9s linear infinite;
+  }
+
+  .loom-seam:hover > .loom-seam__body {
+    transform: translateY(-2px);
+  }
+}
+
+/* One dash plus one gap, so the loop has no visible jump. */
+@keyframes loom-seam-run {
+  to {
+    stroke-dashoffset: -13;
+  }
+}
+
 /* ── The WebGL stage ─────────────────────────────────────── */
 .loom-stage {
   position: fixed;
@@ -311,7 +407,7 @@ html.lenis {
 /* While the menu is open the stage draws only into the preview box, so it
    can sit above the menu panel without covering anything else. */
 .loom-stage--menu {
-  z-index: 60;
+  z-index: 75; /* above the menu (70) and tracer (60), below the header */
 }
 
 /* ── Posters (the designed no-WebGL / reduced-motion state) ── */
@@ -445,9 +541,40 @@ html.loom-live [data-menu-preview] img {
 }
 
 /* ── Header (the pill) ───────────────────────────────────── */
-.loom-header .menu-button {
+/* Controls are 40px; a ::before extends each hit area to 44px. */
+.loom-header .loom-cta {
+  position: relative;
   min-height: 40px;
-  padding-inline: 0.5rem;
+  gap: 8px;
+  padding-inline: 16px;
+}
+
+.loom-header .loom-cta::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+}
+
+.loom-header .loom-cta:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+@media (max-width: 639.98px) {
+  .loom-header .loom-cta {
+    width: 40px;
+    padding-inline: 0;
+    justify-content: center;
+  }
+}
+
+.loom-cta__tag {
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
 }
 
 /* ── Hero: Boot ──────────────────────────────────────────── */
@@ -492,12 +619,12 @@ html.loom-live [data-menu-preview] img {
 
 /* ── Intro: Index (process table) ────────────────────────── */
 .loom-index {
-  padding-block: clamp(96px, 14vw, 200px);
+  padding-block: var(--section-y);
 }
 
 .loom-index__grid {
   display: grid;
-  gap: clamp(40px, 6vw, 96px);
+  gap: var(--section-gap);
 }
 
 @media (min-width: 1024px) {
@@ -606,7 +733,7 @@ html.loom-live [data-menu-preview] img {
 .loom-why__cards {
   display: grid;
   gap: clamp(12px, 1.4vw, 20px);
-  padding-bottom: clamp(96px, 12vw, 180px);
+  padding-bottom: var(--section-y);
 }
 
 @media (min-width: 768px) {
@@ -622,36 +749,90 @@ html.loom-live [data-menu-preview] img {
 }
 
 /* ── Stats: Telemetry + milestones ───────────────────────── */
+/* Vertical rhythm also reads the viewport height, so 1280×720 and
+   1366×768 laptops are not mostly empty space. */
 .loom-stats {
-  padding-block: clamp(96px, 12vw, 180px);
+  padding-block: var(--section-y);
+}
+
+.loom-stats__header {
+  margin-bottom: var(--section-gap);
 }
 
 .loom-stats__grid {
   display: grid;
-  gap: clamp(48px, 6vw, 96px);
+  gap: clamp(32px, min(6vw, 8vh), 96px);
 }
 
+.loom-stats__grid>* {
+  min-width: 0;
+}
+
+/* ≥ 1024: the stats sit beside the weave figure. */
 @media (min-width: 1024px) {
   .loom-stats__grid {
-    grid-template-columns: 6fr 6fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
   }
 }
 
+/* The list is the size container, so every value is sized from the column
+   width: "Tk 100 crore" always fits one line and all values match. */
 .loom-stats__list {
+  --stat-size: 13.5cqi;
+  container-type: inline-size;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2rem 1.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(10px, 1.4vw, 16px);
 }
 
-.loom-stats__list>div {
+@media (min-width: 360px) {
+  .loom-stats__list {
+    --stat-size: 6.6cqi;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* An odd last stat spans its row instead of leaving a hole. */
+  .loom-stats__cell:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .loom-stats__list {
+    --stat-size: 4.3cqi;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .loom-stats__cell:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+
+  .loom-stats__cell:last-child:nth-child(3n + 1) {
+    grid-column: 1 / -1;
+  }
+
+  .loom-stats__cell:last-child:nth-child(3n + 2) {
+    grid-column: span 2;
+  }
+}
+
+.loom-stats__cell {
+  --seam-idle: 0;
+  min-width: 0;
+  padding: clamp(14px, 1.8vw, 24px);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 14px;
+}
+
+.loom-stats__body {
   display: flex;
+  margin: 0;
   flex-direction: column;
   gap: 0.35rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--light-line);
 }
 
+/* Shared with the dusk stats (SustainabilitySection). */
 .loom-stats__value {
   font-size: clamp(1.75rem, 1.1rem + 2.2vw, 3.25rem);
   font-weight: 800;
@@ -659,47 +840,164 @@ html.loom-live [data-menu-preview] img {
   letter-spacing: -0.02em;
 }
 
+/* Inside the venture list: column-relative, one line, tabular. */
+.loom-stats__list .loom-stats__value {
+  font-size: clamp(1.375rem, var(--stat-size), 3.25rem);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Milestones: a thread timeline. Below 1024 it is vertical, the thread down
+   the left (scaleY); from 1024 three columns with the thread across the top
+   (scaleX). `.is-live` (JS + motion) lets scroll draw the gold thread and
+   turns each knot gold as the thread reaches it. Without it — no JS, reduced
+   motion — the thread is fully drawn and every knot is gold. */
+#milestones {
+  margin-top: var(--section-y);
+  scroll-margin-top: var(--header);
+}
+
+.loom-milestones__title {
+  margin-bottom: clamp(14px, 2.4vh, 24px);
+}
+
+.loom-timeline {
+  /* Thread centre line, measured from the timeline's start edge. */
+  --rail: 11px;
+  --knot: 13px;
+  --card-pad: clamp(18px, 2vw, 28px);
+  position: relative;
+  padding-left: 36px;
+}
+
+.loom-timeline__ghost,
+.loom-timeline__thread {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--rail) - 1px);
+  pointer-events: none;
+}
+
+.loom-timeline__ghost {
+  width: 0;
+  border-left: 2px dashed color-mix(in srgb, var(--gold) 35%, transparent);
+}
+
+.loom-timeline__thread {
+  width: 2px;
+  background: var(--gold);
+  transform-origin: top;
+}
+
+.loom-timeline.is-live .loom-timeline__thread {
+  transform: scaleY(var(--thread, 0));
+}
+
 .loom-milestones {
   display: grid;
-  gap: 1.5rem;
-  margin-top: clamp(64px, 8vw, 128px);
+  gap: clamp(12px, 2vh, 18px);
 }
 
-@media (min-width: 768px) {
-  .loom-milestones {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.loom-milestones li {
+.loom-milestones>li {
   position: relative;
+  min-width: 0;
+}
+
+.loom-milestones__card {
+  height: 100%;
+  padding: var(--card-pad);
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 14px;
+}
+
+.loom-milestones__body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--light-line);
 }
 
-.loom-milestones li::before {
+/* The knot sits on the thread, level with its card's label. */
+.loom-timeline__knot {
   position: absolute;
-  top: -5px;
-  left: 0;
-  width: 9px;
-  height: 9px;
+  top: calc(var(--card-pad) + 0.45rem - var(--knot) / 2);
+  left: calc(var(--rail) - 36px - var(--knot) / 2);
+  width: var(--knot);
+  height: var(--knot);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  background: var(--night);
+}
+
+.loom-timeline__knot::after {
+  position: absolute;
+  inset: 2px;
   border-radius: 50%;
   content: "";
   background: var(--gold);
 }
 
+.loom-timeline.is-live .loom-timeline__knot:not(.is-reached)::after {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loom-timeline__knot::after {
+    transition: opacity var(--dur-sm) var(--ease);
+  }
+}
+
+@media (min-width: 1024px) {
+  .loom-timeline {
+    padding-top: 36px;
+    padding-left: 0;
+  }
+
+  .loom-timeline__ghost,
+  .loom-timeline__thread {
+    top: calc(var(--rail) - 1px);
+    right: 0;
+    bottom: auto;
+    left: 0;
+  }
+
+  .loom-timeline__ghost {
+    width: auto;
+    height: 0;
+    border-top: 2px dashed color-mix(in srgb, var(--gold) 35%, transparent);
+    border-left: 0;
+  }
+
+  .loom-timeline__thread {
+    width: auto;
+    height: 2px;
+    transform-origin: left;
+  }
+
+  .loom-timeline.is-live .loom-timeline__thread {
+    transform: scaleX(var(--thread, 0));
+  }
+
+  .loom-milestones {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 1.6vw, 24px);
+  }
+
+  .loom-timeline__knot {
+    top: calc(var(--rail) - 36px - var(--knot) / 2);
+    left: var(--card-pad);
+  }
+}
+
 /* ── Factory: Dawn ───────────────────────────────────────── */
 .loom-factory {
-  padding-bottom: clamp(96px, 12vw, 180px);
+  padding-bottom: var(--section-y);
 }
 
 .loom-factory__grid {
   display: grid;
   gap: clamp(40px, 5vw, 80px);
-  padding-top: clamp(48px, 6vw, 96px);
+  padding-top: var(--section-gap);
 }
 
 @media (min-width: 1024px) {
@@ -765,6 +1063,14 @@ html.loom-live [data-menu-preview] img {
   overflow: hidden;
   background: var(--panel);
   cursor: zoom-in;
+  /* Seam: hidden at rest, a light stitch over the photograph on hover/focus. */
+  --seam-idle: 0;
+  --seam-color: var(--paper);
+}
+
+/* Contained shots leave the light panel under the stitch: stitch in navy. */
+.category-scene--contain .category-scene__visual {
+  --seam-color: var(--navy);
 }
 
 .category-scene--cover .category-scene__visual img {
@@ -808,6 +1114,112 @@ html.loom-live [data-menu-preview] img {
 
 .category-scene__copy>p {
   max-width: 44ch;
+}
+
+/* Scene label and status badge share one row, in the copy column. */
+.category-scene__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+/* Status badge: a small woven label with a punched eyelet and a thread tail.
+   Live is sewn (filled, stitched edge, slowly pulsing dot); soon is basted
+   (dashed outline, no fill, no pulse). Fill vs outline plus the words carry
+   the difference without colour. Live text ≈12:1, soon text/outline ≈6.9:1. */
+.loom-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  min-height: 26px;
+  margin-left: 10px;
+  padding: 5px 11px 5px 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+:root:lang(en) .loom-badge {
+  text-transform: uppercase;
+}
+
+.loom-badge--live {
+  background: var(--navy);
+  color: var(--beige);
+}
+
+/* The sewn edge, kept clear of the eyelet. */
+.loom-badge--live::before {
+  position: absolute;
+  inset: 3px 3px 3px 13px;
+  border: 1px dashed color-mix(in srgb, var(--beige) 65%, transparent);
+  border-radius: 2px;
+  content: "";
+  pointer-events: none;
+}
+
+.loom-badge--soon {
+  border-style: dashed;
+  border-color: var(--gray-600);
+  color: var(--gray-600);
+}
+
+/* Eyelet + tail: the tail hangs outside the label's left edge. */
+.loom-badge__eyelet {
+  flex: none;
+  width: 20px;
+  height: 12px;
+  margin-left: -16px;
+  overflow: visible;
+  color: var(--navy);
+}
+
+.loom-badge__eyelet path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+}
+
+/* Live: punched through to the ground. Soon: a hole marked in outline. */
+.loom-badge__eyelet circle {
+  fill: var(--beige);
+  stroke: none;
+}
+
+.loom-badge--soon .loom-badge__eyelet {
+  color: var(--gray-600);
+}
+
+.loom-badge--soon .loom-badge__eyelet circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.loom-badge__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loom-badge__dot {
+    animation: loom-badge-pulse var(--dur-xl) ease-in-out infinite alternate;
+  }
+}
+
+@keyframes loom-badge-pulse {
+  to {
+    opacity: 0.3;
+  }
 }
 
 /* Unpinned on wide screens (reduced motion, or before GSAP loads): an
@@ -876,14 +1288,18 @@ html.loom-live [data-menu-preview] img {
   text-align: right;
 }
 
+.category-theatre.is-horizontal .category-scene:nth-child(even) .category-scene__meta {
+  justify-content: flex-end;
+}
+
 /* ── Catalogue rail ──────────────────────────────────────── */
 .loom-catalogue {
-  padding-block: clamp(80px, 9vw, 150px);
+  padding-block: var(--section-y);
 }
 
 /* ── Sustainability: Dusk ────────────────────────────────── */
 .loom-dusk {
-  padding-bottom: clamp(96px, 12vw, 180px);
+  padding-bottom: var(--section-y);
 }
 
 .loom-dusk__grid {
@@ -924,13 +1340,13 @@ html.loom-live [data-menu-preview] img {
 
 /* ── Partnership: Ply ────────────────────────────────────── */
 .loom-ply {
-  padding-block: clamp(110px, 14vw, 220px);
+  padding-block: var(--section-y);
 }
 
 .loom-ply__yarn {
   position: relative;
   height: clamp(56px, 9vw, 120px);
-  margin-block: clamp(32px, 5vw, 72px);
+  margin-block: var(--section-gap);
 }
 
 .loom-ply__facts {

@@ -51,7 +51,7 @@ useScrollScene(section, (ctx) => {
     <div class="loom-dawn" aria-hidden="true" />
 
     <div class="loom-wrap">
-      <header class="flex flex-col gap-6 pt-16" data-reveal-block>
+      <header class="flex flex-col gap-6 pt-(--section-y)" data-reveal-block>
         <p class="loom-label loom-muted"><span>05</span>{{ t("factoryEyebrow") }}</p>
         <h2 class="loom-display loom-display--xl">{{ t("factoryTitle") }}</h2>
         <p class="loom-body-l loom-muted max-w-[44ch]">{{ t("factorySite") }}</p>
