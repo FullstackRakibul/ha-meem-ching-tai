@@ -1,20 +1,18 @@
 <!-- components/landing/ProductRail.vue -->
 <script setup lang="ts">
 /**
- * Scene 07 — Catalogue. An endlessly looping card rail on a dark ground: the
- * card nearest the rail's centre is full size and opaque, cards toward the
- * edges shrink and fade.
+ * Scene 07 — Catalogue. A 3D perspective fan carousel on a dark ground.
  *
- * Plumbing follows the landing-page motion contract (utils/motion.ts):
- *  - GSAP arrives through `useScrollScene` (lazy, scoped, auto-reverted) and
- *    the loop runs on `gsap.ticker` — the page's single animation loop.
- *  - `$lenis` is optional: when it exists its scroll event nudges the rail,
- *    otherwise a native `scroll` listener does (Lenis is off on touch).
- *  - Reduced motion: no ticker, no clones — a native scroll-snap strip whose
- *    centre-scale is driven by the strip's own `scroll` event.
+ * Visual model: cards arc in a concave fan using CSS perspective + rotateY +
+ * translateZ. The centre card is upright, full-scale, and closest to the
+ * viewer. Each card to the left/right tilts away and recedes on Z, producing
+ * true depth — not a flat scale stack. Cards are landscape (16:9).
  *
- * Until motion loads (and without JS) the rail is that same native strip,
- * unscaled, so the catalogue never waits on an engine.
+ * Perf contract: per frame we write EXACTLY four composited properties
+ * (scale, opacity, rotateY, translateZ) per card, only inside a 1.15 ×
+ * half-width cull band. Everything else (glow, gold tint, caption) is a
+ * single `is-active` class toggled when the centre index changes.
+ * borderRadius is fixed in CSS and never animated.
  */
 import type { SceneContext } from "~/composables/useScrollScene";
 import { DUR, EASE } from "~/utils/motion";
@@ -22,52 +20,37 @@ import { DUR, EASE } from "~/utils/motion";
 const props = withDefaults(
   defineProps<{
     title: string;
-    items: Array<[string, string, string]>; // [name, meta, image]
-    /** Auto-run speed in px/s. */
+    items: Array<[string, string, string]>;
     speed?: number;
   }>(),
-  { speed: 60 },
+  { speed: 55 }
 );
 
 const { t } = useLocale();
 const { $lenis } = useNuxtApp();
 
-/**
- * How a card looks at closeness `v` (1 = centred, 0 = at/past the edge).
- * Radius is the *rendered* corner in rem, i.e. after the card's own scale.
- */
-type Curve = {
-  scale: (v: number) => number;
-  opacity: (v: number) => number;
-  radius: (v: number) => number;
-  /** Caption + index visibility, given how "lit" (centred) the card is. */
-  labels: (lit: number) => number;
-};
+// ── 3D fan curve constants ────────────────────────────────────────────────
+/** Scale at the outermost visible card. */
+const SCALE_EDGE = 0.5;
+const SCALE_CENTRE = 1.0;
+/** Opacity at the outermost visible card. */
+const OPACITY_EDGE = 0.45;
+/** Max Y-rotation (degrees) applied to the outermost card. Left cards rotate
+ *  positively (right edge away), right cards rotate negatively. */
+const MAX_ROTATE_Y = 38;
+/** translateZ range in px: centre card = MAX (closest), edge card = 0. */
+const TRANSLATE_Z_MAX = 110;
 
-// [ref-tune] Live stage — fitted to the reference: card heights there run
-// 1, .81, .64, .49, .36, .25, .16, .09 at even spacing, which `v^1.5` tracks
-// within ~0.02. Steep from the centre out, so the middle card dominates.
-const STAGE: Curve = {
-  scale: (v) => 0.06 + 0.94 * v ** 1.5,
-  opacity: (v) => 0.08 + 0.92 * v ** 1.5,
-  radius: (v) => 0.35 + 0.8 * v,
-  labels: (lit) => lit,
-};
+/** Smooth quadratic ease-out — 2 muls, no pow(). */
+const easeOut = (v: number) => v * (2 - v);
 
-/** Reduced-motion strip — gentle and linear; every caption stays readable. */
-const STRIP: Curve = {
-  scale: (v) => 0.55 + 0.45 * v,
-  opacity: (v) => 0.35 + 0.65 * v,
-  radius: (v) => 0.5 + 0.75 * v,
-  labels: () => 1,
-};
-
-/** Share of the remaining distance the visual state closes per 60fps frame. */
-const LERP = 0.18; // [ref-tune] was 0.14 — snappier tracking
-/** How much page scroll (px) carries over into rail travel. */
+const LERP = 0.18;
 const NUDGE_GAIN = 0.35;
-/** Fastest fling a drag release may hand to the momentum tween (px/s). */
 const MAX_FLING = 2400;
+/** Write threshold — changes smaller than this are imperceptible. */
+const WRITE_EPS = 0.008;
+/** Cull band: cards beyond 1.15 × half-width are held at edge state. */
+const CULL = 1.15;
 
 type RailMode = "static" | "reduced" | "live";
 
@@ -76,81 +59,67 @@ const rail = ref<HTMLElement | null>(null);
 const track = ref<HTMLElement | null>(null);
 
 const mode = ref<RailMode>("static");
-/** How many copies of `items` are rendered (live mode loops over ≥ 3). */
 const copies = ref(1);
 const userPaused = ref(false);
 const live = computed(() => mode.value === "live");
-/** The real, accessible set is the middle copy in live mode; the rest are clones. */
 const realCopy = computed(() => (live.value ? 2 : 1));
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-useScrollScene(section, (ctx) => (ctx.mode === "reduced" ? nativeRail(ctx) : liveRail(ctx)));
-
-/* ── Shared: per-card visual writer ─────────────────────────────────── */
+useScrollScene(section, (ctx) =>
+  ctx.mode === "reduced" ? nativeRail(ctx) : liveRail(ctx)
+);
 
 type Gsap = SceneContext["gsap"];
 
-/** quickSetter-backed writes for every card; skips cards whose value hasn't moved. */
-function cardWriter(gsap: Gsap, els: HTMLElement[], curve: Curve) {
-  const part = (sel: string) => els.map((el) => el.querySelector<HTMLElement>(sel)!);
-  const glows = part("[data-glow]");
-  const accents = part("[data-accent]"); // [ref-tune]
-  const labels = part("[data-labels]"); // [ref-tune]
-  const setters = els.map((el, i) => ({
-    scale: gsap.quickSetter(el, "scale"),
-    opacity: gsap.quickSetter(el, "opacity"),
-    radius: gsap.quickSetter(el, "borderRadius", "rem"),
-    glow: gsap.quickSetter(glows[i]!, "opacity"),
-    accent: gsap.quickSetter(accents[i]!, "opacity"), // [ref-tune]
-    labels: gsap.quickSetter(labels[i]!, "opacity"), // [ref-tune]
-  }));
-  const writtenV = new Float32Array(els.length).fill(-1);
-  const writtenF = new Float32Array(els.length).fill(-1);
-  const zIndex = new Int16Array(els.length).fill(-1);
+/** Four composited properties per card — all GPU-only, no layout/paint. */
+type Setter = {
+  el: HTMLElement;
+  scale: (n: number) => void;
+  opacity: (n: number) => void;
+  /** rotateY in degrees. */
+  rotateY: (n: number) => void;
+  /** translateZ in px. */
+  translateZ: (n: number) => void;
+  lastV: number;
+};
 
-  return {
-    /**
-     * `v` is closeness to centre: 1 at the centre, 0 at (or past) the edge.
-     * `focus` is the same idea measured in cards: 1 when centred, 0 once a
-     * full card-step away — so glow/accent/labels light only the centre card.
-     */
-    write(i: number, v: number, focus: number) {
-      if (Math.abs(v - writtenV[i]!) < 5e-4 && Math.abs(focus - writtenF[i]!) < 5e-4) return;
-      writtenV[i] = v;
-      writtenF[i] = focus;
-      const s = setters[i]!;
-      const scale = curve.scale(v);
-      s.scale(scale);
-      s.opacity(curve.opacity(v));
-      // Divide out the scale so the *rendered* corner matches the curve.
-      s.radius(curve.radius(v) / scale);
-      const lit = focus * focus * (3 - 2 * focus); // smoothstep
-      s.glow(lit);
-      s.accent(lit * 0.85); // [ref-tune] gold tint rides the glow
-      s.labels(curve.labels(lit)); // [ref-tune] index + caption on the centre card only
-      const z = Math.round(v * 100);
-      if (z !== zIndex[i]) {
-        zIndex[i] = z;
-        els[i]!.style.zIndex = String(z);
-      }
-    },
-    clear() {
-      gsap.set(els, { clearProps: "transform,opacity,borderRadius,zIndex" });
-      gsap.set([...glows, ...accents, ...labels], { clearProps: "opacity" });
-    },
-  };
+function buildSetters(gsap: Gsap, els: HTMLElement[]): Setter[] {
+  return els.map((el) => ({
+    el,
+    scale: gsap.quickSetter(el, "scale") as (n: number) => void,
+    opacity: gsap.quickSetter(el, "opacity") as (n: number) => void,
+    rotateY: gsap.quickSetter(el, "rotateY", "deg") as (n: number) => void,
+    translateZ: gsap.quickSetter(el, "translateZ", "px") as (n: number) => void,
+    lastV: -1,
+  }));
 }
 
-/** Width of one card-step in normalised distance, for the `focus` band. */
-const focusOf = (v: number, band: number) => Math.max(0, (v - (1 - band)) / band);
+/**
+ * Write all four properties for card at closeness `v` (1 = centre, 0 = edge).
+ * `side`: +1 = card is left of centre (left edge tilts away from viewer),
+ *         −1 = card is right of centre (right edge tilts away from viewer).
+ * Skipped when the value has not moved by more than WRITE_EPS.
+ */
+function writeCard(sv: Setter, v: number, side: number) {
+  if (Math.abs(v - sv.lastV) < WRITE_EPS) return;
+  sv.lastV = v;
+  const curved = easeOut(v);
+  sv.scale(SCALE_EDGE + (SCALE_CENTRE - SCALE_EDGE) * curved);
+  sv.opacity(OPACITY_EDGE + (1 - OPACITY_EDGE) * curved);
+  sv.rotateY(side * MAX_ROTATE_Y * (1 - curved));
+  sv.translateZ(TRANSLATE_Z_MAX * curved);
+}
 
-const cardsIn = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>("[data-card]"));
-/** Card centre x relative to the track (offsetLeft ignores transforms). */
+function clearSetters(gsap: Gsap, els: HTMLElement[]) {
+  gsap.set(els, { clearProps: "transform,opacity" });
+}
+
+const cardsIn = (el: HTMLElement) =>
+  Array.from(el.querySelectorAll<HTMLElement>("[data-card]"));
 const centreOf = (el: HTMLElement) => el.offsetLeft + el.offsetWidth / 2;
 
-/* ── Reduced motion: native scroll-snap strip ───────────────────────── */
-
+/* ── Reduced motion: native scroll-snap strip ───────────────────── */
 function nativeRail({ gsap }: SceneContext) {
   mode.value = "reduced";
   copies.value = 1;
@@ -171,31 +140,45 @@ function runNative(gsap: Gsap) {
   const trackEl = track.value;
   if (!railEl || !trackEl) return;
 
-  let els: HTMLElement[] = [];
-  let writer: ReturnType<typeof cardWriter> | null = null;
+  let setters: Setter[] = [];
   let centres: number[] = [];
   let railW = 0;
-  let band = 1;
+  let activeIdx = -1;
 
-  // Purpose: the centre-scale effect, driven by the user's own scroll — no loop.
   const paint = () => {
-    if (!writer) return;
+    if (!setters.length) return;
     const half = railW / 2;
     const left = railEl.scrollLeft;
-    centres.forEach((c, i) => {
-      const v = 1 - Math.min(1, Math.abs((c - left - half) / half));
-      writer!.write(i, v, focusOf(v, band));
-    });
+    let nearest = -1;
+    let nearestD = Infinity;
+
+    for (let i = 0; i < centres.length; i++) {
+      const dx = centres[i]! - left - half;
+      const absDx = Math.abs(dx);
+      if (absDx < nearestD) {
+        nearestD = absDx;
+        nearest = i;
+      }
+      const v = Math.max(0, 1 - absDx / half);
+      // side: +1 = card is left of centre, −1 = right of centre
+      const side = dx <= 0 ? 1 : -1;
+      writeCard(setters[i]!, v, side);
+    }
+
+    if (nearest !== activeIdx) {
+      if (activeIdx >= 0) setters[activeIdx]!.el.classList.remove("is-active");
+      if (nearest >= 0) setters[nearest]!.el.classList.add("is-active");
+      activeIdx = nearest;
+    }
   };
 
   const measure = () => {
-    writer?.clear();
-    els = cardsIn(trackEl);
-    writer = cardWriter(gsap, els, STRIP);
+    clearSetters(gsap, cardsIn(trackEl));
+    const els = cardsIn(trackEl);
+    setters = buildSetters(gsap, els);
     centres = els.map(centreOf);
     railW = railEl.clientWidth;
-    const step = els.length > 1 ? els[1]!.offsetLeft - els[0]!.offsetLeft : railW;
-    band = Math.min(1, step / (railW / 2));
+    activeIdx = -1;
     paint();
   };
 
@@ -207,12 +190,12 @@ function runNative(gsap: Gsap) {
   return () => {
     railEl.removeEventListener("scroll", paint);
     ro.disconnect();
-    writer?.clear();
+    if (activeIdx >= 0) setters[activeIdx]?.el.classList.remove("is-active");
+    clearSetters(gsap, cardsIn(trackEl));
   };
 }
 
-/* ── Live: auto-running infinite loop ───────────────────────────────── */
-
+/* ── Live: auto-running infinite loop ───────────────────────────── */
 function liveRail({ gsap }: SceneContext) {
   mode.value = "live";
   copies.value = Math.max(copies.value, 3);
@@ -234,16 +217,8 @@ function runLive(gsap: Gsap) {
   const trackEl = track.value;
   if (!railEl || !trackEl) return;
 
-  /**
-   * Single source of truth for the track position. Auto-run, momentum, page
-   * scroll, wheel, keyboard and drag all write `x`; only `tick` renders it.
-   * Kept in [-setW, 0) and rendered at `x - setW` so the middle copy is the
-   * one in view.
-   */
   let x = 0;
-  /** Tweened by GSAP: `factor` eases auto-run in/out, `vel` carries a fling. */
   const s = { factor: 1, vel: 0 };
-  /** Page-scroll displacement still to be eased into the rail. */
   let nudge = 0;
 
   let n = 0;
@@ -252,11 +227,11 @@ function runLive(gsap: Gsap) {
   let railW = 0;
   let centres: number[] = [];
   let els: HTMLElement[] = [];
-  let writer: ReturnType<typeof cardWriter> | null = null;
-  /** Smoothed closeness-to-centre per card; -1 = snap to target next frame. */
-  let vis: Float32Array = new Float32Array(0);
+  let setters: Setter[] = [];
+  let vis = new Float32Array(0);
   let positioned = false;
   let inView = true;
+  let activeIdx = -1;
 
   let hovered = false;
   let focused = false;
@@ -270,25 +245,21 @@ function runLive(gsap: Gsap) {
     n = props.items.length;
     if (!n || els.length < n * 2) return;
 
-    step = els.length > 1 ? els[1]!.offsetLeft - els[0]!.offsetLeft : els[0]!.offsetWidth;
+    step = els[1]!.offsetLeft - els[0]!.offsetLeft;
     setW = els[n]!.offsetLeft - els[0]!.offsetLeft;
     railW = railEl.clientWidth;
 
-    // Enough copies that a full viewport always sits inside rendered cards,
-    // with one spare set either side of the middle copy.
-    const needed = Math.max(3, 2 + Math.ceil(railW / setW));
+    const needed = Math.max(3, 1 + Math.ceil(railW / setW));
     if (needed !== copies.value) {
       copies.value = needed;
       nextTick(measure);
       return;
     }
 
-    writer?.clear();
-    writer = cardWriter(gsap, els, STAGE);
+    setters = buildSetters(gsap, els);
     centres = els.map(centreOf);
     vis = new Float32Array(els.length).fill(-1);
     if (!positioned) {
-      // Start with the first real card centred.
       x = railW / 2 - centres[0]!;
       positioned = true;
     }
@@ -296,12 +267,10 @@ function runLive(gsap: Gsap) {
   };
 
   const render = (alpha: number) => {
-    if (!writer || !setW) return;
+    if (!setW || !setters.length) return;
 
     const wrapped = wrap(x);
     if (wrapped !== x) {
-      // Every card jumped by ±setW; hand each card the smoothed state of the
-      // card that previously occupied its on-screen slot, so nothing pops.
       const shift = Math.round((wrapped - x) / setW) * n;
       const prev = vis.slice();
       for (let i = 0; i < vis.length; i++) {
@@ -314,21 +283,58 @@ function runLive(gsap: Gsap) {
     const offset = x - setW;
     trackEl.style.transform = `translate3d(${offset}px,0,0)`;
 
-    // Normalise against half the rail, but never fewer than ~3.5 cards so the
-    // falloff still reads on narrow phones. [ref-tune] was step * 2.5
     const half = Math.max(railW / 2, step * 3.5);
-    const band = Math.min(1, step / half);
+    const cullDist = half * CULL;
+    const cx = railW / 2;
+    let nearest = -1;
+    let nearestD = Infinity;
+
     for (let i = 0; i < centres.length; i++) {
-      const d = (centres[i]! + offset - railW / 2) / half;
-      const target = 1 - Math.min(1, Math.abs(d));
+      const screenX = centres[i]! + offset;
+      const dx = screenX - cx;
+      const absDx = Math.abs(dx);
+      const sv = setters[i]!;
+
+      // Cull: force to edge state once, skip until card re-enters the band.
+      if (absDx > cullDist) {
+        if (sv.lastV !== 0) {
+          sv.lastV = 0;
+          sv.scale(SCALE_EDGE);
+          sv.opacity(OPACITY_EDGE);
+          // Tilt fully away; direction matches which side of centre it sits on.
+          sv.rotateY(dx > 0 ? -MAX_ROTATE_Y : MAX_ROTATE_Y);
+          sv.translateZ(0);
+        }
+        vis[i] = -1;
+        continue;
+      }
+
+      if (absDx < nearestD) {
+        nearestD = absDx;
+        nearest = i;
+      }
+
+      const target = Math.max(0, 1 - absDx / half);
       const cur = vis[i]!;
       const v = (vis[i] = cur < 0 ? target : cur + (target - cur) * alpha);
-      writer.write(i, v, focusOf(v, band));
+
+      // side: +1 = left of centre (left edge tilts away), −1 = right of centre
+      const side = dx <= 0 ? 1 : -1;
+      writeCard(sv, v, side);
+
+      // z-index follows depth: higher v = closer = higher z.
+      const z = Math.round(v * 100);
+      if (sv.el.style.zIndex !== String(z)) sv.el.style.zIndex = String(z);
+    }
+
+    if (nearest !== activeIdx) {
+      if (activeIdx >= 0) els[activeIdx]?.classList.remove("is-active");
+      if (nearest >= 0) els[nearest]?.classList.add("is-active");
+      activeIdx = nearest;
     }
   };
 
-  // Purpose: the rail's continuous drift — the scene's one primary move.
-  const tick = (_time: number, deltaMs: number) => {
+  const tick = (_t: number, deltaMs: number) => {
     if (!inView || !setW) return;
     const dt = Math.min(deltaMs, 50) / 1000;
     const frames = dt * 60;
@@ -342,18 +348,14 @@ function runLive(gsap: Gsap) {
     render(1 - Math.pow(1 - LERP, frames));
   };
 
-  /* Pause / resume — always eased, never a hard stop. */
   const isHeld = () => hovered || focused || dragging || coasting || userPaused.value;
-
-  const pause = (duration: number = DUR.md) =>
-    gsap.to(s, { factor: 0, duration, ease: "power2.out", overwrite: "auto" });
-
+  const pause = (d: number = DUR.md) =>
+    gsap.to(s, { factor: 0, duration: d, ease: "power2.out", overwrite: "auto" });
   const resume = () => {
     if (isHeld()) return;
     gsap.to(s, { factor: 1, duration: DUR.lg, ease: EASE.inout, overwrite: "auto" });
   };
 
-  /* Hover (mouse only — touch has no hover). */
   const onEnter = (e: PointerEvent) => {
     if (e.pointerType !== "mouse") return;
     hovered = true;
@@ -365,7 +367,6 @@ function runLive(gsap: Gsap) {
     resume();
   };
 
-  /* Drag / swipe via Pointer Events. */
   let pointerId = -1;
   let lastX = 0;
   let lastT = 0;
@@ -385,29 +386,24 @@ function runLive(gsap: Gsap) {
     railEl.setPointerCapture(e.pointerId);
     railEl.classList.add("is-dragging");
   };
-
   const onMove = (e: PointerEvent) => {
     if (!dragging || e.pointerId !== pointerId) return;
     const dx = e.clientX - lastX;
     const dtMs = Math.max(1, e.timeStamp - lastT);
     x += dx;
-    dragVel = dragVel * 0.6 + ((dx / dtMs) * 1000) * 0.4;
+    dragVel = dragVel * 0.6 + (dx / dtMs) * 1000 * 0.4;
     lastX = e.clientX;
     lastT = e.timeStamp;
   };
-
   const onUp = (e: PointerEvent) => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
     pointerId = -1;
     if (railEl.hasPointerCapture(e.pointerId)) railEl.releasePointerCapture(e.pointerId);
     railEl.classList.remove("is-dragging");
-
-    // A pointer that stopped before lifting shouldn't fling.
     if (e.timeStamp - lastT > 80) dragVel = 0;
     s.vel = gsap.utils.clamp(-MAX_FLING, MAX_FLING, dragVel);
     coasting = true;
-    // Purpose: momentum after release, decaying before auto-run re-engages.
     gsap.to(s, {
       vel: 0,
       duration: DUR.md,
@@ -419,9 +415,7 @@ function runLive(gsap: Gsap) {
     });
   };
 
-  /* Keyboard: pause while focus-visible inside; ←/→ step one card. */
   const onFocusIn = (e: FocusEvent) => {
-    // Mouse clicks focus the rail too — only keyboard focus should hold it.
     if (!(e.target as HTMLElement).matches(":focus-visible")) return;
     focused = true;
     pause(DUR.sm);
@@ -437,7 +431,6 @@ function runLive(gsap: Gsap) {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir || !setW) return;
     e.preventDefault();
-    // Offset of the card nearest the centre, then one card further along.
     let nearest = Infinity;
     for (const c of centres) {
       const off = c + x - setW - railW / 2;
@@ -447,7 +440,6 @@ function runLive(gsap: Gsap) {
     const p = { v: 0 };
     let applied = 0;
     glide?.kill();
-    // Purpose: bring the next card to the centre on an arrow key.
     glide = gsap.to(p, {
       v: delta,
       duration: DUR.sm,
@@ -459,20 +451,17 @@ function runLive(gsap: Gsap) {
     });
   };
 
-  /* Horizontal trackpad swipes scrub the rail; vertical wheel stays the page's. */
   const onWheel = (e: WheelEvent) => {
     if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
     e.preventDefault();
     x -= e.deltaX;
   };
 
-  /* Page scroll → rail nudge. Lenis when present, native scroll otherwise. */
   let lastY = window.scrollY;
   const onPageScroll = () => {
     const y = window.scrollY;
     const dy = y - lastY;
     lastY = y;
-    // Ignore anchor jumps and off-screen scrolling.
     if (!inView || Math.abs(dy) > 400) return;
     nudge = gsap.utils.clamp(-600, 600, nudge + dy);
   };
@@ -485,7 +474,6 @@ function runLive(gsap: Gsap) {
     offPageScroll = () => window.removeEventListener("scroll", onPageScroll);
   }
 
-  // No work at all while the section is off-screen.
   const io = new IntersectionObserver(([entry]) => {
     inView = !!entry?.isIntersecting;
     if (inView) vis.fill(-1);
@@ -497,9 +485,9 @@ function runLive(gsap: Gsap) {
 
   const stopItemsWatch = watch(
     () => props.items.length,
-    () => nextTick(measure),
+    () => nextTick(measure)
   );
-  const stopPauseWatch = watch(userPaused, (paused) => (paused ? pause() : resume()));
+  const stopPauseWatch = watch(userPaused, (p) => (p ? pause() : resume()));
 
   railEl.addEventListener("pointerenter", onEnter);
   railEl.addEventListener("pointerleave", onLeave);
@@ -536,8 +524,9 @@ function runLive(gsap: Gsap) {
     railEl.removeEventListener("keydown", onKey);
     railEl.removeEventListener("wheel", onWheel);
     railEl.classList.remove("is-dragging");
+    if (activeIdx >= 0) els[activeIdx]?.classList.remove("is-active");
+    gsap.set(els, { clearProps: "transform,opacity,rotateY,translateZ" });
     trackEl.style.transform = "";
-    writer?.clear();
   };
 }
 </script>
@@ -563,7 +552,12 @@ function runLive(gsap: Gsap) {
           :aria-label="userPaused ? t('carouselPlay') : t('carouselPause')"
           @click="userPaused = !userPaused"
         >
-          <UIcon :name="userPaused ? 'i-heroicons-play-20-solid' : 'i-heroicons-pause-20-solid'" class="h-5 w-5" />
+          <UIcon
+            :name="
+              userPaused ? 'i-heroicons-play-20-solid' : 'i-heroicons-pause-20-solid'
+            "
+            class="h-5 w-5"
+          />
         </button>
       </div>
     </div>
@@ -589,7 +583,6 @@ function runLive(gsap: Gsap) {
             :aria-label="c === realCopy ? `${i + 1} / ${items.length}` : undefined"
             :aria-hidden="c === realCopy ? undefined : 'true'"
           >
-            <span data-glow class="product-rail__glow" aria-hidden="true" />
             <figure class="product-rail__figure">
               <img
                 :src="image"
@@ -597,12 +590,15 @@ function runLive(gsap: Gsap) {
                 loading="lazy"
                 decoding="async"
                 draggable="false"
-                width="600"
-                height="800"
+                width="800"
+                height="450"
               />
-              <span data-accent class="product-rail__accent" aria-hidden="true" />
-              <figcaption data-labels class="product-rail__labels">
-                <span class="product-rail__index" aria-hidden="true">{{ pad(i + 1) }}</span>
+              <span class="product-rail__glow" aria-hidden="true" />
+              <span class="product-rail__accent" aria-hidden="true" />
+              <figcaption class="product-rail__labels">
+                <span class="product-rail__index" aria-hidden="true">{{
+                  pad(i + 1)
+                }}</span>
                 <span class="product-rail__caption">
                   <span class="product-rail__name">{{ name }}</span>
                   <span class="product-rail__meta">{{ meta }}</span>
@@ -619,7 +615,6 @@ function runLive(gsap: Gsap) {
 <style scoped>
 /* Dark ground; still `.loom-day` so it stays opaque above the WebGL stage. */
 .product-rail-section {
-  /* [ref-tune] near-black ground + gold accent, per the reference */
   --rail-ground: #05070a;
   --rail-accent: #e8b938;
   background-color: var(--rail-ground);
@@ -653,10 +648,27 @@ function runLive(gsap: Gsap) {
 
 /* ── Rail ─────────────────────────────────────────────────── */
 .product-rail {
-  --card-w: 180px;
-  --gap: 16px;
+  --card-w: 300px;
+  /* card height is derived from 16:9 ratio in CSS on the card itself */
+
+  /*
+   * Fan step: how far apart card centres are placed. Much tighter than
+   * card width — this creates the heavy overlap from the design reference.
+   * 0.44 × card width means each successive card's centre is 44% of a
+   * card-width from the previous, so neighbours tuck deeply behind centre.
+   */
+  --fan-step: calc(var(--card-w) * 0.44);
+
+  /*
+   * Perspective is set on the FIXED container (not the moving track) so the
+   * vanishing point stays centred while the track translates. If perspective
+   * were on the track, the VP would drift with x and distort the fan.
+   */
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+
   position: relative;
-  padding-block: 32px 48px;
+  padding-block: 40px 56px;
   -webkit-user-select: none;
   user-select: none;
   outline-offset: -6px;
@@ -664,12 +676,18 @@ function runLive(gsap: Gsap) {
 
 @media (min-width: 640px) {
   .product-rail {
-    --card-w: 240px;
-    --gap: 24px;
+    --card-w: 380px;
+    perspective: 1100px;
   }
 }
 
-/* Static (pre-motion) + reduced motion: a native, keyboard-scrollable strip. */
+@media (min-width: 1024px) {
+  .product-rail {
+    --card-w: 460px;
+    perspective: 1400px;
+  }
+}
+
 .product-rail.is-static,
 .product-rail.is-reduced {
   overflow-x: auto;
@@ -677,9 +695,10 @@ function runLive(gsap: Gsap) {
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--beige) 30%, transparent) transparent;
+  /* Flat strip: no 3D context needed. */
+  perspective: none;
 }
 
-/* Live: JS owns horizontal travel; `clip` (not `hidden`) can't be scrolled by focus. */
 .product-rail.is-live {
   overflow-x: clip;
   touch-action: pan-y;
@@ -689,14 +708,20 @@ function runLive(gsap: Gsap) {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--gap);
   width: max-content;
+  /*
+   * preserve-3d: cards' rotateY + translateZ are computed in the 3D space
+   * of .product-rail, not flattened here on the track.
+   */
+  transform-style: preserve-3d;
 }
 
 .is-static .product-rail__track,
 .is-reduced .product-rail__track {
-  /* Lets the first and last card reach the centre. */
+  gap: 16px;
   padding-inline: calc(50% - var(--card-w) / 2);
+  /* Flat strip: collapse 3D context so reduced-motion gets a normal strip. */
+  transform-style: flat;
 }
 
 .is-live .product-rail__track {
@@ -705,13 +730,11 @@ function runLive(gsap: Gsap) {
 }
 
 /*
- * [ref-tune] Stacked deck, live only: card centres sit 0.4 × card width apart
- * (as in the reference), so neighbours tuck behind the centre card. A
- * negative `gap` is invalid CSS, hence the margin. The native strips keep
- * their positive gap so nothing overlaps there.
+ * Fan overlap in live mode: each card's leading edge is offset by --fan-step
+ * from the previous card's leading edge. negative margin = overlap.
  */
 .is-live .product-rail__card {
-  margin-inline-start: calc(var(--card-w) * -0.6);
+  margin-inline-start: calc(var(--fan-step) - var(--card-w));
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
@@ -719,22 +742,17 @@ function runLive(gsap: Gsap) {
   position: relative;
   flex: none;
   width: var(--card-w);
-  aspect-ratio: 3 / 4;
-  border-radius: 1.25rem;
+  /* Landscape 16:9 — matches the design reference. */
+  aspect-ratio: 16 / 9;
+  /* Fixed radius — NOT animated. Animating it triggers paint every frame. */
+  border-radius: 1rem;
   scroll-snap-align: center;
   transform-origin: 50% 50%;
-}
-
-.product-rail__glow {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  pointer-events: none;
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--rail-accent) 70%, transparent),
-    0 0 48px -6px color-mix(in srgb, var(--rail-accent) 35%, transparent),
-    0 28px 70px -18px color-mix(in srgb, var(--rail-accent) 30%, transparent);
+  /*
+   * Composited properties only: scale, opacity, rotateY, translateZ.
+   * No layout or paint recalc per frame.
+   */
+  will-change: transform, opacity;
 }
 
 .product-rail__figure {
@@ -743,7 +761,7 @@ function runLive(gsap: Gsap) {
   margin: 0;
   overflow: hidden;
   border-radius: inherit;
-  background: var(--navy);
+  background: color-mix(in srgb, var(--navy) 80%, black);
 }
 
 .product-rail__figure img {
@@ -752,24 +770,51 @@ function runLive(gsap: Gsap) {
   object-fit: cover;
   pointer-events: none;
   -webkit-user-drag: none;
+  /*
+   * Inactive cards are desaturated and dimmed — a cheap CSS differentiator
+   * that requires zero GSAP writes. CSS transition handles the fade when
+   * is-active is toggled.
+   */
+  filter: saturate(0.5) brightness(0.7);
+  transition: filter 0.4s var(--ease);
 }
 
-/* [ref-tune] Gold tint on the centred card; GSAP drives its opacity. */
-.product-rail__accent {
+.product-rail__card.is-active .product-rail__figure img {
+  filter: saturate(1) brightness(1);
+}
+
+/* ── Active-card states (toggled by a single class, not per-frame setters) ── */
+.product-rail__glow,
+.product-rail__accent,
+.product-rail__labels {
   position: absolute;
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  background: color-mix(in srgb, var(--rail-accent) 42%, transparent);
-  mix-blend-mode: overlay;
+  transition: opacity 0.35s var(--ease);
 }
 
-/* [ref-tune] Index + caption as one layer, so one setter fades both. */
-.product-rail__labels {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  pointer-events: none;
+.product-rail__glow {
+  border-radius: inherit;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rail-accent) 70%, transparent),
+    0 0 48px -6px color-mix(in srgb, var(--rail-accent) 35%, transparent),
+    0 28px 70px -18px color-mix(in srgb, var(--rail-accent) 30%, transparent);
+}
+
+.product-rail__accent {
+  background: color-mix(in srgb, var(--rail-accent) 42%, transparent);
+}
+
+.product-rail__card.is-active .product-rail__glow {
+  opacity: 1;
+}
+
+.product-rail__card.is-active .product-rail__accent {
+  opacity: 0.55;
+}
+
+.product-rail__card.is-active .product-rail__labels {
+  opacity: 1;
 }
 
 .product-rail__index {
@@ -794,7 +839,11 @@ function runLive(gsap: Gsap) {
   display: grid;
   gap: 0.15rem;
   padding: 2.75rem 0.9rem 0.9rem;
-  background: linear-gradient(to top, color-mix(in srgb, var(--rail-ground) 90%, transparent) 35%, transparent);
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--rail-ground) 90%, transparent) 35%,
+    transparent
+  );
   color: var(--beige);
 }
 
@@ -807,5 +856,11 @@ function runLive(gsap: Gsap) {
 .product-rail__meta {
   font-size: 0.75rem;
   color: color-mix(in srgb, var(--beige) 80%, transparent);
+}
+
+/* Fallback when JS is off or reduced motion — captions always readable. */
+.is-static .product-rail__labels,
+.is-reduced .product-rail__labels {
+  opacity: 1;
 }
 </style>
