@@ -4,13 +4,19 @@
 </template>
 
 <script setup>
-// Title and description live once, in nuxt.config.ts.
+const { locale } = useLocale();
+
 useHead({
+  title: "Ha-Meem Ching Tai",
+  titleTemplate: "%s",
+  // `lang` drives the per-script typography (:lang(bn) / :lang(zh)) and
+  // screen-reader pronunciation; it is rendered at SSR, not patched later.
+  htmlAttrs: { lang: locale },
   meta: [
     {
-      name: 'viewport',
-      content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      name: "viewport",
+      content: "width=device-width, initial-scale=1, viewport-fit=cover",
     },
   ],
-})
+});
 </script>

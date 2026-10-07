@@ -52,7 +52,7 @@ onUnmounted(() => {
   margin-left: -40px; /* Centers the cursor on the mouse X */
   margin-top: -40px;  /* Centers the cursor on the mouse Y */
   border-radius: 50%;
-  background-color: #3e2e26; /* Adjust to match your exact dark brown/black */
+  background-color: var(--navy);
   color: #ffffff;
   display: flex;
   align-items: center;
