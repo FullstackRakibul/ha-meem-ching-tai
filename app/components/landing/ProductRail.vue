@@ -1,19 +1,5 @@
 <!-- components/landing/ProductRail.vue -->
 <script setup lang="ts">
-/**
- * Scene 07 — Catalogue. A 3D perspective fan carousel on a dark ground.
- *
- * Visual model: cards arc in a concave fan using CSS perspective + rotateY +
- * translateZ. The centre card is upright, full-scale, and closest to the
- * viewer. Each card to the left/right tilts away and recedes on Z, producing
- * true depth — not a flat scale stack. Cards are landscape (16:9).
- *
- * Perf contract: per frame we write EXACTLY four composited properties
- * (scale, opacity, rotateY, translateZ) per card, only inside a 1.15 ×
- * half-width cull band. Everything else (glow, gold tint, caption) is a
- * single `is-active` class toggled when the centre index changes.
- * borderRadius is fixed in CSS and never animated.
- */
 import type { SceneContext } from "~/composables/useScrollScene";
 import { DUR, EASE } from "~/utils/motion";
 
@@ -29,28 +15,21 @@ const props = withDefaults(
 const { t } = useLocale();
 const { $lenis } = useNuxtApp();
 
-// ── 3D fan curve constants ────────────────────────────────────────────────
-/** Scale at the outermost visible card. */
-const SCALE_EDGE = 0.5;
-const SCALE_CENTRE = 1.0;
-/** Opacity at the outermost visible card. */
-const OPACITY_EDGE = 0.45;
-/** Max Y-rotation (degrees) applied to the outermost card. Left cards rotate
- *  positively (right edge away), right cards rotate negatively. */
-const MAX_ROTATE_Y = 38;
-/** translateZ range in px: centre card = MAX (closest), edge card = 0. */
-const TRANSLATE_Z_MAX = 110;
+// ── Concave wall ──────────────────────────────────────────────────────────
+// Per-breakpoint shape lives in CSS (--rail-visible, --rail-mag, --rail-rotate,
+// perspective) and is read once per measure(). The engine only knows the maths.
 
-/** Smooth quadratic ease-out — 2 muls, no pow(). */
-const easeOut = (v: number) => v * (2 - v);
+/** Gap growth at t = 1, as a fraction of the centre gap (spec cap: 0.2). */
+const GAP_GROWTH = 0.12;
+/** LUT resolution for the x correction, in samples per card step. Must be even. */
+const LUT_PER_STEP = 32;
+/** Cards farther than this many steps past t = 1 are frozen in the culled state. */
+const CULL_STEPS = 1.5;
+/** Skip a card's write when its offset moved less than this (px). */
+const WRITE_EPS = 0.05;
 
-const LERP = 0.18;
 const NUDGE_GAIN = 0.35;
 const MAX_FLING = 2400;
-/** Write threshold — changes smaller than this are imperceptible. */
-const WRITE_EPS = 0.008;
-/** Cull band: cards beyond 1.15 × half-width are held at edge state. */
-const CULL = 1.15;
 
 type RailMode = "static" | "reduced" | "live";
 
@@ -61,137 +40,157 @@ const track = ref<HTMLElement | null>(null);
 const mode = ref<RailMode>("static");
 const copies = ref(1);
 const userPaused = ref(false);
+/** Rail holds keyboard focus (drift paused for the user). */
+const focusHeld = ref(false);
+/** Item index of the centred card — written only when it changes. */
+const activeItem = ref(0);
+
 const live = computed(() => mode.value === "live");
 const realCopy = computed(() => (live.value ? 2 : 1));
+const activeEntry = computed(() => props.items[activeItem.value] ?? props.items[0]);
+/** Announce the readout only while the drift is held, never while it runs. */
+const announce = computed(() => userPaused.value || focusHeld.value);
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-useScrollScene(section, (ctx) =>
-  ctx.mode === "reduced" ? nativeRail(ctx) : liveRail(ctx)
-);
+useScrollScene(section, (ctx) => (ctx.mode === "reduced" ? nativeRail() : liveRail(ctx)));
 
 type Gsap = SceneContext["gsap"];
 
-/** Four composited properties per card — all GPU-only, no layout/paint. */
-type Setter = {
+/** One card's last written state. */
+type CardSlot = {
   el: HTMLElement;
-  scale: (n: number) => void;
-  opacity: (n: number) => void;
-  /** rotateY in degrees. */
-  rotateY: (n: number) => void;
-  /** translateZ in px. */
-  translateZ: (n: number) => void;
-  lastV: number;
+  /** Signed offset from rail centre at the last write (px). */
+  lastDx: number;
+  /** 0 inside the band, ±1 while frozen in the culled state on that side. */
+  culled: -1 | 0 | 1;
 };
 
-function buildSetters(gsap: Gsap, els: HTMLElement[]): Setter[] {
-  return els.map((el) => ({
-    el,
-    scale: gsap.quickSetter(el, "scale") as (n: number) => void,
-    opacity: gsap.quickSetter(el, "opacity") as (n: number) => void,
-    rotateY: gsap.quickSetter(el, "rotateY", "deg") as (n: number) => void,
-    translateZ: gsap.quickSetter(el, "translateZ", "px") as (n: number) => void,
-    lastV: -1,
-  }));
+/** Arc geometry in px, rebuilt by measure(). Pure data — no DOM. */
+type Arc = {
+  /** Offset at which t reaches 1: the outermost visible slot. */
+  half: number;
+  cull: number;
+  persp: number;
+  magEdge: number;
+  rotEdge: number;
+  /** Half card width. */
+  hw: number;
+  /** LUT sample spacing and x-correction samples over [0, cull]. */
+  du: number;
+  xc: Float32Array;
+};
+
+const cssNum = (cs: CSSStyleDeclaration, name: string, fallback: number) => {
+  const v = parseFloat(cs.getPropertyValue(name));
+  return Number.isFinite(v) ? v : fallback;
+};
+
+/** Depth and rotation ease in from the centre: e = t². */
+function arcState(arc: Arc, a: number) {
+  const tt = Math.min(a / arc.half, 1);
+  const e = tt * tt;
+  // Size comes from depth alone: magnification m = p / (p − z) ⇒ z = p(1 − 1/m).
+  const m = 1 + (arc.magEdge - 1) * e;
+  const rad = arc.rotEdge * e * (Math.PI / 180);
+  return {
+    tt,
+    z: arc.persp * (1 - 1 / m),
+    rot: arc.rotEdge * e,
+    cos: arc.hw * Math.cos(rad),
+    sin: arc.hw * Math.sin(rad),
+  };
 }
 
 /**
- * Write all four properties for card at closeness `v` (1 = centre, 0 = edge).
- * `side`: +1 = card is left of centre (left edge tilts away from viewer),
- *         −1 = card is right of centre (right edge tilts away from viewer).
- * Skipped when the value has not moved by more than WRITE_EPS.
+ * Builds the x-correction LUT so every pair of neighbours shows the same
+ * projected gap (growing ≤ GAP_GROWTH toward the edge). Perspective pushes
+ * magnified cards outward; the correction pulls them back.
+ *
+ * Exact by construction: a card's left edge projects linearly in its
+ * pre-projection centre X, so X is solved in closed form from its inner
+ * neighbour's projected right edge. The centre step is seeded linearly
+ * (its cards are almost flat) and every later step is solved from the one
+ * before. Mirror symmetry covers the left side.
  */
-function writeCard(sv: Setter, v: number, side: number) {
-  if (Math.abs(v - sv.lastV) < WRITE_EPS) return;
-  sv.lastV = v;
-  const curved = easeOut(v);
-  sv.scale(SCALE_EDGE + (SCALE_CENTRE - SCALE_EDGE) * curved);
-  sv.opacity(OPACITY_EDGE + (1 - OPACITY_EDGE) * curved);
-  sv.rotateY(side * MAX_ROTATE_Y * (1 - curved));
-  sv.translateZ(TRANSLATE_Z_MAX * curved);
+function buildArc(step: number, cardW: number, cs: CSSStyleDeclaration, persp: number): Arc {
+  const visible = cssNum(cs, "--rail-visible", 7);
+  const half = (step * (visible - 1)) / 2;
+  const cull = half + CULL_STEPS * step;
+  const du = step / LUT_PER_STEP;
+  const n = Math.ceil(cull / du);
+  const arc: Arc = {
+    half,
+    cull,
+    persp,
+    magEdge: cssNum(cs, "--rail-mag", 1.3),
+    rotEdge: cssNum(cs, "--rail-rotate", 52),
+    hw: cardW / 2,
+    du,
+    xc: new Float32Array(n + 1),
+  };
+  const gap = step - cardW;
+  // Projected edges of a right-side card whose outer (right) edge leans in.
+  const leftEdge = (u: number, X: number) => {
+    const s = arcState(arc, u);
+    return ((X - s.cos) * persp) / (persp - s.z + s.sin);
+  };
+  const rightEdge = (u: number, X: number) => {
+    const s = arcState(arc, u);
+    return ((X + s.cos) * persp) / (persp - s.z - s.sin);
+  };
+  const solveX = (u: number, left: number) => {
+    const s = arcState(arc, u);
+    return (left * (persp - s.z + s.sin)) / persp + s.cos;
+  };
+
+  const X = new Float64Array(n + 1);
+  const seed = LUT_PER_STEP / 2;
+  // The pair straddling the centre is symmetric: its gap splits evenly.
+  const xHalf = solveX(step / 2, gap / 2);
+  for (let j = 0; j <= n; j++) {
+    if (j <= seed) {
+      X[j] = (xHalf * j) / seed;
+    } else {
+      const ja = j - LUT_PER_STEP;
+      const a = ja * du;
+      const innerRight = ja >= 0 ? rightEdge(a, X[ja]!) : -leftEdge(-a, X[-ja]!);
+      const mid = Math.min(Math.abs(a + step / 2) / half, 1);
+      X[j] = solveX(j * du, innerRight + gap * (1 + GAP_GROWTH * mid * mid));
+    }
+    arc.xc[j] = X[j]! - j * du;
+  }
+  return arc;
 }
 
-function clearSetters(gsap: Gsap, els: HTMLElement[]) {
-  gsap.set(els, { clearProps: "transform,opacity" });
+function xCorrection(arc: Arc, a: number) {
+  const n = arc.xc.length - 1;
+  const f = Math.min(a / arc.du, n);
+  const i = Math.min(Math.floor(f), n - 1);
+  return arc.xc[i]! + (arc.xc[i + 1]! - arc.xc[i]!) * (f - i);
 }
 
-const cardsIn = (el: HTMLElement) =>
-  Array.from(el.querySelectorAll<HTMLElement>("[data-card]"));
+/**
+ * One composited write per card: x correction, depth and inward turn.
+ * `side` is +1 right of centre, −1 left. rotateY(−θ) brings a right card's
+ * right (outer) edge toward the viewer, so outer edges render taller.
+ */
+function writeCard(slot: CardSlot, arc: Arc, a: number, side: number) {
+  const s = arcState(arc, a);
+  const x = side * xCorrection(arc, a);
+  slot.el.style.transform = `translate3d(${x}px,0,${s.z}px) rotateY(${-side * s.rot}deg)`;
+}
+
+const cardsIn = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>("[data-card]"));
 const centreOf = (el: HTMLElement) => el.offsetLeft + el.offsetWidth / 2;
+const clearCards = (els: HTMLElement[]) => els.forEach((el) => el.style.removeProperty("transform"));
 
-/* ── Reduced motion: native scroll-snap strip ───────────────────── */
-function nativeRail({ gsap }: SceneContext) {
+/* ── Reduced motion: flat native scroll-snap strip, no JS writes ──── */
+function nativeRail() {
   mode.value = "reduced";
   copies.value = 1;
-  let disposed = false;
-  let stop: (() => void) | undefined;
-  nextTick(() => {
-    if (!disposed) stop = runNative(gsap);
-  });
   return () => {
-    disposed = true;
-    stop?.();
     mode.value = "static";
-  };
-}
-
-function runNative(gsap: Gsap) {
-  const railEl = rail.value;
-  const trackEl = track.value;
-  if (!railEl || !trackEl) return;
-
-  let setters: Setter[] = [];
-  let centres: number[] = [];
-  let railW = 0;
-  let activeIdx = -1;
-
-  const paint = () => {
-    if (!setters.length) return;
-    const half = railW / 2;
-    const left = railEl.scrollLeft;
-    let nearest = -1;
-    let nearestD = Infinity;
-
-    for (let i = 0; i < centres.length; i++) {
-      const dx = centres[i]! - left - half;
-      const absDx = Math.abs(dx);
-      if (absDx < nearestD) {
-        nearestD = absDx;
-        nearest = i;
-      }
-      const v = Math.max(0, 1 - absDx / half);
-      // side: +1 = card is left of centre, −1 = right of centre
-      const side = dx <= 0 ? 1 : -1;
-      writeCard(setters[i]!, v, side);
-    }
-
-    if (nearest !== activeIdx) {
-      if (activeIdx >= 0) setters[activeIdx]!.el.classList.remove("is-active");
-      if (nearest >= 0) setters[nearest]!.el.classList.add("is-active");
-      activeIdx = nearest;
-    }
-  };
-
-  const measure = () => {
-    clearSetters(gsap, cardsIn(trackEl));
-    const els = cardsIn(trackEl);
-    setters = buildSetters(gsap, els);
-    centres = els.map(centreOf);
-    railW = railEl.clientWidth;
-    activeIdx = -1;
-    paint();
-  };
-
-  measure();
-  railEl.addEventListener("scroll", paint, { passive: true });
-  const ro = new ResizeObserver(measure);
-  ro.observe(railEl);
-
-  return () => {
-    railEl.removeEventListener("scroll", paint);
-    ro.disconnect();
-    if (activeIdx >= 0) setters[activeIdx]?.el.classList.remove("is-active");
-    clearSetters(gsap, cardsIn(trackEl));
   };
 }
 
@@ -227,19 +226,19 @@ function runLive(gsap: Gsap) {
   let railW = 0;
   let centres: number[] = [];
   let els: HTMLElement[] = [];
-  let setters: Setter[] = [];
-  let vis = new Float32Array(0);
+  let slots: CardSlot[] = [];
+  let arc: Arc | null = null;
   let positioned = false;
   let inView = true;
-  let activeIdx = -1;
+  let shownItem = -1;
 
   let hovered = false;
-  let focused = false;
   let dragging = false;
   let coasting = false;
 
   const wrap = (v: number) => gsap.utils.wrap(-setW, 0, v);
 
+  // All layout reads happen here — never in tick() or render().
   const measure = () => {
     els = cardsIn(trackEl);
     n = props.items.length;
@@ -256,9 +255,10 @@ function runLive(gsap: Gsap) {
       return;
     }
 
-    setters = buildSetters(gsap, els);
+    const cs = getComputedStyle(railEl);
+    arc = buildArc(step, els[0]!.offsetWidth, cs, parseFloat(cs.perspective) || 1200);
+    slots = els.map((el) => ({ el, lastDx: NaN, culled: 0 }));
     centres = els.map(centreOf);
-    vis = new Float32Array(els.length).fill(-1);
     if (!positioned) {
       x = railW / 2 - centres[0]!;
       positioned = true;
@@ -266,71 +266,49 @@ function runLive(gsap: Gsap) {
     x = wrap(x);
   };
 
-  const render = (alpha: number) => {
-    if (!setW || !setters.length) return;
+  const render = () => {
+    if (!setW || !arc) return;
 
-    const wrapped = wrap(x);
-    if (wrapped !== x) {
-      const shift = Math.round((wrapped - x) / setW) * n;
-      const prev = vis.slice();
-      for (let i = 0; i < vis.length; i++) {
-        const j = i + shift;
-        vis[i] = j >= 0 && j < prev.length ? prev[j]! : -1;
-      }
-      x = wrapped;
-    }
-
+    // Card state is a pure function of screen offset, so the wrap seam is
+    // pixel-identical: card i lands exactly where card i ± n just was.
+    x = wrap(x);
     const offset = x - setW;
     trackEl.style.transform = `translate3d(${offset}px,0,0)`;
 
-    const half = Math.max(railW / 2, step * 3.5);
-    const cullDist = half * CULL;
     const cx = railW / 2;
     let nearest = -1;
     let nearestD = Infinity;
 
     for (let i = 0; i < centres.length; i++) {
-      const screenX = centres[i]! + offset;
-      const dx = screenX - cx;
-      const absDx = Math.abs(dx);
-      const sv = setters[i]!;
+      const dx = centres[i]! + offset - cx;
+      const a = Math.abs(dx);
+      const side = dx < 0 ? -1 : 1;
+      const slot = slots[i]!;
 
-      // Cull: force to edge state once, skip until card re-enters the band.
-      if (absDx > cullDist) {
-        if (sv.lastV !== 0) {
-          sv.lastV = 0;
-          sv.scale(SCALE_EDGE);
-          sv.opacity(OPACITY_EDGE);
-          // Tilt fully away; direction matches which side of centre it sits on.
-          sv.rotateY(dx > 0 ? -MAX_ROTATE_Y : MAX_ROTATE_Y);
-          sv.translateZ(0);
+      // Culled = the t = 1 state held at the band edge; written once per side.
+      if (a > arc.cull) {
+        if (slot.culled !== side) {
+          writeCard(slot, arc, arc.cull, side);
+          slot.culled = side;
         }
-        vis[i] = -1;
         continue;
       }
 
-      if (absDx < nearestD) {
-        nearestD = absDx;
+      if (a < nearestD) {
+        nearestD = a;
         nearest = i;
       }
 
-      const target = Math.max(0, 1 - absDx / half);
-      const cur = vis[i]!;
-      const v = (vis[i] = cur < 0 ? target : cur + (target - cur) * alpha);
-
-      // side: +1 = left of centre (left edge tilts away), −1 = right of centre
-      const side = dx <= 0 ? 1 : -1;
-      writeCard(sv, v, side);
-
-      // z-index follows depth: higher v = closer = higher z.
-      const z = Math.round(v * 100);
-      if (sv.el.style.zIndex !== String(z)) sv.el.style.zIndex = String(z);
+      if (slot.culled === 0 && Math.abs(dx - slot.lastDx) < WRITE_EPS) continue;
+      slot.culled = 0;
+      slot.lastDx = dx;
+      writeCard(slot, arc, a, side);
     }
 
-    if (nearest !== activeIdx) {
-      if (activeIdx >= 0) els[activeIdx]?.classList.remove("is-active");
-      if (nearest >= 0) els[nearest]?.classList.add("is-active");
-      activeIdx = nearest;
+    const item = nearest >= 0 ? nearest % n : -1;
+    if (item >= 0 && item !== shownItem) {
+      shownItem = item;
+      activeItem.value = item;
     }
   };
 
@@ -345,10 +323,10 @@ function runLive(gsap: Gsap) {
     nudge -= eased;
     x -= eased * NUDGE_GAIN;
 
-    render(1 - Math.pow(1 - LERP, frames));
+    render();
   };
 
-  const isHeld = () => hovered || focused || dragging || coasting || userPaused.value;
+  const isHeld = () => hovered || focusHeld.value || dragging || coasting || userPaused.value;
   const pause = (d: number = DUR.md) =>
     gsap.to(s, { factor: 0, duration: d, ease: "power2.out", overwrite: "auto" });
   const resume = () => {
@@ -417,12 +395,12 @@ function runLive(gsap: Gsap) {
 
   const onFocusIn = (e: FocusEvent) => {
     if (!(e.target as HTMLElement).matches(":focus-visible")) return;
-    focused = true;
+    focusHeld.value = true;
     pause(DUR.sm);
   };
   const onFocusOut = (e: FocusEvent) => {
     if (railEl.contains(e.relatedTarget as Node | null)) return;
-    focused = false;
+    focusHeld.value = false;
     resume();
   };
 
@@ -476,7 +454,6 @@ function runLive(gsap: Gsap) {
 
   const io = new IntersectionObserver(([entry]) => {
     inView = !!entry?.isIntersecting;
-    if (inView) vis.fill(-1);
   });
   io.observe(railEl);
 
@@ -524,9 +501,9 @@ function runLive(gsap: Gsap) {
     railEl.removeEventListener("keydown", onKey);
     railEl.removeEventListener("wheel", onWheel);
     railEl.classList.remove("is-dragging");
-    if (activeIdx >= 0) els[activeIdx]?.classList.remove("is-active");
-    gsap.set(els, { clearProps: "transform,opacity,rotateY,translateZ" });
-    trackEl.style.transform = "";
+    focusHeld.value = false;
+    clearCards(cardsIn(trackEl));
+    trackEl.style.removeProperty("transform");
   };
 }
 </script>
@@ -553,9 +530,7 @@ function runLive(gsap: Gsap) {
           @click="userPaused = !userPaused"
         >
           <UIcon
-            :name="
-              userPaused ? 'i-heroicons-play-20-solid' : 'i-heroicons-pause-20-solid'
-            "
+            :name="userPaused ? 'i-heroicons-play-20-solid' : 'i-heroicons-pause-20-solid'"
             class="h-5 w-5"
           />
         </button>
@@ -584,46 +559,60 @@ function runLive(gsap: Gsap) {
             :aria-hidden="c === realCopy ? undefined : 'true'"
           >
             <figure class="product-rail__figure">
-              <img
-                :src="image"
-                :alt="name"
-                loading="lazy"
-                decoding="async"
-                draggable="false"
-                width="800"
-                height="450"
-              />
-              <span class="product-rail__glow" aria-hidden="true" />
-              <span class="product-rail__accent" aria-hidden="true" />
-              <figcaption class="product-rail__labels">
-                <span class="product-rail__index" aria-hidden="true">{{
-                  pad(i + 1)
-                }}</span>
-                <span class="product-rail__caption">
-                  <span class="product-rail__name">{{ name }}</span>
-                  <span class="product-rail__meta">{{ meta }}</span>
-                </span>
+              <div class="product-rail__swatch">
+                <img
+                  :src="image"
+                  :alt="name"
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                  width="800"
+                  height="1200"
+                />
+              </div>
+              <!-- Visible under each card when static/reduced; screen-reader only when live. -->
+              <figcaption class="product-rail__caption">
+                <span class="product-rail__name">{{ name }}</span>
+                <span class="product-rail__meta">{{ meta }}</span>
               </figcaption>
             </figure>
           </article>
         </template>
       </div>
     </div>
+
+    <!-- Swatch ticket: the centred card's readout, pinned on a running stitch. -->
+    <div v-if="live && activeEntry" class="product-rail__readout">
+      <span class="product-rail__stitch" aria-hidden="true" />
+      <div
+        class="product-rail__ticket-slot"
+        :aria-live="announce ? 'polite' : 'off'"
+        aria-atomic="true"
+      >
+        <Transition name="rail-ticket">
+          <p :key="activeItem" class="product-rail__ticket">
+            <span class="product-rail__ticket-no">{{ pad(activeItem + 1) }}</span>
+            <span class="product-rail__ticket-name">{{ activeEntry[0] }}</span>
+            <span class="product-rail__ticket-meta">{{ activeEntry[1] }}</span>
+          </p>
+        </Transition>
+      </div>
+    </div>
   </section>
 </template>
 
 <style scoped>
-/* Dark ground; still `.loom-day` so it stays opaque above the WebGL stage. */
+/* Paper ground; still `.loom-day` so it stays opaque above the WebGL stage. */
 .product-rail-section {
-  --rail-ground: #05070a;
-  --rail-accent: #e8b938;
+  --rail-ground: color-mix(in srgb, var(--beige) 70%, var(--white));
+  --rail-hairline: color-mix(in srgb, var(--navy) 22%, transparent);
   background-color: var(--rail-ground);
-  color: var(--beige);
+  color: var(--navy);
   overflow-x: clip;
 }
 
 .product-rail-section__hint {
-  color: color-mix(in srgb, var(--beige) 72%, transparent);
+  color: var(--gray-600);
 }
 
 .product-rail-section__toggle {
@@ -631,44 +620,42 @@ function runLive(gsap: Gsap) {
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid color-mix(in srgb, var(--beige) 30%, transparent);
+  border: 1px solid var(--rail-hairline);
   border-radius: 999px;
-  color: var(--beige);
+  color: var(--navy);
   transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
 
 .product-rail-section__toggle:hover {
-  border-color: var(--beige);
-  background: color-mix(in srgb, var(--beige) 10%, transparent);
-}
-
-.product-rail-section :focus-visible {
-  outline-color: var(--beige);
+  border-color: var(--navy);
+  background: color-mix(in srgb, var(--navy) 6%, transparent);
 }
 
 /* ── Rail ─────────────────────────────────────────────────── */
+/*
+ * Breakpoint shape, read by the engine in measure():
+ *   --rail-visible  slots on screen; the outermost reaches t = 1 and is cropped
+ *   --rail-mag      magnification at t = 1, produced by translateZ alone
+ *   --rail-rotate   inward turn at t = 1, in degrees
+ * --card-w ranges keep the outermost slot straddling the rail edge across the
+ * whole breakpoint (verified numerically 320–2560px).
+ */
 .product-rail {
-  --card-w: 300px;
-  /* card height is derived from 16:9 ratio in CSS on the card itself */
+  --card-w: clamp(7.5rem, 42vw, 17rem);
+  --rail-gap: calc(var(--card-w) * 0.15);
+  --rail-visible: 3;
+  --rail-mag: 1.18;
+  --rail-rotate: 24;
 
   /*
-   * Fan step: how far apart card centres are placed. Much tighter than
-   * card width — this creates the heavy overlap from the design reference.
-   * 0.44 × card width means each successive card's centre is 44% of a
-   * card-width from the previous, so neighbours tuck deeply behind centre.
+   * Perspective sits on the FIXED rail, not the moving track, so the
+   * vanishing point stays centred while the track translates. Scaling it with
+   * the card keeps the arc identical at every width inside a breakpoint.
    */
-  --fan-step: calc(var(--card-w) * 0.44);
-
-  /*
-   * Perspective is set on the FIXED container (not the moving track) so the
-   * vanishing point stays centred while the track translates. If perspective
-   * were on the track, the VP would drift with x and distort the fan.
-   */
-  perspective: 900px;
+  perspective: calc(var(--card-w) * 5);
   perspective-origin: 50% 50%;
 
   position: relative;
-  padding-block: 40px 56px;
   -webkit-user-select: none;
   user-select: none;
   outline-offset: -6px;
@@ -676,15 +663,21 @@ function runLive(gsap: Gsap) {
 
 @media (min-width: 640px) {
   .product-rail {
-    --card-w: 380px;
-    perspective: 1100px;
+    --card-w: clamp(8rem, 20vw, 13rem);
+    --rail-visible: 5;
+    --rail-mag: 1.24;
+    --rail-rotate: 40;
+    perspective: calc(var(--card-w) * 7);
   }
 }
 
 @media (min-width: 1024px) {
   .product-rail {
-    --card-w: 460px;
-    perspective: 1400px;
+    --card-w: clamp(9rem, 13vw, 20rem);
+    --rail-visible: 7;
+    --rail-mag: 1.3;
+    --rail-rotate: 52;
+    perspective: calc(var(--card-w) * 9);
   }
 }
 
@@ -694,47 +687,37 @@ function runLive(gsap: Gsap) {
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--beige) 30%, transparent) transparent;
-  /* Flat strip: no 3D context needed. */
+  scrollbar-color: var(--rail-hairline) transparent;
+  padding-block: 0.5rem 1.25rem;
+  /* Flat strip: no 3D context. */
   perspective: none;
 }
 
 .product-rail.is-live {
   overflow-x: clip;
   touch-action: pan-y;
+  /* Vertical bleed for the edge cards: (tallest edge − 1) / 2 × 1.5 card-w ≈ 0.29. */
+  padding-block: calc(var(--card-w) * 0.3);
 }
 
 .product-rail__track {
   position: relative;
   display: flex;
   align-items: center;
+  gap: var(--rail-gap);
   width: max-content;
-  /*
-   * preserve-3d: cards' rotateY + translateZ are computed in the 3D space
-   * of .product-rail, not flattened here on the track.
-   */
-  transform-style: preserve-3d;
 }
 
 .is-static .product-rail__track,
 .is-reduced .product-rail__track {
-  gap: 16px;
+  align-items: flex-start;
   padding-inline: calc(50% - var(--card-w) / 2);
-  /* Flat strip: collapse 3D context so reduced-motion gets a normal strip. */
-  transform-style: flat;
 }
 
 .is-live .product-rail__track {
-  gap: 0;
+  /* Cards turn and recede in the rail's 3D space, not flattened here. */
+  transform-style: preserve-3d;
   will-change: transform;
-}
-
-/*
- * Fan overlap in live mode: each card's leading edge is offset by --fan-step
- * from the previous card's leading edge. negative margin = overlap.
- */
-.is-live .product-rail__card {
-  margin-inline-start: calc(var(--fan-step) - var(--card-w));
 }
 
 /* ── Card ─────────────────────────────────────────────────── */
@@ -742,109 +725,49 @@ function runLive(gsap: Gsap) {
   position: relative;
   flex: none;
   width: var(--card-w);
-  /* Landscape 16:9 — matches the design reference. */
-  aspect-ratio: 16 / 9;
-  /* Fixed radius — NOT animated. Animating it triggers paint every frame. */
-  border-radius: 1rem;
   scroll-snap-align: center;
   transform-origin: 50% 50%;
-  /*
-   * Composited properties only: scale, opacity, rotateY, translateZ.
-   * No layout or paint recalc per frame.
-   */
-  will-change: transform, opacity;
+}
+
+.is-live .product-rail__card {
+  will-change: transform;
 }
 
 .product-rail__figure {
-  position: absolute;
-  inset: 0;
   margin: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  background: color-mix(in srgb, var(--navy) 80%, black);
 }
 
-.product-rail__figure img {
+.product-rail__swatch {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  /* ≈12% of card width. Fixed — never animated. */
+  border-radius: calc(var(--card-w) * 0.12);
+  background: color-mix(in srgb, var(--navy) 8%, var(--rail-ground));
+}
+
+/* 1px hairline drawn over the photo so light images keep their edge. */
+.product-rail__swatch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--navy) 12%, transparent);
+  pointer-events: none;
+}
+
+.product-rail__swatch img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   pointer-events: none;
   -webkit-user-drag: none;
-  /*
-   * Inactive cards are desaturated and dimmed — a cheap CSS differentiator
-   * that requires zero GSAP writes. CSS transition handles the fade when
-   * is-active is toggled.
-   */
-  filter: saturate(0.5) brightness(0.7);
-  transition: filter 0.4s var(--ease);
-}
-
-.product-rail__card.is-active .product-rail__figure img {
-  filter: saturate(1) brightness(1);
-}
-
-/* ── Active-card states (toggled by a single class, not per-frame setters) ── */
-.product-rail__glow,
-.product-rail__accent,
-.product-rail__labels {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.35s var(--ease);
-}
-
-.product-rail__glow {
-  border-radius: inherit;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rail-accent) 70%, transparent),
-    0 0 48px -6px color-mix(in srgb, var(--rail-accent) 35%, transparent),
-    0 28px 70px -18px color-mix(in srgb, var(--rail-accent) 30%, transparent);
-}
-
-.product-rail__accent {
-  background: color-mix(in srgb, var(--rail-accent) 42%, transparent);
-}
-
-.product-rail__card.is-active .product-rail__glow {
-  opacity: 1;
-}
-
-.product-rail__card.is-active .product-rail__accent {
-  opacity: 0.55;
-}
-
-.product-rail__card.is-active .product-rail__labels {
-  opacity: 1;
-}
-
-.product-rail__index {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--navy) 82%, transparent);
-  color: var(--beige);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
 }
 
 .product-rail__caption {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
   display: grid;
   gap: 0.15rem;
-  padding: 2.75rem 0.9rem 0.9rem;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--rail-ground) 90%, transparent) 35%,
-    transparent
-  );
-  color: var(--beige);
+  padding-top: 0.75rem;
 }
 
 .product-rail__name {
@@ -855,12 +778,85 @@ function runLive(gsap: Gsap) {
 
 .product-rail__meta {
   font-size: 0.75rem;
-  color: color-mix(in srgb, var(--beige) 80%, transparent);
+  color: var(--gray-600);
 }
 
-/* Fallback when JS is off or reduced motion — captions always readable. */
-.is-static .product-rail__labels,
-.is-reduced .product-rail__labels {
-  opacity: 1;
+/* Live: the readout speaks for the centred card; captions stay for AT. */
+.is-live .product-rail__caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Swatch ticket readout ────────────────────────────────── */
+.product-rail__readout {
+  position: relative;
+  display: grid;
+  place-items: center;
+  /* Reserved height: the cross-fade never shifts layout. */
+  height: 3rem;
+}
+
+/* Running stitch spanning the rail. */
+.product-rail__stitch {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  border-top: 2px dashed color-mix(in srgb, var(--navy) 35%, transparent);
+}
+
+.product-rail__ticket-slot {
+  position: relative;
+  display: grid;
+  max-width: calc(100% - 2rem);
+}
+
+.product-rail__ticket {
+  grid-area: 1 / 1;
+  justify-self: center;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--rail-hairline);
+  border-radius: 3px;
+  background: var(--rail-ground);
+  white-space: nowrap;
+  /* On the element itself, so an interrupted fade reverses from where it is. */
+  transition: opacity 0.35s var(--ease);
+}
+
+.product-rail__ticket-no {
+  padding-right: 0.75rem;
+  border-right: 1px solid var(--rail-hairline);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.product-rail__ticket-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.product-rail__ticket-meta {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+}
+
+.rail-ticket-enter-from,
+.rail-ticket-leave-to {
+  opacity: 0;
 }
 </style>

@@ -26,6 +26,7 @@ import SustainabilitySection from "~/components/landing/SustainabilitySection.vu
 import OriginPanel from "~/components/landing/OriginPanel.vue";
 import FooterSection from "~/components/landing/FooterSection.vue";
 import ScrollTracer from "~/components/ScrollTracer.vue";
+import App from "~/app.vue";
 
 useHead({
   title: "Ha-Meem Ching Tai | World-Class Pocketing & Garment Accessories Manufacturing",
@@ -156,7 +157,7 @@ const servicePoints = computed(() => [
       <ProductRail :title="t('featuredTitle')" :items="featuredProducts" />
       <SustainabilitySection />
       <OriginPanel />
-      <FooterSection />
+      <AppFooter />
     </main>
 
     <StatusRail />

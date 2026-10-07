@@ -1,353 +1,490 @@
-<!-- AppFooter.vue -->
+<script setup>
+import denimToolBelt from "~/assets/img/hctpal-section-image-00005.jpg";
+import denimPocketWall from "~/assets/img/hctpal-section-image-00006.jpg";
+
+const { t } = useLocale();
+
+const facilitySpecs = computed(() => [
+  { label: t("footerSpecLocationLabel"), value: t("footerSpecLocationValue") },
+  { label: t("footerSpecSiteLabel"), value: t("footerSpecSiteValue") },
+  { label: t("footerSpecPhaseLabel"), value: t("footerSpecPhaseValue") },
+]);
+
+const footerBlocks = computed(() => [
+  { label: t("footerFactoryHq"), lines: [t("footerFactoryHqValue")] },
+  { label: t("footerHeadOffice"), lines: [t("footerHeadOfficeValue")] },
+  {
+    label: t("footerContactLabel"),
+    lines: [],
+    phone: "+880 131 9320527",
+    email: "info@hameemchingtai.com",
+  },
+]);
+
+const trustedBrands = ["H&M", "Zara", "Uniqlo", "C&A", "American Eagle"];
+
+/**
+ * Asymmetric swap.
+ *
+ * Both columns occupy fixed grid cells for the whole section — the plate in
+ * column 2, the copy in column 1 — and both are pinned to the same grid row,
+ * so the row (and the sticky container beneath the plate) is as tall as the
+ * copy column's full two-section length. The "swap" is a pure transform:
+ * each column translates one column-plus-gutter along X, so they trade
+ * sides without ever changing grid placement.
+ *
+ * That distinction matters twice over. Animating `col-start` cannot tween —
+ * the browser relayouts and the element teleports. And `position: sticky`
+ * only tracks vertical scroll offset, not which column an element visually
+ * occupies, so the plate stays sticky (and pinned on screen) THROUGH the
+ * swap — it doesn't need to un-stick to slide sideways. The reader actually
+ * sees "image now on the left, second section reading on the right" as a
+ * held composition, not a flash mid-scroll. It un-pins on its own, with no
+ * manual toggling, once the shared row scrolls past — ordinary sticky
+ * release.
+ */
+const tripwire = ref(null);
+const plateRef = ref(null);
+const hasSwapped = ref(false);
+
+/** Desktop-only behaviour; below `lg` the layout is a plain vertical stack. */
+const isDesktop = ref(false);
+
+/**
+ * Travel distance in px: one column plus one gutter. Measured rather than
+ * assumed, because the grid is asymmetric (1.05fr / 0.95fr) and the gutter is
+ * a clamp() — neither is knowable from a Tailwind class alone.
+ */
+const travel = ref(0);
+
+const gridRef = ref(null);
+
+const measure = () => {
+  if (!plateRef.value) return;
+  // `offsetLeft` is a layout-box quantity — it ignores CSS transforms
+  // entirely (transforms are paint-time only). That matters here because
+  // `measure` re-runs whenever the grid resizes: reading
+  // `getBoundingClientRect()` instead would, once the swap has applied its
+  // own translateX, measure the plate's already-shifted paint position as
+  // if it were the untransformed one, corrupting `travel` a little more on
+  // every frame until the two columns drift into overlapping. `offsetLeft`
+  // (relative to `gridRef`, its offsetParent — `position: relative` on the
+  // grid establishes that) always reports the static column-2 position,
+  // transform or not.
+  travel.value = Math.round(plateRef.value.offsetLeft);
+};
+
+let observer;
+let resizeObserver;
+let mq;
+let onMqChange;
+
+onMounted(async () => {
+  mq = window.matchMedia("(min-width: 1024px)");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  isDesktop.value = mq.matches;
+  onMqChange = (e) => {
+    isDesktop.value = e.matches;
+    measure();
+  };
+  mq.addEventListener("change", onMqChange);
+
+  await nextTick();
+  measure();
+
+  // Reduced motion: land on the final composition immediately, no animation
+  // and no scroll subscription at all.
+  if (reduced) {
+    hasSwapped.value = true;
+    return;
+  }
+
+  // The plate's width is viewport-relative and its image loads late; both
+  // change the travel distance. Re-measure whenever the box actually changes.
+  resizeObserver = new ResizeObserver(measure);
+  resizeObserver.observe(gridRef.value);
+
+  if (!("IntersectionObserver" in window) || !tripwire.value) {
+    hasSwapped.value = true;
+    return;
+  }
+
+  // IntersectionObserver is driven by the compositor, not the scroll thread,
+  // so it fires correctly under Lenis without any scroll subscription.
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      // Latch: once swapped it stays swapped, so scrolling back up doesn't
+      // send the columns sliding past each other repeatedly.
+      if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
+        hasSwapped.value = true;
+        observer?.disconnect();
+        observer = null;
+      }
+    },
+    { rootMargin: "0px 0px -45% 0px", threshold: 0 }
+  );
+  observer.observe(tripwire.value);
+  // No scroll subscription: the ResizeObserver above already re-measures
+  // whenever the grid box changes, and Lenis is not guaranteed to exist
+  // (touch devices and reduced motion scroll natively).
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  resizeObserver?.disconnect();
+  mq?.removeEventListener("change", onMqChange);
+  observer = resizeObserver = null;
+});
+
+/** Copy slides right (+travel); plate slides left (−travel). Desktop only. */
+const copyShift = computed(() =>
+  isDesktop.value && hasSwapped.value
+    ? `translate3d(${travel.value}px,0,0)`
+    : "translate3d(0,0,0)"
+);
+const plateShift = computed(() =>
+  isDesktop.value && hasSwapped.value
+    ? `translate3d(-${travel.value}px,0,0)`
+    : "translate3d(0,0,0)"
+);
+</script>
+
 <template>
-  <footer id="contact" class="footer-root relative w-full overflow-hidden">
-    <!-- ================= Background Art Layer ================= -->
-    <!-- Bottom-anchored garment line-art with gradient fade overlay -->
-    <div class="footer-bg" aria-hidden="true" />
-    <div class="footer-gradient" aria-hidden="true" />
+  <footer class="relative flex flex-col">
+    <!-- GROUP 1: Standard Document Flow -->
+    <!-- Solid background masks the sticky footer sitting underneath -->
+    <!--
+      No `overflow-hidden` here: it would establish a scroll-container
+      context for the sticky plate below and silently degrade its
+      `position: sticky` to static. The texture SVG's fill is already
+      bounded to its own <rect>, so nothing needs clipping.
+    -->
+    <div class="relative z-10 bg-(--paper)">
+      <!-- Garment-tool line-art texture, tiled behind the editorial column -->
+      <svg
+        class="pointer-events-none absolute inset-0 h-full w-full text-(--brown) opacity-[0.055]"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <defs>
+          <pattern
+            id="hctpalWorkbook"
+            width="240"
+            height="240"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(-8)"
+          >
+            <!-- sewing needle + trailing thread -->
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 20 L74 62" />
+              <ellipse
+                cx="27.5"
+                cy="24.5"
+                rx="3.6"
+                ry="2.1"
+                transform="rotate(39 27.5 24.5)"
+              />
+              <path d="M74 62 q9 5 4 12 t-11 5 q-7 -1 -5 -8" />
+            </g>
 
-    <!-- ================= Content Layer ================= -->
-    <div class="relative z-10">
-      <UContainer>
-        <!-- 3-Column Grid -->
+            <!-- tailor's scissors -->
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              transform="translate(150 26) rotate(24)"
+            >
+              <path d="M0 0 L34 30" />
+              <path d="M14 0 L-20 30" />
+              <circle cx="38.5" cy="33.5" r="5" />
+              <circle cx="-24.5" cy="33.5" r="5" />
+              <circle cx="7" cy="13" r="1.5" />
+            </g>
+
+            <!-- knit / purl stitch rows -->
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-linecap="round"
+            >
+              <path d="M12 132 q11 -19 22 0 q11 19 22 0 q11 -19 22 0 q11 19 22 0" />
+              <path d="M12 152 q11 -19 22 0 q11 19 22 0 q11 -19 22 0 q11 19 22 0" />
+            </g>
+
+            <!-- ball of yarn with loose strand -->
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-linecap="round"
+            >
+              <circle cx="176" cy="150" r="22" />
+              <path d="M158 138 q18 12 36 24" />
+              <path d="M156 152 q20 8 40 -6" />
+              <path d="M166 170 q12 -20 26 -30" />
+              <path d="M197 158 q16 10 8 26 t-24 10" />
+            </g>
+
+            <!-- bobbin of thread -->
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M44 196 h34 M44 232 h34" />
+              <path d="M52 196 v36 M70 196 v36" />
+              <path d="M52 206 h18 M52 214 h18 M52 222 h18" />
+            </g>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hctpalWorkbook)" />
+      </svg>
+
+      <div
+        ref="gridRef"
+        class="relative mx-auto grid max-w-360 grid-cols-1 items-start gap-y-14 px-[max(22px,4vw)] py-[clamp(90px,14vw,220px)] lg:grid-cols-[1.05fr_0.95fr] lg:gap-x-[clamp(48px,6vw,120px)] lg:gap-y-0"
+      >
+        <!-- LEFT (pre-swap): editorial column, flows with the document -->
         <div
-          class="h-screen grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-16 pt-16 pb-24 md:pt-20 md:pb-32"
+          class="order-2 flex flex-col gap-23 border-l border-(--line) pl-6 will-change-transform lg:order-0 lg:col-start-1 lg:row-start-1 lg:gap-[clamp(120px,18vw,300px)] lg:pl-[clamp(24px,3.4vw,60px)] lg:transition-transform lg:duration-900 lg:ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :style="{ transform: copyShift }"
         >
-          <!-- Column 1 — Brand -->
-          <div class="col-brand">
-            <h3 class="footer-brand-name">HA-MEEM<br />CHING TAI</h3>
-            <div class="footer-brand-rule" />
-            <p class="footer-brand-mission">
-              For decades, mills waited on imports. We built the alternative in Bangladesh
-              — pocketing, interlining, lining and waistband, made where the garments are.
-            </p>
-          </div>
-
-          <!-- Column 2 — Find Us -->
-          <div class="col-findus">
-            <h4 class="footer-heading">Find Us</h4>
-
-            <ul class="footer-contact-list">
-              <!-- Ghorashal HQ -->
-              <li>
-                <UIcon name="heroicons:map-pin" class="footer-icon" />
-                <div>
-                  <span class="footer-contact-label">Factory HQ</span>
-                  <span class="footer-contact-text">Narsingdi, Bangladesh</span>
-                </div>
-              </li>
-              <!-- Dhaka Head Office -->
-              <li>
-                <UIcon name="heroicons:building-office-2" class="footer-icon" />
-                <div>
-                  <span class="footer-contact-label">Head Office</span>
-                  <!-- TODO(confirm: head-office address to publish alongside CT sales contacts) -->
-                  <span class="footer-contact-text"
-                    >Times Media Bhaban, 387 Tejgaon I/A, Dhaka 1208</span
-                  >
-                </div>
-              </li>
-              <!-- Phone -->
-              <li>
-                <UIcon name="heroicons:phone" class="footer-icon" />
-                <a href="tel:+8801911420392" class="footer-contact-text footer-link">
-                  +88 01911 420392
-                </a>
-              </li>
-              <!-- Email -->
-              <li>
-                <UIcon name="heroicons:envelope" class="footer-icon" />
-                <a
-                  href="mailto:sharif.ershad@ctcloth.hk"
-                  class="footer-contact-text footer-link"
-                >
-                  sharif.ershad@ctcloth.hk
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Column 3 — Connect -->
-          <div class="col-connect">
-            <h4 class="footer-heading">Connect</h4>
-
-            <!-- Social Icons -->
-            <div class="footer-social-row">
-              <a
-                v-for="social in socials"
-                :key="social.label"
-                :href="social.href"
-                :aria-label="social.label"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="footer-social-icon"
+          <section
+            id="visit"
+            class="flex max-w-[46ch] flex-col items-start gap-5.5"
+            data-reveal
+          >
+            <p
+              class="m-0 flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
+            >
+              <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
+                >01</span
               >
-                <UIcon :name="social.icon" class="size-4.5" />
-              </a>
-            </div>
-
-            <!-- Newsletter -->
-            <!-- TODO(confirm: newsletter needs a real subscribe endpoint before it goes back.
-                 The form only logged to console, so addresses were silently discarded —
-                 replaced with a direct sales mailto until there is somewhere to post to. -->
-            <div class="footer-newsletter">
-              <p class="footer-newsletter-label">Trade &amp; sample enquiries</p>
-              <a href="mailto:sharif.ershad@ctcloth.hk" class="footer-newsletter-cta">
-                <span>sharif.ershad@ctcloth.hk</span>
-                <UIcon name="heroicons:arrow-right-20-solid" class="size-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </UContainer>
-
-      <!-- ================= Bottom Bar ================= -->
-      <div class="footer-bottom-bar">
-        <UContainer>
-          <div class="footer-bottom-inner">
-            <p class="footer-copyright">
-              &copy; {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp;
-              Accessories Ltd.
+              {{ t("footerVisitEyebrow") }}
             </p>
-            <div class="footer-legal-links">
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
+            <h2
+              class="m-0 font-serif text-[clamp(30px,3.3vw,58px)] font-normal leading-[1.03] tracking-[-0.035em] text-(--ink)"
+            >
+              {{ t("footerVisitTitle") }}
+            </h2>
+            <p class="m-0 max-w-[40ch] text-sm leading-[1.65] text-(--brown)">
+              {{ t("footerVisitBody") }}
+            </p>
+
+            <!-- Ruled docket — reads like a tailor's order sheet -->
+            <dl class="mt-1 grid w-full max-w-100 border-t border-(--line)">
+              <div
+                v-for="spec in facilitySpecs"
+                :key="spec.label"
+                class="flex justify-between gap-5 border-b border-(--line) py-2.75"
+              >
+                <dt
+                  class="text-[10px] font-semibold uppercase tracking-[0.09em] text-(--muted)"
+                >
+                  {{ spec.label }}
+                </dt>
+                <dd class="m-0 text-right text-xs text-(--brown)">{{ spec.value }}</dd>
+              </div>
+            </dl>
+
+            <a class="tiny-link" href="#contact">
+              <span>{{ t("footerVisitCta") }}</span>
+              <i>
+                <svg width="12" height="12" viewBox="0 0 20 20">
+                  <path d="M3 10h13M11 5l5 5-5 5" />
+                </svg>
+              </i>
+            </a>
+          </section>
+
+          <!-- 50% tripwire: fires the swap once the reader crosses this line -->
+          <div
+            ref="tripwire"
+            class="pointer-events-none h-px -my-11.5 lg:-my-[clamp(60px,9vw,150px)]"
+            aria-hidden="true"
+          ></div>
+
+          <section
+            id="contact"
+            class="flex max-w-[46ch] flex-col items-start gap-5.5"
+            data-reveal
+          >
+            <p
+              class="m-0 flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
+            >
+              <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
+                >02</span
+              >
+              {{ t("footerContactEyebrow") }}
+            </p>
+            <h2
+              class="m-0 font-serif text-[clamp(42px,5.6vw,96px)] font-normal uppercase leading-[0.94] tracking-[-0.055em] text-(--ink)"
+            >
+              {{ t("footerContactTitle") }}
+            </h2>
+            <p class="m-0 max-w-[40ch] text-sm leading-[1.65] text-(--brown)">
+              {{ t("footerContactBody") }}
+            </p>
+
+            <figure class="mt-1.5 w-full max-w-82.5">
+              <img
+                :src="denimPocketWall"
+                alt="Denim pocket wall organiser holding workshop tools"
+                loading="lazy"
+                decoding="async"
+                class="block aspect-4/5 w-full rounded-[2px_2px_34%_34%/2px_2px_12%_12%] bg-(--panel) object-cover object-center"
+              />
+              <figcaption
+                class="mt-2.75 text-[10.5px] leading-normal tracking-[0.03em] text-(--muted)"
+              >
+                {{ t("footerInsetCaption") }}
+              </figcaption>
+            </figure>
+
+            <!-- Every contact path, as large targets: email, WhatsApp, phone. -->
+            <div class="flex flex-wrap gap-3">
+              <a class="loom-cta" href="mailto:info@hameemchingtai.com">
+                <UIcon name="i-heroicons-envelope" class="h-4 w-4" />
+                {{ t("footerContactCta") }}
+              </a>
+              <a
+                class="loom-ghost"
+                href="https://wa.me/8801319320527"
+                target="_blank"
+                rel="noopener"
+              >
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="h-4 w-4" />
+                {{ t("footerWhatsapp") }}
+              </a>
+              <a class="loom-ghost" href="tel:+8801319320527">
+                <UIcon name="i-heroicons-phone" class="h-4 w-4" />
+                {{ t("footerCall") }} +880 131 9320527
+              </a>
             </div>
-          </div>
-        </UContainer>
+          </section>
+        </div>
+
+        <!--
+          RIGHT (pre-swap): sticky plate. `position: sticky` only cares about
+          vertical scroll position, not which side of the grid it visually
+          sits on — so it stays sticky through the whole swap. The tripwire
+          only ever changes the `transform`, gliding it across to the left
+          while it remains pinned, so the reader actually sees "image left,
+          second section reading on the right" instead of the image un-
+          sticking and scrolling away the instant it swaps. It releases
+          naturally, with no manual toggling, once the shared grid row (as
+          tall as the copy column) scrolls past.
+        -->
+        <aside
+          ref="plateRef"
+          class="order-1 will-change-transform lg:order-0 lg:sticky lg:top-[calc(var(--header)+48px)] lg:col-start-2 lg:row-start-1 lg:transition-transform lg:duration-900 lg:ease-[cubic-bezier(0.16,1,0.3,1)]"
+          :style="{ transform: plateShift }"
+        >
+          <figure
+            class="m-0 border border-(--line) bg-(--paper-soft) p-[clamp(14px,1.5vw,24px)]"
+          >
+            <img
+              :src="denimToolBelt"
+              alt="Denim tool belt cut from a single jean leg, fitted on a tailor's mannequin"
+              loading="lazy"
+              decoding="async"
+              class="block h-[min(58vh,460px)] w-full rounded-[180px_180px_4px_4px/120px_120px_4px_4px] bg-(--panel) object-cover object-center lg:h-[min(64vh,620px)]"
+            />
+            <figcaption
+              class="mt-4 flex flex-col gap-1.25 border-t border-(--line) pt-3.25 text-[10.5px] leading-normal tracking-[0.03em] text-(--muted)"
+            >
+              <span
+                class="text-[10px] font-semibold uppercase tracking-[0.11em] text-(--rust)"
+                >{{ t("footerPlateLabel") }}</span
+              >
+              {{ t("footerPlateCaption") }}
+            </figcaption>
+          </figure>
+        </aside>
+      </div>
+    </div>
+
+    <!-- GROUP 2: Sticky Reveal Footer -->
+    <div
+      class="sticky bottom-0 z-0 flex h-[max(1020px,70svh)] flex-col justify-between overflow-hidden bg-black px-[max(12px,1.1vw)] pb-3 pt-4.5 text-white"
+    >
+      <div class="absolute inset-0">
+        <img
+          src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg"
+          alt="Fabric weave background"
+          class="h-full w-full object-cover"
+        />
+      </div>
+
+      <!-- FIX: Explicitly closed div prevents DOM hierarchy bugs -->
+      <div
+        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(0_0_0/0.85),rgb(0_0_0/0.55)_55%,rgb(0_0_0/0.75))]"
+      ></div>
+
+      <div
+        class="relative z-1 grid grid-cols-1 gap-7.5 border-t border-white/25 pt-2.25 sm:grid-cols-2 md:grid-cols-[1.2fr_1.3fr_1fr]"
+      >
+        <div
+          v-for="block in footerBlocks"
+          :key="block.label"
+          class="flex flex-col items-start gap-1 text-[11px] uppercase leading-normal"
+        >
+          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-white/75">
+            {{ block.label }}
+          </span>
+          <p v-for="line in block.lines" :key="line" class="m-0">{{ line }}</p>
+          <a v-if="block.phone" href="tel:+8801319320527">{{ block.phone }}</a>
+          <a v-if="block.email" :href="`mailto:${block.email}`">{{ block.email }}</a>
+        </div>
+      </div>
+
+      <div
+        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-white/75"
+      >
+        {{ t("footerMission") }}
+      </div>
+
+      <div class="relative z-1 pt-5 text-center">
+        <span
+          class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-white/75"
+        >
+          {{ t("footerTrustedBy") }}
+        </span>
+        <div
+          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-white/75"
+        >
+          <span v-for="brand in trustedBrands" :key="brand">{{ brand }}</span>
+        </div>
+      </div>
+
+      <div
+        class="relative z-1 self-center text-[clamp(92px,17.3vw,330px)] font-light uppercase leading-[0.72] tracking-[-0.09em]"
+      >
+        HCTPAL
+      </div>
+
+      <div
+        class="relative z-1 grid grid-cols-1 gap-2 border-t border-white/25 pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-white/75 sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left"
+      >
+        <span
+          >© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories
+          Ltd.</span
+        >
+        <span class="sm:text-center">{{ t("footerRights") }}</span>
+        <a href="#top" class="sm:text-right">{{ t("footerBackToTop") }}</a>
       </div>
     </div>
   </footer>
 </template>
-
-<script setup>
-// TODO(confirm: real HCTPAL LinkedIn/Facebook profile URLs, then re-add them here.
-// Generic platform homepages were removed rather than shipped as our profiles.)
-const socials = [
-  {
-    label: "Email Us",
-    icon: "heroicons:envelope",
-    href: "mailto:sharif.ershad@ctcloth.hk",
-  },
-];
-</script>
-
-<style scoped>
-/* ─── Root Container ─── */
-.footer-root {
-  background-color: #f5f5f0;
-  min-height: 480px;
-}
-
-/* ─── Background Art (bottom-anchored) ─── */
-.footer-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background-image: url("~/assets/img/HCTPAL.svg");
-  background-position: bottom center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-color: #1d3426;
-}
-
-@media (max-width: 768px) {
-  .footer-bg {
-    background-size: contain;
-    background-position: bottom center;
-  }
-}
-
-/* ─── Gradient Overlay (solid top → transparent bottom) ─── */
-.footer-gradient {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(
-    to bottom,
-    #f5f5f0 0%,
-    #f5f5f0 25%,
-    rgba(245, 245, 240, 0.92) 40%,
-    rgba(245, 245, 240, 0.6) 60%,
-    rgba(245, 245, 240, 0.25) 78%,
-    rgba(245, 245, 240, 0) 100%
-  );
-}
-
-/* ─── Brand Column ─── */
-.footer-brand-name {
-  font-family: var(--font-serif, "Playfair Display", Georgia, serif);
-  font-size: clamp(1.5rem, 2.2vw, 2rem);
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--brown, #242c2c);
-}
-
-.footer-brand-rule {
-  width: 36px;
-  height: 2px;
-  margin: 16px 0 18px;
-  background: var(--brass, #b88d4c);
-  border-radius: 1px;
-}
-
-.footer-brand-mission {
-  font-size: 0.875rem;
-  line-height: 1.65;
-  color: color-mix(in srgb, var(--brown, #242c2c) 62%, transparent);
-  max-width: 320px;
-}
-
-/* ─── Section Headings ─── */
-.footer-heading {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--brown, #242c2c) 55%, transparent);
-  margin-bottom: 20px;
-}
-
-/* ─── Contact List ─── */
-.footer-contact-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.footer-contact-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.footer-icon {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  color: var(--brass, #b88d4c);
-}
-
-.footer-contact-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--brown, #242c2c);
-  margin-bottom: 2px;
-}
-
-.footer-contact-text {
-  display: block;
-  font-size: 0.825rem;
-  line-height: 1.5;
-  color: color-mix(in srgb, var(--brown, #242c2c) 60%, transparent);
-}
-
-.footer-link {
-  transition: color 0.3s ease;
-}
-
-.footer-link:hover {
-  color: var(--brown, #242c2c);
-}
-
-/* ─── Social Icons ─── */
-.footer-social-row {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 28px;
-}
-
-.footer-social-icon {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--brown, #242c2c) 18%, transparent);
-  color: var(--brown, #242c2c);
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.footer-social-icon:hover {
-  background: var(--brown, #242c2c);
-  color: var(--paper, #f5f2eb);
-  border-color: var(--brown, #242c2c);
-  transform: translateY(-2px);
-}
-
-/* ─── Newsletter ─── */
-.footer-newsletter-label {
-  font-size: 0.775rem;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--brown, #242c2c) 55%, transparent);
-  margin-bottom: 10px;
-}
-
-.footer-newsletter-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 280px;
-  padding: 10px 14px;
-  font-size: 0.825rem;
-  color: var(--brown, #242c2c);
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid color-mix(in srgb, var(--brown, #242c2c) 14%, transparent);
-  border-radius: 6px;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
-}
-
-.footer-newsletter-cta:hover {
-  border-color: var(--brass, #b88d4c);
-  background: rgba(0, 0, 0, 0.06);
-}
-
-/* ─── Bottom Bar ─── */
-.footer-bottom-bar {
-  border-top: 1px solid color-mix(in srgb, var(--brown, #242c2c) 10%, transparent);
-}
-
-.footer-bottom-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 16px 0;
-  text-align: center;
-}
-
-@media (min-width: 640px) {
-  .footer-bottom-inner {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-}
-
-.footer-copyright {
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--brown, #242c2c) 50%, transparent);
-}
-
-.footer-legal-links {
-  display: flex;
-  gap: 20px;
-}
-
-.footer-legal-links a {
-  font-size: 0.7rem;
-  color: color-mix(in srgb, var(--brown, #242c2c) 50%, transparent);
-  transition: color 0.3s ease;
-}
-
-.footer-legal-links a:hover {
-  color: var(--brown, #242c2c);
-}
-</style>
