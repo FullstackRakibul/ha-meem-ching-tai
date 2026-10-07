@@ -198,15 +198,19 @@ function morphTube(
   return geoA
 }
 
+/** Sun colours come from the CSS tokens in main.css, so poster and stage match. */
+const sunToken = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
 function glowTexture() {
   const size = 64
   const c = document.createElement('canvas')
   c.width = c.height = size
   const g = c.getContext('2d')!
   const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
-  grad.addColorStop(0, 'rgba(134,192,156,0.6)')
-  grad.addColorStop(0.35, 'rgba(134,192,156,0.2)')
-  grad.addColorStop(1, 'rgba(134,192,156,0)')
+  grad.addColorStop(0, sunToken('--sun-halo'))
+  // Same hue at zero alpha (8-digit hex) — fading to `transparent` greys the edge.
+  grad.addColorStop(1, `${sunToken('--sun-core')}00`)
   g.fillStyle = grad
   g.fillRect(0, 0, size, size)
   const tex = new CanvasTexture(c)
@@ -408,12 +412,14 @@ export function createStage(
   // ── Sun + water ─────────────────────────────────────────────────────────
   const dusk = new Group()
   const glowTex = glowTexture()
-  const sunMat = new MeshBasicMaterial({ color: MINT, transparent: true })
+  // fog: false — the ground-coloured fog would otherwise tint the sun green.
+  const sunMat = new MeshBasicMaterial({ color: sunToken('--sun-core'), transparent: true, fog: false })
   const sun = new Mesh(new IcosahedronGeometry(0.62, 8), sunMat)
   const glowMat = new SpriteMaterial({
     map: glowTex,
     transparent: true,
     depthWrite: false,
+    fog: false,
   })
   const glow = new Sprite(glowMat)
   glow.scale.setScalar(4.2)
@@ -790,7 +796,8 @@ export function createStage(
       key.intensity = 1.6 + 0.9 * s.u.sun * p.dusk
       setOpacity(dusk, [sunMat, recoveryMat], p.dusk)
       if (dusk.visible) place(dusk, anchors.dusk)
-      glowMat.opacity = 0.6 * p.dusk * s.u.sun
+      // Peak alpha is the --sun-halo token itself, same as the poster's halo.
+      glowMat.opacity = p.dusk * s.u.sun
       waterMat.uniforms.uAlpha!.value = p.dusk
       if (watering) stepWater(dt)
 

@@ -43,29 +43,45 @@ useScrollScene(section, (ctx) => {
   <section id="sustainability" ref="section" class="loom-night loom-night--dusk" data-chapter="dusk">
     <div class="loom-dusk-in" aria-hidden="true" />
 
-    <div ref="scene" class="loom-grain loom-dusk relative">
+    <div ref="scene" class="group/dusk loom-grain loom-dusk relative">
       <div class="loom-layer loom-wrap loom-dusk__grid">
         <div class="flex flex-col gap-8">
           <header class="flex flex-col gap-6" data-reveal-block>
             <p class="loom-label loom-muted"><span class="loom-gold">08</span>{{ t("sustainEyebrow") }}</p>
-            <h2 class="loom-display loom-display--l loom-measure">{{ t("sustainHeadline") }}</h2>
+            <h2 class="loom-display loom-display--l loom-measure text-balance">{{ t("sustainHeadline") }}</h2>
           </header>
 
           <div class="loom-dusk__stats">
-            <article v-for="stat in stats" :key="stat.label" data-reveal-block>
-              <p class="loom-stats__value loom-gold">{{ stat.value }}</p>
+            <!-- GSAP reveals the article; hover motion lives on its children only. -->
+            <article v-for="stat in stats" :key="stat.label" class="group/stat relative" data-reveal-block>
+              <span
+                class="pointer-events-none absolute inset-x-0 -top-px h-0.5 origin-left bg-(--sun-core) opacity-0 group-hover/stat:opacity-100 group-focus-within/stat:opacity-100 motion-safe:scale-x-0 motion-safe:transition-transform motion-safe:duration-400 motion-safe:ease-(--ease) motion-safe:group-hover/stat:scale-x-100 motion-safe:group-focus-within/stat:scale-x-100"
+                aria-hidden="true"
+              />
+              <p
+                class="loom-stats__value loom-gold tabular-nums leading-none! motion-safe:transition-transform motion-safe:duration-400 motion-safe:ease-(--ease) motion-safe:group-hover/stat:-translate-y-0.5 motion-safe:group-focus-within/stat:-translate-y-0.5"
+              >
+                {{ stat.value }}
+              </p>
               <p class="loom-label">{{ stat.label }}</p>
-              <p class="loom-body loom-muted">{{ stat.desc }}</p>
+              <p class="loom-body loom-muted max-w-[28ch] text-pretty">{{ stat.desc }}</p>
             </article>
           </div>
 
-          <a class="loom-ghost self-start" href="#milestones">
+          <!-- Hover fill comes from `.loom-night .loom-ghost:hover`; focus mirrors it. -->
+          <a
+            class="group loom-ghost self-start border-(--ink)! focus-visible:bg-(--ink) focus-visible:text-(--white)"
+            href="#milestones"
+          >
             {{ t("sustainCta") }}
-            <UIcon name="i-heroicons-arrow-up-right-20-solid" class="h-4 w-4" />
+            <UIcon
+              name="i-heroicons-arrow-up-right-20-solid"
+              class="h-4 w-4 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-(--ease) motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-focus-visible:translate-x-0.5 motion-safe:group-focus-visible:-translate-y-0.5"
+            />
           </a>
         </div>
 
-        <div class="loom-dusk__figure" data-loom-anchor="dusk">
+        <div class="group/sun loom-dusk__figure" data-loom-anchor="dusk">
           <SunWaterPoster />
         </div>
       </div>

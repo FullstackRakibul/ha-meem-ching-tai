@@ -1,6 +1,5 @@
 <script setup>
 import denimToolBelt from "~/assets/img/hctpal-section-image-00005.jpg";
-import denimPocketWall from "~/assets/img/hctpal-section-image-00006.jpg";
 
 const { t } = useLocale();
 
@@ -23,145 +22,86 @@ const footerBlocks = computed(() => [
 
 const trustedBrands = ["H&M", "Zara", "Uniqlo", "C&A", "American Eagle"];
 
-/**
- * Asymmetric swap.
- *
- * Both columns occupy fixed grid cells for the whole section — the plate in
- * column 2, the copy in column 1 — and both are pinned to the same grid row,
- * so the row (and the sticky container beneath the plate) is as tall as the
- * copy column's full two-section length. The "swap" is a pure transform:
- * each column translates one column-plus-gutter along X, so they trade
- * sides without ever changing grid placement.
- *
- * That distinction matters twice over. Animating `col-start` cannot tween —
- * the browser relayouts and the element teleports. And `position: sticky`
- * only tracks vertical scroll offset, not which column an element visually
- * occupies, so the plate stays sticky (and pinned on screen) THROUGH the
- * swap — it doesn't need to un-stick to slide sideways. The reader actually
- * sees "image now on the left, second section reading on the right" as a
- * held composition, not a flash mid-scroll. It un-pins on its own, with no
- * manual toggling, once the shared row scrolls past — ordinary sticky
- * release.
- */
-const tripwire = ref(null);
-const plateRef = ref(null);
-const hasSwapped = ref(false);
+const reachLinks = computed(() => [
+  { label: "info@hameemchingtai.com", href: "mailto:info@hameemchingtai.com" },
+  { label: t("footerWhatsapp"), href: "https://wa.me/8801319320527", external: true },
+  { label: "+880 131 9320527", href: "tel:+8801319320527" },
+]);
 
-/** Desktop-only behaviour; below `lg` the layout is a plain vertical stack. */
-const isDesktop = ref(false);
+/** Single-line inputs; `wide` spans both columns of the paired row. */
+const fields = computed(() => [
+  {
+    name: "name",
+    type: "text",
+    autocomplete: "name",
+    required: true,
+    icon: "i-heroicons-user",
+    label: t("footerFormName"),
+  },
+  {
+    name: "company",
+    type: "text",
+    autocomplete: "organization",
+    required: false,
+    icon: "i-heroicons-building-office-2",
+    label: t("footerFormCompany"),
+  },
+  {
+    name: "email",
+    type: "email",
+    autocomplete: "email",
+    required: true,
+    icon: "i-heroicons-envelope",
+    label: t("footerFormEmail"),
+    wide: true,
+  },
+]);
 
-/**
- * Travel distance in px: one column plus one gutter. Measured rather than
- * assumed, because the grid is asymmetric (1.05fr / 0.95fr) and the gutter is
- * a clamp() — neither is knowable from a Tailwind class alone.
- */
-const travel = ref(0);
+// Filled field + floating label, shared by every input and the textarea.
+const fieldClass =
+  "peer block w-full min-h-13 rounded-[14px] border-b-2 border-transparent bg-(--panel) pt-5.5 pb-1.5 pl-4 pr-12 text-base text-(--ink) autofill:shadow-[inset_0_0_0_100px_var(--panel)] user-invalid:border-dashed user-invalid:border-(--rust)";
+const labelClass =
+  "pointer-events-none absolute left-4 top-1.5 text-xs text-(--muted) transition-all duration-200 motion-reduce:transition-none peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs";
+const iconClass = "pointer-events-none absolute right-4 top-4 size-5 text-(--muted)";
 
-const gridRef = ref(null);
+const form = reactive({ name: "", company: "", email: "", message: "", file: null });
+const status = ref("idle"); // idle | sending | sent | error
+const fileInput = ref(null);
 
-const measure = () => {
-  if (!plateRef.value) return;
-  // `offsetLeft` is a layout-box quantity — it ignores CSS transforms
-  // entirely (transforms are paint-time only). That matters here because
-  // `measure` re-runs whenever the grid resizes: reading
-  // `getBoundingClientRect()` instead would, once the swap has applied its
-  // own translateX, measure the plate's already-shifted paint position as
-  // if it were the untransformed one, corrupting `travel` a little more on
-  // every frame until the two columns drift into overlapping. `offsetLeft`
-  // (relative to `gridRef`, its offsetParent — `position: relative` on the
-  // grid establishes that) always reports the static column-2 position,
-  // transform or not.
-  travel.value = Math.round(plateRef.value.offsetLeft);
+const onFile = (e) => (form.file = e.target.files?.[0] ?? null);
+const clearFile = () => {
+  form.file = null;
+  fileInput.value.value = "";
 };
 
-let observer;
-let resizeObserver;
-let mq;
-let onMqChange;
+// TODO: post to the enquiry endpoint once one exists. Until then every
+// submit lands in the error state, which offers the mailto fallback.
+async function sendEnquiry(payload) {
+  throw new Error("sendEnquiry is not wired to an endpoint yet");
+}
 
-onMounted(async () => {
-  mq = window.matchMedia("(min-width: 1024px)");
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  isDesktop.value = mq.matches;
-  onMqChange = (e) => {
-    isDesktop.value = e.matches;
-    measure();
-  };
-  mq.addEventListener("change", onMqChange);
-
-  await nextTick();
-  measure();
-
-  // Reduced motion: land on the final composition immediately, no animation
-  // and no scroll subscription at all.
-  if (reduced) {
-    hasSwapped.value = true;
-    return;
+async function submit(e) {
+  status.value = "sending";
+  try {
+    await sendEnquiry({ ...form });
+    e.target.reset(); // also clears :user-invalid
+    Object.assign(form, { name: "", company: "", email: "", message: "", file: null });
+    status.value = "sent";
+  } catch {
+    status.value = "error";
   }
-
-  // The plate's width is viewport-relative and its image loads late; both
-  // change the travel distance. Re-measure whenever the box actually changes.
-  resizeObserver = new ResizeObserver(measure);
-  resizeObserver.observe(gridRef.value);
-
-  if (!("IntersectionObserver" in window) || !tripwire.value) {
-    hasSwapped.value = true;
-    return;
-  }
-
-  // IntersectionObserver is driven by the compositor, not the scroll thread,
-  // so it fires correctly under Lenis without any scroll subscription.
-  observer = new IntersectionObserver(
-    ([entry]) => {
-      // Latch: once swapped it stays swapped, so scrolling back up doesn't
-      // send the columns sliding past each other repeatedly.
-      if (entry.isIntersecting || entry.boundingClientRect.top < 0) {
-        hasSwapped.value = true;
-        observer?.disconnect();
-        observer = null;
-      }
-    },
-    { rootMargin: "0px 0px -45% 0px", threshold: 0 }
-  );
-  observer.observe(tripwire.value);
-  // No scroll subscription: the ResizeObserver above already re-measures
-  // whenever the grid box changes, and Lenis is not guaranteed to exist
-  // (touch devices and reduced motion scroll natively).
-});
-
-onBeforeUnmount(() => {
-  observer?.disconnect();
-  resizeObserver?.disconnect();
-  mq?.removeEventListener("change", onMqChange);
-  observer = resizeObserver = null;
-});
-
-/** Copy slides right (+travel); plate slides left (−travel). Desktop only. */
-const copyShift = computed(() =>
-  isDesktop.value && hasSwapped.value
-    ? `translate3d(${travel.value}px,0,0)`
-    : "translate3d(0,0,0)"
-);
-const plateShift = computed(() =>
-  isDesktop.value && hasSwapped.value
-    ? `translate3d(-${travel.value}px,0,0)`
-    : "translate3d(0,0,0)"
-);
+}
 </script>
 
 <template>
   <footer class="relative flex flex-col">
-    <!-- GROUP 1: Standard Document Flow -->
-    <!-- Solid background masks the sticky footer sitting underneath -->
+    <!-- GROUP 1: Contact card -->
     <!--
-      No `overflow-hidden` here: it would establish a scroll-container
-      context for the sticky plate below and silently degrade its
-      `position: sticky` to static. The texture SVG's fill is already
-      bounded to its own <rect>, so nothing needs clipping.
+      Opaque so it masks the sticky footer beneath. `overflow-x-clip` (not
+      hidden) trims the tilted sheet without creating a scroll container.
     -->
-    <div class="relative z-10 bg-(--paper)">
-      <!-- Garment-tool line-art texture, tiled behind the editorial column -->
+    <div class="relative z-10 overflow-x-clip bg-(--paper)">
+      <!-- Garment-tool line-art texture, tiled behind the contact card -->
       <svg
         class="pointer-events-none absolute inset-0 h-full w-full text-(--brown) opacity-[0.055]"
         aria-hidden="true"
@@ -252,167 +192,286 @@ const plateShift = computed(() =>
         <rect width="100%" height="100%" fill="url(#hctpalWorkbook)" />
       </svg>
 
+      <!-- Plate edges, in the image's own 0–1 box so they scale with it. -->
+      <svg class="absolute size-0" aria-hidden="true" focusable="false">
+        <defs>
+          <clipPath id="hctpalPlateCurve" clipPathUnits="objectBoundingBox">
+            <path
+              d="M0.16,0 C0.02,0.16 0.02,0.34 0.1,0.5 C0.18,0.66 0.18,0.84 0.04,1 L1,1 L1,0 Z"
+            />
+          </clipPath>
+          <clipPath id="hctpalPlateArch" clipPathUnits="objectBoundingBox">
+            <path d="M0,0 H1 V0.86 C0.7,1 0.3,1 0,0.86 Z" />
+          </clipPath>
+        </defs>
+      </svg>
+
       <div
-        ref="gridRef"
-        class="relative mx-auto grid max-w-360 grid-cols-1 items-start gap-y-14 px-[max(22px,4vw)] py-[clamp(90px,14vw,220px)] lg:grid-cols-[1.05fr_0.95fr] lg:gap-x-[clamp(48px,6vw,120px)] lg:gap-y-0"
+        class="relative mx-auto max-w-300 px-[max(16px,4vw)] py-[clamp(64px,10vw,160px)]"
       >
-        <!-- LEFT (pre-swap): editorial column, flows with the document -->
-        <div
-          class="order-2 flex flex-col gap-23 border-l border-(--line) pl-6 will-change-transform lg:order-0 lg:col-start-1 lg:row-start-1 lg:gap-[clamp(120px,18vw,300px)] lg:pl-[clamp(24px,3.4vw,60px)] lg:transition-transform lg:duration-900 lg:ease-[cubic-bezier(0.16,1,0.3,1)]"
-          :style="{ transform: copyShift }"
-        >
-          <section
-            id="visit"
-            class="flex max-w-[46ch] flex-col items-start gap-5.5"
-            data-reveal
-          >
-            <p
-              class="m-0 flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
-            >
-              <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
-                >01</span
-              >
-              {{ t("footerVisitEyebrow") }}
-            </p>
-            <h2
-              class="m-0 font-serif text-[clamp(30px,3.3vw,58px)] font-normal leading-[1.03] tracking-[-0.035em] text-(--ink)"
-            >
-              {{ t("footerVisitTitle") }}
-            </h2>
-            <p class="m-0 max-w-[40ch] text-sm leading-[1.65] text-(--brown)">
-              {{ t("footerVisitBody") }}
-            </p>
-
-            <!-- Ruled docket — reads like a tailor's order sheet -->
-            <dl class="mt-1 grid w-full max-w-100 border-t border-(--line)">
-              <div
-                v-for="spec in facilitySpecs"
-                :key="spec.label"
-                class="flex justify-between gap-5 border-b border-(--line) py-2.75"
-              >
-                <dt
-                  class="text-[10px] font-semibold uppercase tracking-[0.09em] text-(--muted)"
-                >
-                  {{ spec.label }}
-                </dt>
-                <dd class="m-0 text-right text-xs text-(--brown)">{{ spec.value }}</dd>
-              </div>
-            </dl>
-
-            <a class="tiny-link" href="#contact">
-              <span>{{ t("footerVisitCta") }}</span>
-              <i>
-                <svg width="12" height="12" viewBox="0 0 20 20">
-                  <path d="M3 10h13M11 5l5 5-5 5" />
-                </svg>
-              </i>
-            </a>
-          </section>
-
-          <!-- 50% tripwire: fires the swap once the reader crosses this line -->
+        <div class="relative">
+          <!-- Tilted sheet underneath, like a pattern page slipped behind the card -->
           <div
-            ref="tripwire"
-            class="pointer-events-none h-px -my-11.5 lg:-my-[clamp(60px,9vw,150px)]"
+            class="absolute inset-0 hidden -rotate-2 rounded-[clamp(20px,2.4vw,32px)] border border-(--line) bg-(--paper-soft) sm:block"
             aria-hidden="true"
           ></div>
 
           <section
             id="contact"
-            class="flex max-w-[46ch] flex-col items-start gap-5.5"
-            data-reveal
+            aria-labelledby="contact-title"
+            class="relative grid overflow-hidden rounded-[clamp(20px,2.4vw,32px)] border border-(--line) bg-(--paper-soft) shadow-[0_1px_2px_var(--line)] lg:grid-cols-[1.1fr_0.9fr]"
           >
-            <p
-              class="m-0 flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
+            <div
+              class="flex flex-col gap-[clamp(20px,2.4vw,28px)] px-[clamp(20px,5vw,64px)] py-[clamp(28px,5vw,64px)]"
             >
-              <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
-                >02</span
+              <p
+                class="flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
               >
-              {{ t("footerContactEyebrow") }}
-            </p>
-            <h2
-              class="m-0 font-serif text-[clamp(42px,5.6vw,96px)] font-normal uppercase leading-[0.94] tracking-[-0.055em] text-(--ink)"
-            >
-              {{ t("footerContactTitle") }}
-            </h2>
-            <p class="m-0 max-w-[40ch] text-sm leading-[1.65] text-(--brown)">
-              {{ t("footerContactBody") }}
-            </p>
+                <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
+                  >02</span
+                >
+                {{ t("footerContactEyebrow") }}
+              </p>
 
-            <figure class="mt-1.5 w-full max-w-82.5">
+              <div class="flex flex-col gap-3">
+                <h2
+                  id="contact-title"
+                  class="font-serif text-[clamp(32px,4.2vw,64px)] font-normal leading-[1.02] tracking-[-0.035em] text-(--ink)"
+                >
+                  {{ t("footerContactTitle")
+                  }}<span class="text-(--rust)" aria-hidden="true">.</span>
+                </h2>
+                <p
+                  class="max-w-[46ch] text-[clamp(14px,1.1vw,16px)] leading-[1.65] text-(--brown)"
+                >
+                  {{ t("footerContactBody") }}
+                </p>
+              </div>
+
+              <p class="flex flex-wrap items-center gap-x-5 text-sm text-(--brown)">
+                <span
+                  class="text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
+                >
+                  {{ t("footerReachUs") }}
+                </span>
+                <a
+                  v-for="link in reachLinks"
+                  :key="link.href"
+                  :href="link.href"
+                  :target="link.external ? '_blank' : undefined"
+                  :rel="link.external ? 'noopener' : undefined"
+                  class="inline-flex min-h-11 items-center underline decoration-(--muted) underline-offset-4 transition-colors hover:decoration-(--rust) motion-reduce:transition-none"
+                  >{{ link.label }}</a
+                >
+              </p>
+
+              <!-- Paired row needs the viewport (sm) AND a 28rem-wide form; the 1024px column is narrower. -->
+              <form class="@container flex flex-col gap-3" @submit.prevent="submit">
+                <div class="grid gap-3 sm:@md:grid-cols-2">
+                  <div
+                    v-for="f in fields"
+                    :key="f.name"
+                    class="relative"
+                    :class="f.wide && 'sm:@md:col-span-2'"
+                  >
+                    <input
+                      :id="`contact-${f.name}`"
+                      v-model="form[f.name]"
+                      :name="f.name"
+                      :type="f.type"
+                      :autocomplete="f.autocomplete"
+                      :required="f.required"
+                      placeholder=" "
+                      :class="fieldClass"
+                    />
+                    <label :for="`contact-${f.name}`" :class="labelClass">{{
+                      f.label
+                    }}</label>
+                    <UIcon :name="f.icon" :class="iconClass" aria-hidden="true" />
+                  </div>
+
+                  <div class="relative sm:@md:col-span-2">
+                    <textarea
+                      id="contact-message"
+                      v-model="form.message"
+                      name="message"
+                      autocomplete="off"
+                      rows="5"
+                      required
+                      placeholder=" "
+                      class="resize-y"
+                      :class="fieldClass"
+                    ></textarea>
+                    <label for="contact-message" :class="labelClass">{{
+                      t("footerFormMessage")
+                    }}</label>
+                    <UIcon
+                      name="i-heroicons-chat-bubble-bottom-center-text"
+                      :class="iconClass"
+                      aria-hidden="true"
+                    />
+                  </div>
+                </div>
+
+                <!-- Mobile stacks primary first; from sm the pair reads attach → send. -->
+                <div
+                  class="mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:items-center"
+                >
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <input
+                      id="contact-file"
+                      ref="fileInput"
+                      type="file"
+                      name="attachment"
+                      class="peer sr-only"
+                      @change="onFile"
+                    />
+                    <label
+                      for="contact-file"
+                      class="loom-ghost min-h-12! cursor-pointer justify-center text-(--ink) hover:bg-(--ink) hover:text-(--paper) peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-(--ink)"
+                    >
+                      <UIcon
+                        name="i-heroicons-paper-clip"
+                        class="size-4"
+                        aria-hidden="true"
+                      />
+                      {{ t("footerFormAttach") }}
+                    </label>
+                    <p
+                      v-if="form.file"
+                      class="flex min-w-0 items-center gap-1 text-sm text-(--brown)"
+                    >
+                      <span class="truncate">{{ form.file.name }}</span>
+                      <button
+                        type="button"
+                        class="grid size-11 shrink-0 place-items-center rounded-full hover:bg-(--panel)"
+                        :aria-label="t('footerFormRemoveFile')"
+                        @click="clearFile"
+                      >
+                        <UIcon
+                          name="i-heroicons-x-mark"
+                          class="size-4"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="loom-cta min-h-12! justify-center sm:ml-auto"
+                    :class="status === 'sending' && 'cursor-progress'"
+                    :disabled="status === 'sending'"
+                  >
+                    <UIcon
+                      name="i-heroicons-paper-airplane"
+                      class="size-4"
+                      aria-hidden="true"
+                    />
+                    {{
+                      status === "sending" ? t("footerFormSending") : t("footerFormSend")
+                    }}
+                  </button>
+                </div>
+
+                <div aria-live="polite" class="min-h-6 text-sm text-(--brown)">
+                  <p
+                    v-if="status === 'sent' || status === 'error'"
+                    :key="status"
+                    class="transition-opacity duration-500 starting:opacity-0 motion-reduce:transition-none"
+                  >
+                    <template v-if="status === 'sent'">{{
+                      t("footerFormSent")
+                    }}</template>
+                    <template v-else>
+                      {{ t("footerFormError") }}
+                      <a
+                        href="mailto:info@hameemchingtai.com"
+                        class="underline underline-offset-4"
+                        >info@hameemchingtai.com</a
+                      >.
+                    </template>
+                  </p>
+                </div>
+              </form>
+
+              <!-- Ruled docket — reads like a tailor's order sheet -->
+              <section
+                id="visit"
+                aria-labelledby="visit-title"
+                class="flex flex-col gap-3 border-t border-(--line) pt-[clamp(20px,2.4vw,28px)]"
+              >
+                <h3
+                  id="visit-title"
+                  class="text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
+                >
+                  {{ t("footerVisitEyebrow") }}
+                </h3>
+                <dl class="grid max-w-100 border-t border-(--line)">
+                  <div
+                    v-for="spec in facilitySpecs"
+                    :key="spec.label"
+                    class="flex justify-between gap-5 border-b border-(--line) py-2.75"
+                  >
+                    <dt
+                      class="text-[10px] font-semibold uppercase tracking-[0.09em] text-(--muted)"
+                    >
+                      {{ spec.label }}
+                    </dt>
+                    <dd class="m-0 text-right text-xs text-(--brown)">
+                      {{ spec.value }}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+
+            <!--
+              Plate: on top below lg with an arched bottom; from lg it fills the
+              card's right side with an S-curve edge. The stitch is the same
+              curve, nudged 24px into the card (into padding, never a field).
+            -->
+            <figure class="relative order-first m-0 lg:order-0">
               <img
-                :src="denimPocketWall"
-                alt="Denim pocket wall organiser holding workshop tools"
+                :src="denimToolBelt"
+                alt="Denim tool belt cut from a single jean leg, fitted on a tailor's mannequin"
                 loading="lazy"
                 decoding="async"
-                class="block aspect-4/5 w-full rounded-[2px_2px_34%_34%/2px_2px_12%_12%] bg-(--panel) object-cover object-center"
+                class="aspect-16/10 w-full bg-(--panel) object-cover [clip-path:url(#hctpalPlateArch)] sm:aspect-21/9 lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:[clip-path:url(#hctpalPlateCurve)]"
               />
-              <figcaption
-                class="mt-2.75 text-[10.5px] leading-normal tracking-[0.03em] text-(--muted)"
+              <svg
+                class="pointer-events-none absolute inset-0 size-full translate-y-6 overflow-visible text-(--rust) lg:hidden"
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
               >
-                {{ t("footerInsetCaption") }}
-              </figcaption>
+                <path
+                  d="M0,0.86 C0.3,1 0.7,1 1,0.86"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  stroke-dasharray="7 6"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
+              <svg
+                class="pointer-events-none absolute inset-0 hidden size-full -translate-x-6 overflow-visible text-(--rust) lg:block"
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M0.16,0 C0.02,0.16 0.02,0.34 0.1,0.5 C0.18,0.66 0.18,0.84 0.04,1"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  stroke-dasharray="7 6"
+                  vector-effect="non-scaling-stroke"
+                />
+              </svg>
             </figure>
-
-            <!-- Every contact path, as large targets: email, WhatsApp, phone. -->
-            <div class="flex flex-wrap gap-3">
-              <a class="loom-cta" href="mailto:info@hameemchingtai.com">
-                <UIcon name="i-heroicons-envelope" class="h-4 w-4" />
-                {{ t("footerContactCta") }}
-              </a>
-              <a
-                class="loom-ghost"
-                href="https://wa.me/8801319320527"
-                target="_blank"
-                rel="noopener"
-              >
-                <UIcon name="i-heroicons-chat-bubble-left-right" class="h-4 w-4" />
-                {{ t("footerWhatsapp") }}
-              </a>
-              <a class="loom-ghost" href="tel:+8801319320527">
-                <UIcon name="i-heroicons-phone" class="h-4 w-4" />
-                {{ t("footerCall") }} +880 131 9320527
-              </a>
-            </div>
           </section>
         </div>
-
-        <!--
-          RIGHT (pre-swap): sticky plate. `position: sticky` only cares about
-          vertical scroll position, not which side of the grid it visually
-          sits on — so it stays sticky through the whole swap. The tripwire
-          only ever changes the `transform`, gliding it across to the left
-          while it remains pinned, so the reader actually sees "image left,
-          second section reading on the right" instead of the image un-
-          sticking and scrolling away the instant it swaps. It releases
-          naturally, with no manual toggling, once the shared grid row (as
-          tall as the copy column) scrolls past.
-        -->
-        <aside
-          ref="plateRef"
-          class="order-1 will-change-transform lg:order-0 lg:sticky lg:top-[calc(var(--header)+48px)] lg:col-start-2 lg:row-start-1 lg:transition-transform lg:duration-900 lg:ease-[cubic-bezier(0.16,1,0.3,1)]"
-          :style="{ transform: plateShift }"
-        >
-          <figure
-            class="m-0 border border-(--line) bg-(--paper-soft) p-[clamp(14px,1.5vw,24px)]"
-          >
-            <img
-              :src="denimToolBelt"
-              alt="Denim tool belt cut from a single jean leg, fitted on a tailor's mannequin"
-              loading="lazy"
-              decoding="async"
-              class="block h-[min(58vh,460px)] w-full rounded-[180px_180px_4px_4px/120px_120px_4px_4px] bg-(--panel) object-cover object-center lg:h-[min(64vh,620px)]"
-            />
-            <figcaption
-              class="mt-4 flex flex-col gap-1.25 border-t border-(--line) pt-3.25 text-[10.5px] leading-normal tracking-[0.03em] text-(--muted)"
-            >
-              <span
-                class="text-[10px] font-semibold uppercase tracking-[0.11em] text-(--rust)"
-                >{{ t("footerPlateLabel") }}</span
-              >
-              {{ t("footerPlateCaption") }}
-            </figcaption>
-          </figure>
-        </aside>
       </div>
     </div>
 

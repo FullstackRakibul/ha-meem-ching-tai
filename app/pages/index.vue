@@ -24,7 +24,6 @@ import CategoryTheatre from "~/components/landing/CategoryTheatre.vue";
 import ProductRail from "~/components/landing/ProductRail.vue";
 import SustainabilitySection from "~/components/landing/SustainabilitySection.vue";
 import OriginPanel from "~/components/landing/OriginPanel.vue";
-import FooterSection from "~/components/landing/FooterSection.vue";
 import ScrollTracer from "~/components/ScrollTracer.vue";
 import App from "~/app.vue";
 
@@ -151,10 +150,10 @@ const servicePoints = computed(() => [
       <IntroSection :service-points="servicePoints" />
       <FabricIndexDirectory />
       <WhyMatters />
+      <ProductRail :title="t('featuredTitle')" :items="featuredProducts" />
       <VentureStats />
       <FactoryAbout />
       <CategoryTheatre :category-scenes="categoryScenes" />
-      <ProductRail :title="t('featuredTitle')" :items="featuredProducts" />
       <SustainabilitySection />
       <OriginPanel />
       <AppFooter />

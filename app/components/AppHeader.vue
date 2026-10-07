@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
 <template>
   <header
     :class="[
-      'loom-header fixed top-3 left-1/2 z-[1500] flex w-[calc(100%-24px)] -translate-x-1/2 items-center  gap-3 rounded-full bg-white text-(--navy) shadow-lg transition-all duration-500 ease-in-out sm:gap-5',
+      'loom-header fixed top-3 left-1/2 z-1500 flex w-[calc(100%-24px)] -translate-x-1/2 items-center  gap-3 rounded-full bg-white text-(--navy) shadow-lg transition-all duration-500 ease-in-out sm:gap-5',
       scrolled ? 'max-w-225 px-4 py-2 sm:px-6' : 'max-w-325 px-5 py-1 sm:px-10 sm:py-4',
     ]"
   >
@@ -118,55 +118,6 @@ onBeforeUnmount(() => {
     </button>
 
     <div class="ml-auto flex items-center gap-2 sm:gap-4">
-      <div ref="langRef" class="lang-switch relative">
-        <button
-          type="button"
-          class="lang-switch__trigger flex min-h-10 items-center gap-1.5 px-2 font-semibold uppercase tracking-wider transition-all duration-500"
-          :class="scrolled ? 'text-xs' : 'text-sm'"
-          :aria-expanded="langOpen"
-          aria-haspopup="listbox"
-          :aria-label="t('language')"
-          @click="langOpen = !langOpen"
-        >
-          <UIcon name="i-heroicons-language" class="h-4 w-4" />
-          <span class="hidden sm:inline">{{ activeLocale.native }}</span>
-          <UIcon
-            name="i-heroicons-chevron-down-20-solid"
-            class="h-3 w-3 transition-transform"
-            :class="langOpen ? 'rotate-180' : ''"
-          />
-        </button>
-
-        <ul
-          v-show="langOpen"
-          class="lang-switch__menu"
-          role="listbox"
-          :aria-label="t('language')"
-        >
-          <li
-            v-for="l in locales"
-            :key="l.code"
-            role="option"
-            :aria-selected="l.code === locale"
-          >
-            <button
-              type="button"
-              class="lang-switch__option"
-              :class="l.code === locale ? 'is-active' : ''"
-              :lang="l.code"
-              @click="choose(l.code)"
-            >
-              <span>{{ l.native }}</span>
-              <UIcon
-                v-if="l.code === locale"
-                name="i-heroicons-check-20-solid"
-                class="h-3.5 w-3.5"
-              />
-            </button>
-          </li>
-        </ul>
-      </div>
-
       <!-- Gold CTA with navy text: 5.7:1. Gold is never used as text on light grounds. -->
       <a
         href="#contact"

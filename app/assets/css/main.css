@@ -27,6 +27,13 @@
   --on-night-muted: #4b5563;
   --gray-600: #4b5563;
 
+  /* The sun (16.9 MW solar plant). Read by the dusk poster SVG and the WebGL
+     stage so both suns match. Fills and rules only — never text. */
+  --sun-hi: #FFD970;
+  --sun-core: #FDB833;
+  --sun-edge: #F59E0B;
+  --sun-halo: rgb(253 184 51 / 0.28);
+
   /* Legacy names, re-pointed at the palette. */
   --paper: var(--beige);
   --panel: #e9ede6;

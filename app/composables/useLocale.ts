@@ -236,6 +236,17 @@ const en = {
   footerTrustedBy: 'Trusted By',
   footerRights: 'All rights reserved',
   footerBackToTop: 'Back to top ↑',
+  footerReachUs: 'Reach us',
+  footerFormName: 'Name',
+  footerFormCompany: 'Company (optional)',
+  footerFormEmail: 'Email',
+  footerFormMessage: 'Message',
+  footerFormAttach: 'Add attachment',
+  footerFormRemoveFile: 'Remove attachment',
+  footerFormSend: 'Send message',
+  footerFormSending: 'Sending…',
+  footerFormSent: 'Thank you — we have your message and will reply by email.',
+  footerFormError: 'Your message could not be sent. Please email us at',
 } as const
 
 /**

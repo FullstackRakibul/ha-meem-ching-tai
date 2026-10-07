@@ -388,8 +388,6 @@ html.lenis {
 .loom-poster__sun {
   fill: url(#loomSunDisc);
   stroke: none;
-  filter: drop-shadow(0 0 6px rgba(255, 160, 0, 0.6))
-          drop-shadow(0 0 18px rgba(255, 120, 0, 0.3));
 }
 
 .loom-poster__water {
