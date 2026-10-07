@@ -195,7 +195,7 @@ const columns = [
 </script>
 
 <template>
-  <section class="loom-day overflow-hidden py-[clamp(20px,1vw,150px)]" data-reveal>
+  <section class="loom-day bg-(--paper) overflow-hidden py-[clamp(20px,1vw,150px)]" data-reveal>
     <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
     <!-- <div
       aria-hidden="true"

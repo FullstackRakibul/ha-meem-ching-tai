@@ -93,7 +93,7 @@ const en = {
   whyLongLabel: 'Imported',
   whyLongNote: 'Accessories shipped in from abroad — the long way round.',
   whyShortLabel: 'Made in Ghorashal',
-  whyShortNote: 'Made where the garments are made — the short thread.',
+  whyShortNote: 'Sourced next door. Stitched on schedule. Ready at the line.',
   why1Title: 'Reducing Lead Time',
   why1Text:
     'Fabrics are mostly local, but imported accessories delay production and shipment. Making them at home closes the gap.',

@@ -10,12 +10,12 @@
 import { useDebounceFn, useWindowScroll } from "@vueuse/core";
 import { useLocale, type LocaleCode } from "~/composables/useLocale";
 
-defineProps < { menuOpen: boolean } > ();
+defineProps<{ menuOpen: boolean }>();
 
-const emit = defineEmits < {
+const emit = defineEmits<{
   (e: "toggleMenu"): void;
-(e: "closeMenu"): void;
-}> ();
+  (e: "closeMenu"): void;
+}>();
 
 const { locale, setLocale, t, locales } = useLocale();
 
@@ -27,7 +27,7 @@ const syncScrolled = useDebounceFn((value: number) => {
 watch(y, (value) => syncScrolled(value));
 
 const langOpen = ref(false);
-const langRef = ref < HTMLElement | null > (null);
+const langRef = ref<HTMLElement | null>(null);
 
 const activeLocale = computed(
   () => locales.find((l) => l.code === locale.value) ?? locales[0]
@@ -88,7 +88,7 @@ onBeforeUnmount(() => {
 
       <!-- Always visible: a hover-gated subtitle is unreachable on touch. -->
       <span
-        class="text-[6px] sm:text-[8px] md:text-[8.3px] text-gray-500 group-hover:text-primary uppercase tracking-[0.2em] sm:tracking-[0.3em] group-hover:tracking-[0.25em] sm:group-hover:tracking-[0.35em] whitespace-nowrap transition-all duration-700 delay-100 motion-reduce:transition-none"
+        class="text-[8px] sm:text-[6px] md:text-[9px] text-gray-500 group-hover:text-primary uppercase tracking-[0.2em] sm:tracking-[0.3em] group-hover:tracking-[0.25em] sm:group-hover:tracking-[0.35em] whitespace-nowrap transition-all duration-700 delay-100 motion-reduce:transition-none"
       >
         Pocketing &amp; Accessories Ltd.
       </span>
@@ -105,18 +105,6 @@ onBeforeUnmount(() => {
       <span>{{ menuOpen ? t("close") : t("menu") }}</span>
     </button> -->
 
-    <!-- 'shrink-0' prevents the menu button from compressing on small devices -->
-    <button
-      type="button"
-      :class="['menu-button', { 'is-open': menuOpen }, scrolled ? 'text-xs' : 'text-sm']"
-      :aria-expanded="menuOpen"
-      aria-controls="site-menu"
-      @click="emit('toggleMenu')"
-    >
-      <i aria-hidden="true"><span /><span /></i>
-      <span>{{ menuOpen ? t("close") : t("menu") }}</span>
-    </button>
-
     <div class="ml-auto flex items-center gap-2 sm:gap-4">
       <!-- Gold CTA with navy text: 5.7:1. Gold is never used as text on light grounds. -->
       <a
@@ -129,6 +117,21 @@ onBeforeUnmount(() => {
         <span class="hidden sm:inline">{{ t("contactCta") }}</span>
         <span class="sm:hidden">{{ t("inquire") }}</span>
       </a>
+      <!-- 'shrink-0' prevents the menu button from compressing on small devices -->
+      <button
+        type="button"
+        :class="[
+          'menu-button',
+          { 'is-open': menuOpen },
+          scrolled ? 'text-xs' : 'text-sm',
+        ]"
+        :aria-expanded="menuOpen"
+        aria-controls="site-menu"
+        @click="emit('toggleMenu')"
+      >
+        <i aria-hidden="true"><span /><span /></i>
+        <span>{{ menuOpen ? t("close") : t("menu") }}</span>
+      </button>
     </div>
   </header>
 </template>

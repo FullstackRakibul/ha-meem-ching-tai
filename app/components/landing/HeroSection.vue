@@ -43,7 +43,7 @@ useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
           <span class="block">{{ t("heroTitleA") }}</span>
           <em class="loom-serif loom-gold block">{{ t("heroTitleB") }}</em>
         </h1>
-        <p class="loom-body-l loom-muted max-w-[46ch]">{{ t("heroLede") }}</p>
+        <p class="loom-body-l loom-muted max-w-[52ch]">{{ t("heroLede") }}</p>
         <div class="flex flex-wrap gap-3">
           <a class="loom-cta" href="#collections">
             {{ t("heroCta") }}
