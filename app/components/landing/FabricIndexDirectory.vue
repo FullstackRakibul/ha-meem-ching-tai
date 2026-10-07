@@ -195,15 +195,14 @@ const columns = [
 </script>
 
 <template>
-  <section class="loom-day overflow-hidden py-[clamp(80px,10vw,150px)]" data-reveal>
+  <section class="loom-day overflow-hidden py-[clamp(20px,1vw,150px)]" data-reveal>
     <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
     <!-- <div
       aria-hidden="true"
       class="pointer-events-none absolute inset-0 bg-[radial-gradient(rgb(20_83_45/0.1)_1px,transparent_1px)] bg-size-[22px_22px] mask-[linear-gradient(to_bottom,black,transparent_60%)]"
     /> -->
 
-    <div aria-hidden="true" class="pointer-events-none absolute inset-0 " />
-
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0" />
 
     <div class="page-gutter relative mx-auto max-w-350">
       <!-- Section Header -->
@@ -252,8 +251,8 @@ const columns = [
               <span
                 class="flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-full px-2 py-2 transition-colors duration-300 sm:flex-row sm:gap-2.5 sm:px-5"
                 :class="activeCategory === cat.id
-                  ? 'text-white'
-                  : 'text-(--navy) hover:bg-white/80'
+                    ? 'text-white'
+                    : 'text-(--navy) hover:bg-white/80'
                   ">
                 <span class="text-[11px] font-bold uppercase tracking-[0.06em] sm:text-xs">
                   {{ cat.label }}
@@ -261,8 +260,8 @@ const columns = [
                 <span
                   class="rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors duration-300"
                   :class="activeCategory === cat.id
-                    ? 'bg-white/20 text-white'
-                    : 'bg-white text-(--muted) ring-1 ring-(--line)'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white text-(--muted) ring-1 ring-(--line)'
                     ">
                   {{ cat.badge }}
                 </span>
