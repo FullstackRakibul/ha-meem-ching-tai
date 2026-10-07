@@ -22,6 +22,32 @@ const footerBlocks = computed(() => [
 
 const trustedBrands = ["H&M", "Zara", "Uniqlo", "C&A", "American Eagle"];
 
+/** Finishing-footer nav. Each href must match a section id on the page. */
+const footerNav = computed(() => [
+  { label: t("go To Top"), href: "#top" },
+  { label: t("go To Collections"), href: "#collections" },
+  { label: t("go To Factory"), href: "#factory" },
+  { label: t("go To Sustainability"), href: "#sustainability" },
+  { label: t("go To Milestones"), href: "#milestones" },
+  { label: t("goTo Contact"), href: "#contact" },
+]);
+
+// Shared by every link on the dark footer ground: a stitched underline on
+// hover/focus and a focus ring that stays visible on --ink.
+const footerLinkClass =
+  "inline-flex min-h-11 items-center underline decoration-transparent decoration-dashed decoration-1 underline-offset-[7px] transition-colors duration-300 hover:decoration-current focus-visible:decoration-current focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--paper) motion-reduce:transition-none";
+
+/**
+ * World map: Natural Earth 110m land, Natural Earth projection, simplified
+ * and cropped above Antarctica to a 1000 x 436 box. Used only as a clip
+ * shape; the visible map is rows of running stitches showing through it.
+ */
+const WORLD_LAND =
+  "M337,430l7,2l-6,3l-7-2l-12-6l10,3l5-4zM876,388l7,0l-5,8l-5,1zM947,389l1,2l-23,16l-6-1l4-4zM960,373l0,4l8,1l-14,12l-2-6zM640,299l0,6l-11,31l-9,1l-1-10l3-7l1-12l10-5l4-9zM900,300l4,4l1,13l5,5l1,6l6,9l-1,10l-7,11l-5,5l-11,14l-12,6l-13-4l0-6l-8-4l-2-7l-6-4l-15,2l-8,6l-11,0l-6,4l-7-3l4-7l0-13l1-12l4-9l20-7l8-10l12-9l3,3l13-12l12,4l-5,8l9,9l5,0l8-22zM805,277l6-1l13,6l-3,2l-17-4l-8-3l2-3zM927,273l-5,3l-5-3zM877,259l4,7l8-5l17,7l11,17l5,4l-8-1l-8-8l-7,5l-6-3l-7,0l3-3l-2-6l-11-6l-9-9zM852,250l-2,4l-12,0l8,18l-8-7l0,8l-3,0l-1-9l6-13zM797,274l-9-5l-11-20l-9-10l6-1l9,10l9,7l6,10zM831,249l-5,19l-16-3l-3-8l1-8l5,0l16-16l6,4l-5,8zM854,228l-2,9l-5-7zM728,235l-2,1l-2-13l5,8zM836,195l4,4l-1,9l-5-2zM300,190l11,4l-10,2zM281,181l14,8l-10,1l-1-5l-11-4zM541,130l-1,6l-7-4zM870,134l1,6l-23,4l4,8l-7-6l5-7l8,0l6-9l-2-9l7,6zM866,111l6,3l-4,4l-5-2l-4-9zM193,97l-5-1l-3-6l6,2zM362,90l6,5l0,5l-16,0l9-12zM852,90l8,12l-2,3l-15-24zM484,85l-8,2l1-7l5-3l4,1zM493,66l2,8l6,9l3,1l-3,6l-15,2l3-3l2-11l-5-7l2-5zM313,45l8,6l-6-1l-7,3zM468,43l2,4l-12,5l-12-6l6-3l3,2zM627,120l2,12l12,2l-4-12l4-1l-10-7l-3-4l6-2l-1-6l-5,0l-10,8zM898,47l-4,1l9,5l-8,4l-2,5l-6-2l-10,2l1,5l4,2l5,8l-3,2l0,10l-14-13l-3-8l3,0l4-10l-3-4l-4,6l-5-3l-5,1l-1,5l3,1l-8,1l-1-2l-20,2l-7,13l19,5l6,14l-4,17l-6,0l-7,11l9,10l2,6l-7,2l-5-11l-8-7l-7,3l-1-7l-8,8l12,6l-3,6l11,11l3,6l-5,17l-6,6l-13,4l-7-1l-6,9l11,12l2,12l-10,10l-1-4l-15-12l-2,12l5,8l8,8l1,12l-6-5l-6-15l-4-3l1-10l-6-18l-8,3l-1-7l-10-15l-3,3l-9,1l-4,7l-12,11l0,18l-6,8l-2-3l-11-23l-4-18l-6,2l-3-5l-10-10l-13,1l-12-2l-3-4l-4,2l-9-5l-5-7l-6,0l3,8l10,12l6-1l5-7l1,5l10,8l-4,11l-7,6l-17,11l-15,4l-3-14l-10-14l-1-5l-12-17l-7-3l13,22l3,11l5,9l12,12l2,6l20-5l-4,17l-8,13l-18,17l-4,13l4,14l0,13l-4,7l-13,10l2,7l-2,8l-6,3l-2,9l-13,15l-7,4l-8,0l-8,3l-4-3l1-8l-8-15l-2-16l-6-13l-1-5l6-15l-1-11l-4-12l-8-12l3-14l-4-5l-7,1l-5-6l-9,1l-9,4l-5-2l-10,3l-15-11l-5-10l-5-5l-3-8l3-4l1-13l-2-3l8-18l13-12l3-10l7-9l10,2l10-4l21-3l3,3l2,10l11,4l10,6l5-8l22,6l3-2l11,1l3-15l-4-3l-5,2l-13-2l-5-9l7-5l15-3l9,3l8-1l-1-4l-13-8l5-7l-8,2l2,4l-6,3l-1-4l-8-3l-6,13l3,5l-15,2l4,7l-6,5l-7-11l0-5l-9-6l-8-7l-1,5l16,12l-6,8l-2-7l-7-4l-10-10l-6,4l-9,1l-6,6l-2,8l-6,6l-8,3l-9-3l-2-6l2-7l-1-7l4-3l15,1l2-8l-8-8l7,0l13-10l2-4l10-3l-1-10l5-1l-2,6l3,5l8,1l8-4l9-1l2-7l4,2l-3-7l11-1l-1-3l-11,2l-4-2l-1-6l8-7l-7-2l-1,4l-8,5l-1,4l4,4l-4,4l-1,8l-7,2l-7-13l-4,4l-7-1l-2-10l12-7l9-10l9-5l10-4l8,0l4,3l15,3l9,3l3,3l-6,2l-10-2l4,7l5,2l-1-4l15-5l-4-5l6,1l2,5l14-7l0,2l11-2l2-2l7,1l13,4l0-2l-8-7l4-5l6,1l0,3l8,9l-2,6l6-5l-9-10l12-2l5,2l-5-6l12,0l-2-3l11-3l14-1l0-2l20,2l9,3l-7,3l11,2l3-1l17,2l-1-2l12,2l3,3l9,3l-1-3l17,1l-3-3l21,1l11,4l13,0l8,4l15-1l6,3l-3-4l20,2l5,1l13,11zM115,36l6,5l6,3l-14,5l-2-3l-6-1l-3,2l13-11zM307,35l3,6l9-7l8,2l-4,5l-10,2l-7,5l-7,2l-14,9l-5,6l3,6l7,0l8,5l6,0l-2,10l3,3l4-5l0-6l10-6l-1-7l4-3l1-7l10,0l8,4l-2,6l3,2l10-6l3,10l-1,2l9,5l2,8l-13,6l-15,0l-15,11l13-8l3,9l11,1l-16,8l-3-4l-9,4l-1,6l-8,2l-10,10l-2,8l-9,6l-10,10l2,12l-4,6l-4-16l-16,0l0,3l-14-1l-9,7l-5,16l4,12l4,2l10-4l2-5l10-2l-8,18l13,1l3,2l-3,12l6,8l5-2l8,3l4-6l11-6l0,4l9,2l18-1l-2,3l9,6l6,7l12,1l4,4l7,15l15,7l10,1l13,9l1,11l-11,16l-1,19l-5,11l-12,4l-5,5l0,10l-13,20l-10-2l6,9l-5,5l-8,1l1,6l-7,1l5,5l-7,12l6,3l-6,11l5,5l-6,5l-11-5l-6-11l2-6l-4-1l1-8l-3-23l1-15l-2-36l-2-10l-17-12l-12-25l-5-8l5-6l-4-2l3-9l8-10l0-10l-5-7l-2,5l-9-3l-7-6l-5-9l-9-3l-9-8l-5,2l-18-8l-5-7l0-8l-12-20l0-8l-5,4l8,22l-6-5l0-4l-5-3l-2-20l-6-4l-3-15l3-12l6-9l3-9l5-2l-7-6l0-12l-1-11l-6,0l-4-4l-13-4l-5,3l-15,3l-20,9l-19,4l14-4l11-5l-8-7l0-5l8-4l11-2l3-3l-11,1l-3-4l11-2l5,1l-2-5l14-7l15-2l7,2l17,1l11,3l22-4l3,3l7-1l15,4l0,2l18-3l2,2l21,0l3-3l-3-3l6-5l4,2zM265,25l5,2l7-2l6,1l-2,5l5,2l-5,4l-7-1l-17,1l-5-4l11-1l-11,0l5-2l-6-1l6-3zM322,25l10-2l0,5l8-2l15,6l2,4l-4,1l12,5l-6,5l-5-4l-4,2l5,4l-2,5l-7-3l4,5l-6-1l-10-6l-7,0l1-3l9,0l5-7l-6-3l-3-3l-6,1l-14-2l0-5l6-3zM295,23l6,0l0,3l-7,4l-6-4zM308,26l-6,2l6-6l7,1zM248,29l-6,2l-4-3l9-5l-1-1l15,0l3,2l-10,2zM791,19l0,1l-10,1l-7-3l8-1zM305,16l-3,4l-5,0l-1-3zM285,17l1,3l-14,1l3-1l-12-1l8-3l10,3zM621,31l-8,0l-5-2l4-9l10-3l12-2l2,2l-12,2l-5,3l-4,5zM314,15l5,0l2,3l17,0l-4,3l-13,1l-8-2zM273,13l-3,2l-9,2l-6,0l12-3zM704,12l-10,1l0-4zM535,8l7,2l-5,1l-3,4l-12-5l-2-1l12-1zM548,7l2,2l-12,0l-5-2zM693,10l-14-1l-6-2l6-2l12,3zM334,9l-7,3l-7,0l1-3l-5-2l11-2zM375,1l11,2l-22,5l-12,1l2,2l-14,6l-17-1l6-4l8-3l-7-5l13-2l4,1l9-2zM451,0l11,2l-4,1l-17,0l13,1l3,1l14-2l6,2l-11,2l-4,4l2,4l-3,2l0,5l-11,4l4,5l-7-2l-3,4l9,0l-13,4l-8,1l-7,4l-13,4l-9,8l-3,8l-10-3l-6-8l-1-10l9-8l-6,2l-2-6l3-3l-4-7l-5-2l-14,0l-5-2l10-1l-8-1l-3-2l16-2l-3-2l13-2l0-1l10-1l8,1l5-2l10,2l-3-2l7-1l16-1z";
+// The two ends of the joint venture, in the same 1000 x 436 box.
+const FACTORY_PIN = { x: 747.4, y: 177.5 }; // Dhaka region, Bangladesh
+const PARTNER_PIN = { x: 813.5, y: 182.3 }; // Hong Kong
+
 const reachLinks = computed(() => [
   { label: "info@hameemchingtai.com", href: "mailto:info@hameemchingtai.com" },
   { label: t("footerWhatsapp"), href: "https://wa.me/8801319320527", external: true },
@@ -448,6 +474,7 @@ async function submit(e) {
               >
                 <path
                   d="M0,0.86 C0.3,1 0.7,1 1,0.86"
+                  fill="none"
                   stroke="currentColor"
                   stroke-width="1"
                   stroke-dasharray="7 6"
@@ -463,6 +490,7 @@ async function submit(e) {
               >
                 <path
                   d="M0.16,0 C0.02,0.16 0.02,0.34 0.1,0.5 C0.18,0.66 0.18,0.84 0.04,1"
+                  fill="none"
                   stroke="currentColor"
                   stroke-width="1"
                   stroke-dasharray="7 6"
@@ -475,74 +503,204 @@ async function submit(e) {
       </div>
     </div>
 
-    <!-- GROUP 2: Sticky Reveal Footer -->
+    <!-- GROUP 2: Finishing footer, revealed from under the contact card -->
+    <!--
+      A sticky element taller than the viewport pins its bottom edge and its
+      top can never scroll into view. So the reveal only switches on where the
+      whole footer fits (desktop width, 720px+ of height); everywhere else it
+      sits in normal flow.
+    -->
     <div
-      class="sticky bottom-0 z-0 flex h-[max(1020px,70svh)] flex-col justify-between overflow-hidden bg-black px-[max(12px,1.1vw)] pb-3 pt-4.5 text-white"
+      class="relative z-0 overflow-hidden bg-(--ink) text-(--paper) lg:[@media(min-height:720px)]:sticky lg:[@media(min-height:720px)]:bottom-0"
     >
-      <div class="absolute inset-0">
-        <img
-          src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai05.jpeg"
-          alt="Fabric weave background"
-          class="h-full w-full object-cover"
-        />
-      </div>
-
-      <!-- FIX: Explicitly closed div prevents DOM hierarchy bugs -->
       <div
-        class="absolute inset-0 bg-[linear-gradient(0deg,rgb(0_0_0/0.85),rgb(0_0_0/0.55)_55%,rgb(0_0_0/0.75))]"
-      ></div>
-
-      <div
-        class="relative z-1 grid grid-cols-1 gap-7.5 border-t border-white/25 pt-2.25 sm:grid-cols-2 md:grid-cols-[1.2fr_1.3fr_1fr]"
+        class="mx-auto flex max-w-360 flex-col px-[max(16px,4vw)] pb-4 pt-[clamp(48px,6vw,88px)]"
       >
+        <!-- Brand block and the stitched world map -->
         <div
-          v-for="block in footerBlocks"
-          :key="block.label"
-          class="flex flex-col items-start gap-1 text-[11px] uppercase leading-normal"
+          class="relative isolate flex flex-col items-center gap-[clamp(16px,1.8vw,24px)] pb-[clamp(44px,5.5vw,80px)] text-center"
         >
-          <span class="mb-1.75 text-[9px] font-semibold tracking-[0.08em] text-white/75">
-            {{ block.label }}
-          </span>
-          <p v-for="line in block.lines" :key="line" class="m-0">{{ line }}</p>
-          <a v-if="block.phone" href="tel:+8801319320527">{{ block.phone }}</a>
-          <a v-if="block.email" :href="`mailto:${block.email}`">{{ block.email }}</a>
+          <p
+            class="text-[11px] font-semibold uppercase tracking-[0.24em] text-(--paper)/65"
+          >
+            HCTPAL
+          </p>
+          <p
+            class="font-serif text-[clamp(34px,5.2vw,76px)] font-normal leading-none tracking-[-0.035em]"
+          >
+            Ha-Meem Ching Tai
+          </p>
+          <p
+            class="max-w-[38ch] text-pretty text-[13px] italic leading-[1.6] text-(--paper)/75 sm:text-sm lg:max-w-[44ch]"
+          >
+            {{ t("footerMission") }}
+          </p>
+
+          <nav :aria-label="t('footerNavLabel')">
+            <ul
+              class="flex flex-wrap justify-center gap-x-[clamp(18px,2.6vw,40px)] text-xs font-semibold uppercase tracking-widest"
+            >
+              <li v-for="link in footerNav" :key="link.href">
+                <a :href="link.href" :class="footerLinkClass">{{ link.label }}</a>
+              </li>
+            </ul>
+          </nav>
+
+          <!--
+            Below lg the map sits in flow under the nav, cropped to the
+            Europe-to-Asia half so the stitches and the route stay readable;
+            the mask feathers the cropped edges.
+            From lg the wrapper dissolves (`contents`) and the full map becomes
+            the backdrop, with the pins landing to the right of the copy.
+          -->
+          <div
+            class="relative aspect-video w-full max-w-130 overflow-hidden mask-[radial-gradient(closest-side,black_62%,transparent)] lg:contents"
+            aria-hidden="true"
+          >
+            <svg
+              class="pointer-events-none absolute left-[-92%] top-[-12%] w-[192%] max-w-none text-(--paper) lg:left-1/2 lg:top-[45%] lg:-z-10 lg:w-[min(100%,940px)] lg:-translate-x-1/2 lg:-translate-y-1/2"
+              viewBox="0 0 1000 436"
+              fill="none"
+              focusable="false"
+            >
+              <defs>
+                <clipPath id="hctpalWorldLand">
+                  <path :d="WORLD_LAND" />
+                </clipPath>
+                <!-- Two staggered rows of running stitch -->
+                <pattern
+                  id="hctpalWorldStitch"
+                  width="12"
+                  height="12"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M1 3h6M7 9h6M-5 9h6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
+                </pattern>
+              </defs>
+
+              <rect
+                width="1000"
+                height="436"
+                fill="url(#hctpalWorldStitch)"
+                clip-path="url(#hctpalWorldLand)"
+                class="opacity-35 lg:opacity-25"
+              />
+
+              <!-- Thread from the factory to the partner's head office -->
+              <path
+                :d="`M${FACTORY_PIN.x} ${FACTORY_PIN.y} Q${
+                  (FACTORY_PIN.x + PARTNER_PIN.x) / 2
+                } ${FACTORY_PIN.y - 26} ${PARTNER_PIN.x} ${PARTNER_PIN.y}`"
+                stroke="currentColor"
+                stroke-width="1.25"
+                stroke-linecap="round"
+                stroke-dasharray="4 4"
+                class="opacity-80"
+              />
+              <circle
+                :cx="FACTORY_PIN.x"
+                :cy="FACTORY_PIN.y"
+                r="5"
+                stroke="currentColor"
+                stroke-width="1"
+                class="origin-center transform-fill motion-safe:animate-ping motion-safe:[animation-duration:2.8s]"
+              />
+              <circle
+                v-for="pin in [FACTORY_PIN, PARTNER_PIN]"
+                :key="pin.x"
+                :cx="pin.x"
+                :cy="pin.y"
+                r="4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                class="fill-(--rust)"
+              />
+            </svg>
+          </div>
+
+          <p
+            class="text-balance text-[11px] font-semibold uppercase leading-[1.6] tracking-[0.11em] text-(--paper)/65"
+          >
+            <span
+              class="mr-2 inline-block size-2 rounded-full bg-(--rust) align-baseline ring-1 ring-(--paper)"
+              aria-hidden="true"
+            ></span
+            >{{ t("see Us In Google Maps") }}
+          </p>
         </div>
-      </div>
 
-      <div
-        class="relative z-1 mx-auto max-w-150 text-center text-[13px] italic leading-[1.6] text-white/75"
-      >
-        {{ t("footerMission") }}
-      </div>
-
-      <div class="relative z-1 pt-5 text-center">
-        <span
-          class="mb-2.5 block text-[9px] font-semibold uppercase tracking-widest text-white/75"
-        >
-          {{ t("footerTrustedBy") }}
-        </span>
+        <!-- Addresses, contact, clients -->
         <div
-          class="flex flex-wrap justify-center gap-x-[clamp(20px,3vw,50px)] gap-y-2 text-xs font-semibold uppercase tracking-[0.06em] text-white/75"
+          class="grid grid-cols-1 gap-x-8 gap-y-7 border-t border-dashed border-(--paper)/30 pt-7 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1.1fr]"
         >
-          <span v-for="brand in trustedBrands" :key="brand">{{ brand }}</span>
+          <div
+            v-for="block in footerBlocks"
+            :key="block.label"
+            class="flex flex-col items-start text-[13px] leading-[1.6] text-(--paper)/85"
+          >
+            <h3
+              class="mb-2 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--paper)/65"
+            >
+              {{ block.label }}
+            </h3>
+            <p v-for="line in block.lines" :key="line" class="max-w-[34ch]">{{ line }}</p>
+            <a
+              v-if="block.phone"
+              :href="`tel:${block.phone.replace(/\s/g, '')}`"
+              :class="footerLinkClass"
+              class="-my-2"
+              >{{ block.phone }}</a
+            >
+            <a
+              v-if="block.email"
+              :href="`mailto:${block.email}`"
+              :class="footerLinkClass"
+              class="-my-2"
+              >{{ block.email }}</a
+            >
+          </div>
+
+          <div class="flex flex-col items-start">
+            <h3
+              class="mb-2 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--paper)/65"
+            >
+              {{ t("footerTrustedBy") }}
+            </h3>
+            <ul
+              class="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold uppercase leading-[1.6] tracking-[0.06em] text-(--paper)/85"
+            >
+              <li v-for="brand in trustedBrands" :key="brand">{{ brand }}</li>
+            </ul>
+          </div>
         </div>
-      </div>
 
-      <div
-        class="relative z-1 self-center text-[clamp(92px,17.3vw,330px)] font-light uppercase leading-[0.72] tracking-[-0.09em]"
-      >
-        HCTPAL
-      </div>
-
-      <div
-        class="relative z-1 grid grid-cols-1 gap-2 border-t border-white/25 pt-2.5 text-center text-[9px] font-semibold uppercase tracking-[0.08em] text-white/75 sm:grid-cols-[1fr_auto_1fr] sm:gap-0 sm:text-left"
-      >
-        <span
-          >© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp; Accessories
-          Ltd.</span
+        <!-- Bottom bar -->
+        <div
+          class="mt-7 grid grid-cols-1 items-center gap-1 border-t border-(--paper)/15 pt-3 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-(--paper)/65 md:grid-cols-[1fr_auto_1fr] md:gap-6 md:text-left"
         >
-        <span class="sm:text-center">{{ t("footerRights") }}</span>
-        <a href="#top" class="sm:text-right">{{ t("footerBackToTop") }}</a>
+          <span
+            >© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp;
+            Accessories Ltd.</span
+          >
+          <span>{{ t("footerRights") }}</span>
+          <a
+            href="#top"
+            :class="footerLinkClass"
+            class="group justify-self-center gap-1.5 md:justify-self-end"
+          >
+            {{ t("footerBackToTop") }}
+            <UIcon
+              name="i-heroicons-arrow-up-20-solid"
+              class="size-4 transition-transform duration-300 group-hover:-translate-y-0.5 motion-reduce:transition-none"
+              aria-hidden="true"
+            />
+          </a>
+        </div>
       </div>
     </div>
   </footer>
