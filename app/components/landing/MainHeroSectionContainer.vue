@@ -35,8 +35,10 @@ onBeforeUnmount(() => {
 <template>
   <section id="top" :class="['catalog-hero', { 'catalog-hero--ready': ready }]">
     <div class="catalog-hero__image" data-hero-image>
-      <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai60.jpeg"
-        alt="Precision engineering — HCTPAL manufacturing floor" />
+      <img
+        src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai60.jpeg"
+        alt="Precision engineering — HCTPAL manufacturing floor"
+      />
     </div>
     <div class="catalog-hero__veil" />
 
@@ -49,49 +51,80 @@ onBeforeUnmount(() => {
       <span style="--letter: 5">L</span>
     </h1>
 
-    <!-- Rotating product line, sat under the wordmark -->
-    <div class="catalog-hero__lines" aria-live="off">
-      <span v-for="(line, index) in productLines" :key="line"
-        :class="['catalog-hero__line', { 'is-active': index === lineIndex }]" aria-hidden="true">
-        {{ line }}
-      </span>
-      <span class="sr-only">{{ productLines.join(", ") }}</span>
-    </div>
+    <!--
+      The pocket. On desktop it is `display: contents`, so its children keep
+      their absolute positions on the photo exactly as before. On phones it
+      becomes a solid panel stitched onto the photo, like a jeans front
+      pocket, and all the reading happens on that panel instead of on the
+      busy aerial image.
+    -->
+    <div class="catalog-hero__pocket">
+      <!-- Pocket opening: the curved top edge with a double topstitch. -->
+      <svg
+        class="catalog-hero__seam"
+        viewBox="0 0 100 56"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path
+          class="catalog-hero__seam-fill"
+          d="M0,0 C38,0 56,56 100,56 L100,58 L0,58 Z"
+        />
+        <path class="catalog-hero__seam-stitch" d="M0,10 C36,10 54,62 100,62" />
+        <path class="catalog-hero__seam-stitch" d="M0,16 C36,16 54,68 100,68" />
+      </svg>
 
-    <div class="catalog-hero__left">
-      <p>
-        Garment construction components, made in Bangladesh. Pocketing, interlining,
-        lining and waistband — in commercial production at Narsingdi.
-      </p>
-      <a class="tiny-link" href="#collections">
-        <span>Explore Catalog</span>
-        <i>
-          <svg width="12" height="12" viewBox="0 0 20 20">
-            <path d="M3 10h13M11 5l5 5-5 5" />
-          </svg>
-        </i>
-      </a>
-    </div>
-
-    <div class="catalog-hero__statement">
-      <p>Precision Engineering</p>
-      <h2>Ha-Meem * Ching Tai</h2>
-    </div>
-
-    <div class="hero-object" data-parallax="0.06">
-      <p>Sixty Years in Hong Kong. </p>
-      <span>Now in Bangladesh.</span>
-      <div>
-        <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
-        <img src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
-          alt="Close-up of greige pocketing fabric on the loom" />
+      <!-- Rotating product line. On phones it is a woven label sewn over the seam. -->
+      <div class="catalog-hero__lines" aria-live="off">
+        <span
+          v-for="(line, index) in productLines"
+          :key="line"
+          :class="['catalog-hero__line', { 'is-active': index === lineIndex }]"
+          aria-hidden="true"
+        >
+          {{ line }}
+        </span>
+        <span class="sr-only">{{ productLines.join(", ") }}</span>
       </div>
-    </div>
 
-    <div class="catalog-hero__footer">
-      <!-- TODO(confirm: exact plant address — sources say Narsingdi; "Ghorashal" unconfirmed) -->
-      <span>Narsingdi · Bangladesh</span>
-      <span>Pocketing &amp; Accessories Division</span>
+      <div class="catalog-hero__left">
+        <p>
+          Garment construction components, made in Bangladesh. Pocketing, interlining,
+          lining and waistband — in commercial production at Narsingdi.
+        </p>
+        <a class="tiny-link" href="#collections">
+          <span>Explore Catalog</span>
+          <i>
+            <svg width="12" height="12" viewBox="0 0 20 20">
+              <path d="M3 10h13M11 5l5 5-5 5" />
+            </svg>
+          </i>
+        </a>
+      </div>
+
+      <div class="catalog-hero__statement">
+        <p>Precision Engineering</p>
+        <h2>Ha-Meem * Ching Tai</h2>
+      </div>
+
+      <div class="hero-object" data-parallax="0.06">
+        <p>Sixty Years in Hong Kong.</p>
+        <span>Now in Bangladesh.</span>
+        <div>
+          <!-- TODO(confirm: replace with a real HCTPAL asset — Unsplash placeholder) -->
+          <img
+            src="https://api.hameemgroup.com:9012/Resources/HCTPAL/HameemChingTai51.jpeg"
+            alt="Close-up of greige pocketing fabric on the loom"
+          />
+        </div>
+      </div>
+
+      <div class="catalog-hero__footer">
+        <!-- TODO(confirm: exact plant address — sources say Narsingdi; "Ghorashal" unconfirmed) -->
+        <span>Narsingdi · Bangladesh</span>
+        <span>Pocketing &amp; Accessories Division</span>
+      </div>
     </div>
 
     <a class="catalog-hero__scroll" href="#collections" aria-label="Scroll to products">
@@ -108,6 +141,11 @@ onBeforeUnmount(() => {
   so no margin-top. Top-anchored content is offset by var(--header) instead.
 */
 .catalog-hero {
+  /* Deep green of the veil, made solid: the pocket panel on phones. */
+  --hero-ink: rgb(8 40 14);
+  /* Height of the photo window above the pocket on phones. */
+  --hero-window: clamp(300px, 52svh, 480px);
+
   position: relative;
   height: 100svh;
   min-height: 560px;
@@ -187,6 +225,15 @@ onBeforeUnmount(() => {
   }
 }
 
+/* Desktop and tablet: no box of its own, children sit on the photo. */
+.catalog-hero__pocket {
+  display: contents;
+}
+
+.catalog-hero__seam {
+  display: none;
+}
+
 .catalog-hero__left,
 .catalog-hero__statement,
 .catalog-hero__footer,
@@ -230,7 +277,7 @@ onBeforeUnmount(() => {
   width: min(250px, 20vw);
 }
 
-.catalog-hero__left>p {
+.catalog-hero__left > p {
   max-width: 280px;
   margin-bottom: 22px;
   font-size: 12px;
@@ -249,7 +296,7 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
 }
 
-.catalog-hero__statement>p {
+.catalog-hero__statement > p {
   margin-bottom: 8px;
   font-size: 10px;
   font-weight: 600;
@@ -280,8 +327,8 @@ onBeforeUnmount(() => {
   will-change: transform;
 }
 
-.hero-object>p,
-.hero-object>span {
+.hero-object > p,
+.hero-object > span {
   display: block;
   font-size: 10px;
   font-weight: 600;
@@ -290,7 +337,7 @@ onBeforeUnmount(() => {
   text-transform: uppercase;
 }
 
-.hero-object>div {
+.hero-object > div {
   position: relative;
   aspect-ratio: 1.22;
   margin-block: clamp(16px, 1.8vw, 24px);
@@ -479,73 +526,245 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (max-width: 560px) {
-  .catalog-hero__word {
-    top: calc(var(--header) + 24px);
-    width: calc(100% - 14px);
-    font-size: min(15.8vw, 78px);
-  }
-}
-
-@media (max-width: 480px) {
+/* ─── Phones: photo window on top, stitched pocket below ─── */
+/*
+  Text on the aerial photo can't be read at phone size: the white factory
+  roofs sit right behind it. So the photo becomes a window at the top that
+  carries only the wordmark, and everything else moves onto a solid green
+  pocket with a curved opening and a double topstitch, like a jeans front
+  pocket.
+*/
+@media (max-width: 640px) {
   .catalog-hero {
     display: flex;
     height: auto;
-    min-height: 860px;
+    min-height: 0;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: calc(var(--header) + 142px) 16px 18px;
+    padding-top: var(--hero-window);
+    background: var(--hero-ink);
+  }
+
+  /* The photo only fills the window. */
+  .catalog-hero__image,
+  .catalog-hero__veil {
+    inset: 0 0 auto;
+    height: calc(var(--hero-window) + 24px);
+  }
+
+  .catalog-hero__image img {
+    object-position: center 62%;
+  }
+
+  /* Top shade keeps the header and wordmark readable; the bottom melts into the pocket. */
+  .catalog-hero__veil {
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.38), transparent 42%),
+      linear-gradient(0deg, var(--hero-ink), transparent 34%);
   }
 
   .catalog-hero__word {
     top: calc(var(--header) + 24px);
     left: 16px;
     width: calc(100% - 32px);
-    font-size: clamp(60px, 18vw, 78px);
+    font-size: clamp(56px, 18vw, 78px);
+    text-shadow: 0 2px 18px rgb(0 0 0 / 0.25);
     transform: none !important;
   }
 
+  .catalog-hero__pocket {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 0 16px 20px;
+    background: var(--hero-ink);
+    opacity: 0;
+  }
+
+  .catalog-hero--ready .catalog-hero__pocket {
+    animation: hero-pocket-in 0.8s 0.3s var(--ease) forwards;
+  }
+
+  /* Copper rivet at the pocket corner. */
+  .catalog-hero__pocket::before {
+    position: absolute;
+    bottom: calc(100% + 26px);
+    left: 22px;
+    z-index: 2;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    content: "";
+    background: var(--wood-tan);
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.28);
+  }
+
+  .catalog-hero__seam {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 56px;
+    margin-bottom: -1px;
+    overflow: visible;
+  }
+
+  /*
+    stroke: none on purpose: a global svg path rule (the one that draws the
+    arrow in .tiny-link) was outlining this shape with a light border.
+  */
+  .catalog-hero__seam-fill {
+    fill: var(--hero-ink);
+    stroke: none;
+  }
+
+  .catalog-hero__seam-stitch {
+    fill: none;
+    stroke: var(--wood-tan);
+    stroke-width: 1.25;
+    stroke-dasharray: 6 5;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* Everything inside the pocket flows in a column. */
+  .catalog-hero__lines,
   .catalog-hero__left,
   .catalog-hero__statement,
   .catalog-hero__footer,
   .hero-object {
     position: relative;
+    top: auto;
     right: auto;
     bottom: auto;
     left: auto;
+    width: auto;
     transform: none !important;
   }
 
-  .catalog-hero__left {
-    order: 1;
-    width: min(100%, 300px);
+  /* Woven label, sewn over the seam on the raised side of the pocket. */
+  .catalog-hero__lines {
+    align-self: flex-start;
+    height: auto;
+    margin: -30px 0 0 28px;
+    padding: 7px 14px;
+    background: var(--paper);
+    color: var(--hero-ink);
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: 0.2em;
+    outline: 1px dashed currentColor;
+    outline-offset: -4px;
+    rotate: -2deg;
+    box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.6);
+  }
+
+  .catalog-hero__left > p {
+    max-width: 34ch;
+    margin-bottom: 18px;
+    color: color-mix(in srgb, var(--paper) 90%, transparent);
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.55;
+    text-transform: none;
   }
 
   .catalog-hero__statement {
-    order: 2;
-    align-self: flex-start;
-    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
     text-align: left;
   }
 
-  .catalog-hero__footer {
-    order: 3;
-    width: 100%;
-    margin-top: 24px;
+  .catalog-hero__statement > p {
+    margin-bottom: 10px;
+    color: var(--wood-tan);
+    font-size: 11px;
   }
 
+  /*
+    One line at every phone width: the size follows the pocket's inner width
+    (100vw minus 2 x 16px padding). The name is about 9.8em wide in the serif
+    face, so dividing by 10.4 leaves a small margin; capped at 42px.
+  */
+  .catalog-hero__statement h2 {
+    font-size: min(calc((100vw - 32px) / 10.4), 42px);
+    line-height: 0.95;
+    white-space: nowrap;
+  }
+
+  /* Heritage card: text left, swatch right. Solid ground, so no blur. */
   .hero-object {
-    order: 4;
-    align-self: flex-start;
-    width: min(100%, 300px);
-    margin-top: 34px;
-    padding: 18px;
+    display: grid;
+    grid-template-columns: 1fr 96px;
+    grid-template-rows: auto 1fr;
+    column-gap: 16px;
+    align-items: start;
+    padding: 14px;
+    border-color: color-mix(in srgb, var(--paper) 18%, transparent);
+    background: color-mix(in srgb, var(--paper) 5%, transparent);
+    backdrop-filter: none;
+  }
+
+  .hero-object > p,
+  .hero-object > span {
+    grid-column: 1;
+    font-size: 11px;
+    text-wrap: balance;
+  }
+
+  .hero-object > p {
+    grid-row: 1;
+    margin-top: 4px;
+  }
+
+  .hero-object > span {
+    grid-row: 2;
+    margin-top: 6px;
+    color: var(--wood-tan);
+  }
+
+  .hero-object > div {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    aspect-ratio: 1;
+    margin: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 4px;
+  }
+
+  .catalog-hero__footer {
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    justify-content: flex-start;
+    padding-top: 16px;
+    border-top: 1px dashed color-mix(in srgb, var(--paper) 22%, transparent);
+    color: color-mix(in srgb, var(--paper) 72%, transparent);
+    font-size: 11px;
+  }
+
+  /* The pocket ends the hero, so the scroll cue would only crowd it. */
+  .catalog-hero__scroll {
+    display: none;
+  }
+}
+
+@keyframes hero-pocket-in {
+  from {
+    opacity: 0;
+    translate: 0 40px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
   }
 }
 
 /* Accessibility / Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-
   .catalog-hero--ready .catalog-hero__image img,
   .catalog-hero__scroll-line::after {
     animation: none !important;
@@ -557,6 +776,11 @@ onBeforeUnmount(() => {
 
   .catalog-hero__scroll-line::after {
     transform: translateY(0);
+  }
+
+  .catalog-hero--ready .catalog-hero__pocket {
+    animation: none;
+    opacity: 1;
   }
 }
 </style>
