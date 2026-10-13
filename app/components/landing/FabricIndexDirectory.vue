@@ -201,10 +201,10 @@ const columns = [
 <template>
   <!--
     [spacing] Was py-[clamp(20px,1vw,150px)] — 20px at every real width.
-    No top padding: the intro above is the same light ground and owns its
-    bottom. This section owns its own bottom.
+    Full --section-y top and bottom: this band is opaque (.loom-day covers
+    the WebGL thread), so both edges show and content must not touch them.
   -->
-  <section ref="section" class="loom-day bg-(--paper) overflow-hidden pb-(--section-y)" data-reveal>
+  <section ref="section" class="loom-day bg-(--paper) overflow-hidden py-(--section-y)" data-reveal>
     <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
     <!-- <div
       aria-hidden="true"

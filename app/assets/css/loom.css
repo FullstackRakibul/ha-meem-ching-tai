@@ -715,6 +715,22 @@ html.loom-live [data-menu-preview] img {
   padding-bottom: 88px;
 }
 
+/* [spacing] Phones: this scene sits below the photo hero, mid-page, so it
+   needs neither a full screen (the centred copy left ~200px of empty ground
+   above the headline) nor clearance for the fixed header. One --section-y
+   on top, and a single row so the empty foot row's 40px gap goes too. The
+   88px foot stays: the portrait yarn band runs there. */
+@media (max-width: 767px) {
+  .loom-hero {
+    min-height: 0;
+  }
+
+  .loom-hero__inner {
+    grid-template-rows: auto;
+    padding-top: var(--section-y);
+  }
+}
+
 .loom-hero__copy {
   display: flex;
   flex-direction: column;
@@ -794,13 +810,13 @@ html.loom-live [data-menu-preview] img {
 /* Rows 1fr · auto · 1fr keep the word band centred on the viewport while
    pinned — the same line the 3D stitch is drawn on. */
 /* [spacing] Below 840 the stage is not pinned, so it is plain section flow:
-   no top padding (the Fabric Index above is the same light ground and owns
-   its bottom), --section-gap between header, band and cards. From 840 the
-   pinned stage keeps its header clearance and 48px foot unchanged. */
+   a full --section-y on top (the opaque Fabric Index above ends in a
+   visible edge), --section-gap between header, band and cards. From 840
+   the pinned stage keeps its header clearance and 48px foot unchanged. */
 .loom-why__stage {
   display: grid;
   gap: var(--section-gap);
-  padding-top: 0;
+  padding-top: var(--section-y);
   padding-bottom: var(--section-gap);
 }
 
@@ -814,9 +830,12 @@ html.loom-live [data-menu-preview] img {
   padding-inline: var(--gutter);
 }
 
+/* [spacing] Below 840 (unpinned): the stitch slot between the two labels.
+   Was 34vh (~290px on a phone), mostly empty above the stitch; now
+   ~150–220px. From 840 the pinned band sizes it (rule below). */
 .loom-why__track {
   position: relative;
-  height: 34vh;
+  height: clamp(120px, 22vh, 220px);
 }
 
 .loom-why__word {
@@ -825,20 +844,25 @@ html.loom-live [data-menu-preview] img {
   gap: 0.75rem;
 }
 
+/* [spacing] From 840 the stage no longer fills the screen with 1fr rows to
+   centre the band — that left ~150px under the heading and ~280px above
+   "Scroll to explore". It is compact: heading, band and hint one
+   --section-gap apart, and WhyMatters.vue starts the pin when the band's
+   centre reaches the viewport's centre, so the words still sit on the 3D
+   stitch's line. The section-y top keeps the eyebrow clear of the header. */
 @media (min-width: 840px) {
   .loom-why__stage {
-    min-height: 100svh;
-    grid-template-rows: 1fr auto 1fr;
-    gap: 0;
-    padding-top: calc(var(--header) + 24px);
-    padding-bottom: 48px;
+    gap: var(--section-gap);
+    padding-top: var(--section-y);
+    padding-bottom: var(--section-gap);
   }
 
-  /* Columns mirror the stitch: it spans ±24% of the viewport around centre. */
+  /* Columns mirror the stitch: it spans ±24% of the viewport around centre.
+     Height: room for the stitch, not 44vh of empty band. */
   .loom-why__band {
     grid-template-columns: 26fr 48fr 26fr;
     gap: 0;
-    min-height: 44vh;
+    min-height: clamp(200px, 26vh, 320px);
   }
 
   .loom-why__track {

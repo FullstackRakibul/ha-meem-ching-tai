@@ -22,6 +22,7 @@ import { EASE, SCRUB } from "~/utils/motion";
 const { t } = useLocale();
 const section = ref<HTMLElement | null>(null);
 const stage = ref<HTMLElement | null>(null);
+const band = ref<HTMLElement | null>(null);
 
 // The scroll hint fades in once the pinned stage is on screen.
 const isVisible = useElementVisibility(stage);
@@ -41,13 +42,33 @@ useScrollScene(section, (ctx) => {
 
   const thread = { morph: 0 };
   const pinned = mode === "full";
+  const stageEl = stage.value;
+  const bandEl = band.value;
+  // [spacing] The stage is compact (no full-screen rows), so the pin starts
+  // when the word band's centre reaches the viewport's centre — the line the
+  // 3D stitch is drawn on (paths.ts, y = 0). On a screen too short for that,
+  // it pins with the stage top at the viewport top, as before. Read on
+  // refresh only.
+  const bandLine = () =>
+    bandEl
+      ? Math.max(window.innerHeight / 2, bandEl.offsetTop + bandEl.offsetHeight / 2)
+      : 0;
   gsap.to(thread, {
     morph: 1,
     ease: EASE.scrub,
     onUpdate: () => setUniform("morph", thread.morph),
     scrollTrigger: pinned
-      ? { trigger: stage.value, start: "top top", end: "+=120%", pin: true, scrub: SCRUB }
-      : { trigger: stage.value, start: "top 70%", end: "bottom 40%", scrub: SCRUB },
+      ? bandEl
+        ? {
+            trigger: bandEl,
+            start: () => `center ${bandLine()}px`,
+            end: "+=120%",
+            pin: stageEl,
+            scrub: SCRUB,
+            invalidateOnRefresh: true,
+          }
+        : { trigger: stageEl, start: "top top", end: "+=120%", pin: true, scrub: SCRUB }
+      : { trigger: stageEl, start: "top 70%", end: "bottom 40%", scrub: SCRUB },
   });
   return () => setUniform("morph", 0);
 });
@@ -69,7 +90,7 @@ useScrollScene(section, (ctx) => {
         <h2 class="loom-display loom-display--m max-w-[24ch]">{{ t("whyHeadline") }}</h2>
       </header>
 
-      <div class="loom-why__band">
+      <div ref="band" class="loom-why__band">
         <div class="loom-why__word loom-why__word--long">
           <p class="loom-display loom-display--m loom-muted">{{ t("whyLongLabel") }}</p>
           <p class="loom-body loom-muted max-w-[28ch]">{{ t("whyLongNote") }}</p>
@@ -84,11 +105,12 @@ useScrollScene(section, (ctx) => {
       </div>
 
       <!--
-        Scroll hint (desktop only). Lives inside the pinned stage, in the empty
-        third grid row, so it's on screen while scrolling drives the thread.
+        Scroll hint (desktop only). Lives inside the pinned stage, one
+        --section-gap under the band, so it's on screen while scrolling drives
+        the thread.
       -->
       <div
-        class="hidden items-center gap-3 self-end transition-opacity delay-800 duration-1000 motion-reduce:transition-none lg:flex"
+        class="hidden items-center gap-3 transition-opacity delay-800 duration-1000 motion-reduce:transition-none lg:flex"
         :class="isVisible ? 'opacity-100' : 'opacity-0'"
         aria-hidden="true"
       >

@@ -30,7 +30,12 @@ useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
 </script>
 
 <template>
-  <section id="top" ref="section" class="loom-night loom-grain loom-hero" data-chapter="boot">
+  <section
+    id="top"
+    ref="section"
+    class="loom-night loom-grain loom-hero"
+    data-chapter="boot"
+  >
     <div class="loom-glow" aria-hidden="true" />
     <ThreadPoster />
 
@@ -52,11 +57,6 @@ useScrollScene(section, ({ gsap, ScrollTrigger, mode, root }) => {
           <a class="loom-ghost" href="#why-matters">{{ t("heroSecondaryCta") }}</a>
         </div>
       </div>
-
-      <!-- <div class="loom-hero__foot loom-label loom-muted">
-        <span>{{ t("heroLocation") }}</span>
-        <span>{{ t("heroDivision") }}</span>
-      </div> -->
     </div>
   </section>
 </template>
