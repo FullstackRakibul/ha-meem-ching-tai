@@ -554,8 +554,13 @@ function runLive(gsap: Gsap) {
     data-chapter="catalogue"
     aria-labelledby="catalogue-title"
   >
-    <div class="loom-wrap mb-8 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
-      <h2 id="catalogue-title" class="loom-display loom-display--m">{{ title }}</h2>
+    <!-- [spacing] Heading row → rail: --section-gap. [rhythm] eyebrow →16→ heading;
+         no index number — the catalogue sits between numbered chapters. -->
+    <div class="loom-wrap mb-(--section-gap) flex flex-wrap items-end justify-between gap-4">
+      <div class="loom-head">
+        <p class="loom-label loom-muted">{{ t("navProducts") }}</p>
+        <h2 id="catalogue-title" class="loom-display loom-display--m">{{ title }}</h2>
+      </div>
       <div class="flex items-center gap-4">
         <p class="loom-label product-rail-section__hint" aria-hidden="true">
           {{ live ? t("catalogueDrag") : t("catalogueHint") }} →
@@ -677,12 +682,37 @@ function runLive(gsap: Gsap) {
   border: 1px solid var(--rail-hairline);
   border-radius: 999px;
   color: var(--navy);
-  transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease);
+  transition: background-color 0.3s var(--ease-out), border-color 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
 }
 
-.product-rail-section__toggle:hover {
+/* [hover] The shared button language: colour + 2px lift, mirrored on focus. */
+@media (hover: hover) {
+  .product-rail-section__toggle:hover {
+    border-color: var(--navy);
+    background: color-mix(in srgb, var(--navy) 6%, transparent);
+  }
+}
+
+.product-rail-section__toggle:focus-visible {
   border-color: var(--navy);
   background: color-mix(in srgb, var(--navy) 6%, transparent);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .product-rail-section__toggle:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .product-rail-section__toggle:focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
+.product-rail-section__toggle:active {
+  transform: translateY(0);
 }
 
 /* ── Rail ─────────────────────────────────────────────────── */

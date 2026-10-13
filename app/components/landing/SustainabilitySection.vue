@@ -45,8 +45,9 @@ useScrollScene(section, (ctx) => {
 
     <div ref="scene" class="group/dusk loom-grain loom-dusk relative">
       <div class="loom-layer loom-wrap loom-dusk__grid">
-        <div class="flex flex-col gap-8">
-          <header class="flex flex-col gap-6" data-reveal-block>
+        <!-- [spacing] heading →section-gap→ stats →section-gap→ CTA; eyebrow →16→ heading -->
+        <div class="flex flex-col gap-(--section-gap)">
+          <header class="loom-head" data-reveal-block>
             <p class="loom-label loom-muted"><span class="loom-gold">08</span>{{ t("sustainEyebrow") }}</p>
             <h2 class="loom-display loom-display--l loom-measure text-balance">{{ t("sustainHeadline") }}</h2>
           </header>
@@ -55,11 +56,11 @@ useScrollScene(section, (ctx) => {
             <!-- GSAP reveals the article; hover motion lives on its children only. -->
             <article v-for="stat in stats" :key="stat.label" class="group/stat relative" data-reveal-block>
               <span
-                class="pointer-events-none absolute inset-x-0 -top-px h-0.5 origin-left bg-(--sun-core) opacity-0 group-hover/stat:opacity-100 group-focus-within/stat:opacity-100 motion-safe:scale-x-0 motion-safe:transition-transform motion-safe:duration-400 motion-safe:ease-(--ease) motion-safe:group-hover/stat:scale-x-100 motion-safe:group-focus-within/stat:scale-x-100"
+                class="pointer-events-none absolute inset-x-0 -top-px h-0.5 origin-left bg-(--sun-core) opacity-0 group-hover/stat:opacity-100 group-focus-within/stat:opacity-100 motion-safe:scale-x-0 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-(--ease-out) motion-safe:group-hover/stat:scale-x-100 motion-safe:group-focus-within/stat:scale-x-100"
                 aria-hidden="true"
               />
               <p
-                class="loom-stats__value loom-gold tabular-nums leading-none! motion-safe:transition-transform motion-safe:duration-400 motion-safe:ease-(--ease) motion-safe:group-hover/stat:-translate-y-0.5 motion-safe:group-focus-within/stat:-translate-y-0.5"
+                class="loom-stats__value loom-gold tabular-nums leading-none! motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-(--ease-out) motion-safe:group-hover/stat:-translate-y-0.5 motion-safe:group-focus-within/stat:-translate-y-0.5"
               >
                 {{ stat.value }}
               </p>

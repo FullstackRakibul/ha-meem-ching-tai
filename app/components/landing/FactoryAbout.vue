@@ -20,24 +20,38 @@ const points = computed(() => [
   { title: t("factory3Title"), text: t("factory3Text") },
 ]);
 
+/** The opening window, as a share of the frame: 56% wide, 64% tall. */
+const WINDOW = { x: 0.56, y: 0.64 };
+
 useScrollScene(section, (ctx) => {
   const { gsap, mode } = ctx;
   revealBlocks(ctx);
-  if (mode === "reduced" || !frame.value) return;
-  gsap.fromTo(
-    frame.value,
-    { clipPath: "inset(18% 22% 18% 22%)" },
-    {
-      clipPath: "inset(0% 0% 0% 0%)",
-      ease: EASE.scrub,
-      scrollTrigger: {
-        trigger: frame.value,
-        start: "top 90%",
-        end: "top 30%",
-        scrub: SCRUB,
-      },
-    }
-  );
+  const el = frame.value;
+  const img = el?.querySelector("img");
+  const grid = el?.parentElement;
+  if (mode === "reduced" || !el || !img || !grid) return;
+
+  // The one move: the photograph opens out of a centred window, scrubbed.
+  // [motion] Transforms only (was a clip-path inset): the frame scales up
+  // from the window while the photo counter-scales by the exact inverse, so
+  // the picture never distorts and the crop matches the old inset(18% 22%).
+  // The grid is the trigger — its top is the frame's top and it is never
+  // transformed, so start/end measure the same as before.
+  const open = { p: 0 };
+  const render = () => {
+    const sx = WINDOW.x + (1 - WINDOW.x) * open.p;
+    const sy = WINDOW.y + (1 - WINDOW.y) * open.p;
+    gsap.set(el, { scaleX: sx, scaleY: sy });
+    gsap.set(img, { scaleX: 1 / sx, scaleY: 1 / sy });
+  };
+  render();
+  gsap.to(open, {
+    p: 1,
+    ease: EASE.scrub,
+    onUpdate: render,
+    scrollTrigger: { trigger: grid, start: "top 90%", end: "top 30%", scrub: SCRUB },
+  });
+  return () => gsap.set([el, img], { clearProps: "transform" });
 });
 </script>
 
@@ -51,10 +65,12 @@ useScrollScene(section, (ctx) => {
     <div class="loom-dawn" aria-hidden="true" />
 
     <div class="loom-wrap">
-      <header class="flex flex-col gap-6 pt-(--section-y)" data-reveal-block>
+      <!-- [spacing] No pt: the dawn band above is this section's top space.
+           [type] Chapter title: --xl → --l, the one class for full-row h2s. -->
+      <header class="loom-head" data-reveal-block>
         <p class="loom-label loom-muted"><span>05</span>{{ t("factoryEyebrow") }}</p>
-        <h2 class="loom-display loom-display--xl">{{ t("factoryTitle") }}</h2>
-        <p class="loom-body-l loom-muted max-w-[44ch]">{{ t("factorySite") }}</p>
+        <h2 class="loom-display loom-display--l">{{ t("factoryTitle") }}</h2>
+        <p class="loom-body-l loom-muted max-w-[52ch]">{{ t("factorySite") }}</p>
       </header>
 
       <div class="loom-factory__grid">
@@ -75,7 +91,7 @@ useScrollScene(section, (ctx) => {
               >{{ t("factoryPointLabel") }} {{ String(i + 1).padStart(2, "0") }}</span
             >
             <div class="flex flex-col gap-2">
-              <p class="text-lg font-bold">{{ point.title }}</p>
+              <p class="loom-card-title">{{ point.title }}</p>
               <p class="loom-body loom-muted">{{ point.text }}</p>
             </div>
           </li>

@@ -26,7 +26,11 @@ export const EASE = {
   scrub: 'none',
 } as const
 
-export const STAGGER = { list: 0.05, block: 0.06 } as const
+/** `cap` bounds a whole stagger: a row of n blocks never spreads past it. */
+export const STAGGER = { list: 0.05, block: 0.06, cap: 0.3 } as const
+
+/** Block reveal (revealBlocks): a 24px rise and fade, the same everywhere. */
+export const REVEAL = { y: 24, dur: 0.7 } as const
 
 /** Seconds of lag on scrubbed timelines — smooths wheel steps without drift. */
 export const SCRUB = 0.6

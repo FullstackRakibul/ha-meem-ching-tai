@@ -9,9 +9,13 @@
      word fits at 360px; bn/zh adjust line-height and tracking below. */
   --fs-xl: clamp(2.5rem, 0.9rem + 7.2vw, 9.5rem);
   --fs-l: clamp(2.25rem, 1rem + 5vw, 6rem);
-  --fs-m: clamp(1.75rem, 1rem + 3vw, 3.75rem);
+  /* [type] Shallower ramp below 1100px: at 840–1024 the Why band's 26%
+     columns hold "Ghorashal" in this size, and the old 1rem + 3vw overran
+     them. Same 28px floor and 60px cap; ≈30 / 33 / 39 / 48 / 53px at
+     768 / 840 / 1024 / 1280 / 1440. */
+  --fs-m: clamp(1.75rem, 0.25rem + 3.4vw, 3.75rem);
   --fs-body-l: clamp(1.125rem, 1rem + 0.4vw, 1.375rem);
-  --gutter: max(16px, 4vw);
+  /* [spacing] --gutter now lives with the other spacing tokens in main.css. */
 
   /* The yarn — light greens, mirrored in lib/loom/stage.ts. */
   --loom-thread-pale: #FCE570;
@@ -69,14 +73,41 @@ html.lenis {
   letter-spacing: -0.04em;
 }
 
+/* [type] Section headings (h2) use only --l and --m:
+     --l  chapter title on its own full-width row
+     --m  heading that shares its row: a column, a pinned stage, controls
+   Line-height sits in the 1.0–1.15 heading range. */
 .loom-display--l {
   font-size: var(--fs-l);
+  line-height: 1;
 }
 
 .loom-display--m {
   font-size: var(--fs-m);
-  line-height: 1;
+  line-height: 1.05;
   letter-spacing: -0.02em;
+}
+
+/* [type] Card headings (h3 role): 20px on phones, 22px from 640px. */
+.loom-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+@media (min-width: 640px) {
+  .loom-card-title {
+    font-size: 1.375rem;
+  }
+}
+
+/* [rhythm] Section header: eyebrow → 16px → heading (→ lede). The parent
+   sets the --section-gap below it, down to the content. */
+.loom-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 /* The counter-voice: one Playfair italic phrase per headline. */
@@ -89,7 +120,8 @@ html.lenis {
 
 .loom-body-l {
   font-size: var(--fs-body-l);
-  line-height: 1.5;
+  /* [type] Body range is 1.55–1.65. */
+  line-height: 1.55;
 }
 
 .loom-body {
@@ -275,12 +307,9 @@ html.lenis {
   color: var(--beige);
   font-size: 0.875rem;
   font-weight: 700;
-  transition: background-color 0.3s var(--ease), box-shadow 0.3s var(--ease);
-}
-
-.loom-cta:hover {
-  background: var(--gold-soft);
-  box-shadow: 0 0 0 4px rgb(20 83 45 / 0.18);
+  /* [hover] Colour as before, plus the 2px lift; one 300ms ease-out. */
+  transition: background-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
 }
 
 .loom-ghost {
@@ -293,17 +322,108 @@ html.lenis {
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 600;
-  transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
+  transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out),
+    transform 0.3s var(--ease-out);
 }
 
-.loom-night .loom-ghost:hover {
+/* [hover] Buttons: the existing colour change, mirrored on keyboard focus,
+   plus a 2px lift that settles back on press. No new shadows. The lift is
+   motion, so reduced motion keeps only the colour. */
+@media (hover: hover) {
+  .loom-cta:hover {
+    background: var(--gold-soft);
+    box-shadow: 0 0 0 4px rgb(20 83 45 / 0.18);
+  }
+
+  .loom-night .loom-ghost:hover {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .loom-day .loom-ghost:hover {
+    background: var(--navy);
+    color: var(--beige);
+  }
+}
+
+.loom-cta:focus-visible {
+  background: var(--gold-soft);
+}
+
+.loom-night .loom-ghost:focus-visible {
   background: var(--navy);
   color: var(--white);
 }
 
-.loom-day .loom-ghost:hover {
+.loom-day .loom-ghost:focus-visible {
   background: var(--navy);
   color: var(--beige);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :is(.loom-cta, .loom-ghost):hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.loom-cta, .loom-ghost):focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
+:is(.loom-cta, .loom-ghost):active {
+  transform: translateY(0);
+}
+
+/* ── Stitch link: the one text-link hover ────────────────── */
+/* A dashed running stitch that draws in from the left under a text link.
+   currentColor, so it reads on light and dark grounds at the text's own
+   contrast. Sits 0.85em below the centre of the link's box, which places it
+   under the text both for inline links and for inline-flex links padded to
+   a 44px target. A link that wraps more than its label (the menu rows) adds
+   `.loom-link--wrap` and puts `.loom-link__text` on the label instead. */
+.loom-link,
+.loom-link__text {
+  position: relative;
+}
+
+.loom-link:not(.loom-link--wrap)::after,
+.loom-link__text::after {
+  position: absolute;
+  top: calc(50% + 0.85em);
+  right: 0;
+  left: 0;
+  content: "";
+  border-top: max(1px, 0.03em) dashed currentColor;
+  pointer-events: none;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* Display-size labels: the stitch runs along the label's foot. */
+.loom-link__text::after {
+  top: auto;
+  bottom: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loom-link::after,
+  .loom-link__text::after {
+    transition: transform 0.3s var(--ease-out);
+  }
+}
+
+@media (hover: hover) {
+  .loom-link:hover::after,
+  .loom-link:hover .loom-link__text::after {
+    transform: scaleX(1);
+  }
+}
+
+.loom-link:focus-visible::after,
+.loom-link:focus-visible .loom-link__text::after {
+  transform: scaleX(1);
 }
 
 /* ── Seam: the one stitched hover ────────────────────────── */
@@ -314,7 +434,8 @@ html.lenis {
      --seam-inset  distance from the host's edge (7px)
      --seam-color  gold on night grounds, navy on day grounds (see surfaces)
      --seam-idle   stitch opacity at rest (0.3)
-   0.4s fade/lift and 0.9s per stitch are the approved .why-card timings. */
+   Fade and lift run 300ms ease-out, the site-wide hover timing; 0.9s per
+   stitch is the approved run. */
 .loom-seam {
   position: relative;
 }
@@ -354,12 +475,13 @@ html.lenis {
 /* Motion only when allowed; reduced motion keeps the static final state
    (stitch fully drawn on hover/focus, no run, no lift). */
 @media (prefers-reduced-motion: no-preference) {
+  /* [hover] 0.4s → 0.3s ease-out, the one card timing. */
   .loom-seam__stitch {
-    transition: opacity 0.4s var(--ease);
+    transition: opacity 0.3s var(--ease-out);
   }
 
   .loom-seam__body {
-    transition: transform 0.4s var(--ease);
+    transition: transform 0.3s var(--ease-out);
   }
 
   .loom-seam:is(:focus-visible, :has(:focus-visible)) > .loom-seam__stitch rect {
@@ -618,8 +740,10 @@ html.loom-live [data-menu-preview] img {
 }
 
 /* ── Intro: Index (process table) ────────────────────────── */
+/* [spacing] No top padding: the boot hero above is the same night ground
+   and already ends in its own 88px foot. Owns its bottom. */
 .loom-index {
-  padding-block: var(--section-y);
+  padding-block: 0 var(--section-y);
 }
 
 .loom-index__grid {
@@ -670,11 +794,15 @@ html.loom-live [data-menu-preview] img {
 /* ── Why: the Short Thread ───────────────────────────────── */
 /* Rows 1fr · auto · 1fr keep the word band centred on the viewport while
    pinned — the same line the 3D stitch is drawn on. */
+/* [spacing] Below 840 the stage is not pinned, so it is plain section flow:
+   no top padding (the Fabric Index above is the same light ground and owns
+   its bottom), --section-gap between header, band and cards. From 840 the
+   pinned stage keeps its header clearance and 48px foot unchanged. */
 .loom-why__stage {
   display: grid;
-  gap: 3rem;
-  padding-top: calc(var(--header) + 24px);
-  padding-bottom: 48px;
+  gap: var(--section-gap);
+  padding-top: 0;
+  padding-bottom: var(--section-gap);
 }
 
 .loom-why__band {
@@ -682,7 +810,7 @@ html.loom-live [data-menu-preview] img {
   display: grid;
   grid-template-columns: 1fr;
   align-items: center;
-  gap: 1.5rem;
+  gap: var(--grid-gap);
   margin-inline: calc(-1 * var(--gutter));
   padding-inline: var(--gutter);
 }
@@ -703,6 +831,8 @@ html.loom-live [data-menu-preview] img {
     min-height: 100svh;
     grid-template-rows: 1fr auto 1fr;
     gap: 0;
+    padding-top: calc(var(--header) + 24px);
+    padding-bottom: 48px;
   }
 
   /* Columns mirror the stitch: it spans ±24% of the viewport around centre. */
@@ -730,13 +860,14 @@ html.loom-live [data-menu-preview] img {
 }
 
 /* Card styling lives in WhyMatters.vue (.why-card); this is only the grid. */
+/* [spacing] One column on phones, two from 640, four from 1200 (unchanged). */
 .loom-why__cards {
   display: grid;
-  gap: clamp(12px, 1.4vw, 20px);
+  gap: var(--grid-gap);
   padding-bottom: var(--section-y);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .loom-why__cards {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -759,9 +890,12 @@ html.loom-live [data-menu-preview] img {
   margin-bottom: var(--section-gap);
 }
 
+/* [spacing] Stats ↔ weave figure: the same column gap as every other
+   two-column content row. (The stats list's own 10–16px gap stays: the
+   --stat-size values below are tuned against it.) */
 .loom-stats__grid {
   display: grid;
-  gap: clamp(32px, min(6vw, 8vh), 96px);
+  gap: var(--section-gap);
 }
 
 .loom-stats__grid>* {
@@ -857,8 +991,9 @@ html.loom-live [data-menu-preview] img {
   scroll-margin-top: var(--header);
 }
 
+/* [rhythm] Label → content: the 16px eyebrow step. */
 .loom-milestones__title {
-  margin-bottom: clamp(14px, 2.4vh, 24px);
+  margin-bottom: 16px;
 }
 
 .loom-timeline {
@@ -896,7 +1031,7 @@ html.loom-live [data-menu-preview] img {
 
 .loom-milestones {
   display: grid;
-  gap: clamp(12px, 2vh, 18px);
+  gap: var(--grid-gap);
 }
 
 .loom-milestones>li {
@@ -980,7 +1115,6 @@ html.loom-live [data-menu-preview] img {
 
   .loom-milestones {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(14px, 1.6vw, 24px);
   }
 
   .loom-timeline__knot {
@@ -994,9 +1128,11 @@ html.loom-live [data-menu-preview] img {
   padding-bottom: var(--section-y);
 }
 
+/* [spacing] The dawn band above the header is this section's top space
+   (it is never shrunk), so the header adds none of its own. */
 .loom-factory__grid {
   display: grid;
-  gap: clamp(40px, 5vw, 80px);
+  gap: var(--section-gap);
   padding-top: var(--section-gap);
 }
 
@@ -1042,17 +1178,23 @@ html.loom-live [data-menu-preview] img {
   display: none;
 }
 
+/* [spacing] Stacked (unpinned) scenes: one --section-y between scenes and
+   below the last. No top padding — the factory above is the same beige
+   ground and owns its bottom. The 82svh minimum and 82px padding per scene
+   were most of the dead space on tall phones; the pinned stage below is
+   untouched. */
 .category-track {
   display: grid;
+  gap: var(--section-y);
+  padding-bottom: var(--section-y);
 }
 
 .category-scene {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 34px;
-  min-height: 82svh;
-  padding: 82px var(--gutter);
+  gap: var(--section-gap);
+  padding-inline: var(--gutter);
 }
 
 .category-scene__visual {
@@ -1091,7 +1233,7 @@ html.loom-live [data-menu-preview] img {
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1.25rem;
+  gap: var(--grid-gap);
 }
 
 .category-scene__copy h2 {
@@ -1112,8 +1254,9 @@ html.loom-live [data-menu-preview] img {
   letter-spacing: 0;
 }
 
+/* [type] The site's one body measure. */
 .category-scene__copy>p {
-  max-width: 44ch;
+  max-width: 52ch;
 }
 
 /* Scene label and status badge share one row, in the copy column. */
@@ -1229,8 +1372,6 @@ html.loom-live [data-menu-preview] img {
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
     align-items: center;
-    min-height: auto;
-    padding-block: clamp(72px, 8vw, 128px);
   }
 }
 
@@ -1255,6 +1396,7 @@ html.loom-live [data-menu-preview] img {
   align-items: center;
   gap: clamp(24px, 4vw, 72px);
   width: max-content;
+  padding-block: 0;
   padding-inline: 12vw 18vw;
   will-change: transform;
 }
@@ -1302,9 +1444,11 @@ html.loom-live [data-menu-preview] img {
   padding-bottom: var(--section-y);
 }
 
+/* [spacing] The dusk band is the top space; the grid uses the shared
+   column gap. */
 .loom-dusk__grid {
   display: grid;
-  gap: clamp(48px, 6vw, 96px);
+  gap: var(--section-gap);
 }
 
 @media (min-width: 1024px) {
@@ -1316,7 +1460,7 @@ html.loom-live [data-menu-preview] img {
 
 .loom-dusk__stats {
   display: grid;
-  gap: 2rem;
+  gap: var(--grid-gap);
 }
 
 @media (min-width: 640px) {
@@ -1343,15 +1487,22 @@ html.loom-live [data-menu-preview] img {
   padding-block: var(--section-y);
 }
 
+/* [spacing] The height moved from the figure to the anchor: with a fixed
+   figure height the caption overflowed it and ran into the facts below on
+   phones. The anchor keeps the same size and position, so the 3D ply still
+   lines up; the figure now grows to hold its caption. */
 .loom-ply__yarn {
   position: relative;
-  height: clamp(56px, 9vw, 120px);
   margin-block: var(--section-gap);
+}
+
+.loom-ply__yarn > [data-loom-anchor] {
+  height: clamp(56px, 9vw, 120px);
 }
 
 .loom-ply__facts {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--grid-gap);
 }
 
 @media (min-width: 900px) {

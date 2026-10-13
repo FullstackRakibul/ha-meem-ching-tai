@@ -21,16 +21,21 @@ useScrollScene(section, (ctx) => {
 <template>
   <section id="studio" ref="section" class="loom-night loom-grain loom-index" data-chapter="index">
     <div class="loom-layer loom-wrap loom-index__grid">
-      <div class="flex flex-col gap-8" data-reveal-block>
-        <p class="loom-label loom-muted">
-          <span class="loom-gold">02</span>{{ t("navIndex") }}
-        </p>
-        <h2 class="loom-display loom-display--m">{{ t("introTitle") }}</h2>
-        <p class="loom-body loom-muted max-w-[52ch]">{{ t("introBody") }}</p>
-        <a class="loom-ghost self-start" href="#why-matters">{{ t("introCta") }}</a>
-        <div class="loom-plate mt-4 hidden aspect-4/3 lg:block">
-          <img src="../../assets/img/denim-pocket.png" :alt="t('introImageAlt')" loading="lazy" decoding="async"
-            width="800" height="600" />
+      <!-- [spacing] eyebrow →16→ heading →section-gap→ content (grid-gap apart) -->
+      <div class="flex flex-col gap-(--section-gap)" data-reveal-block>
+        <div class="loom-head">
+          <p class="loom-label loom-muted">
+            <span class="loom-gold">02</span>{{ t("navIndex") }}
+          </p>
+          <h2 class="loom-display loom-display--m">{{ t("introTitle") }}</h2>
+        </div>
+        <div class="flex flex-col items-start gap-(--grid-gap)">
+          <p class="loom-body loom-muted max-w-[52ch]">{{ t("introBody") }}</p>
+          <a class="loom-ghost" href="#why-matters">{{ t("introCta") }}</a>
+          <div class="loom-plate hidden aspect-4/3 w-full lg:block">
+            <img src="../../assets/img/denim-pocket.png" :alt="t('introImageAlt')" loading="lazy" decoding="async"
+              width="800" height="600" />
+          </div>
         </div>
       </div>
 

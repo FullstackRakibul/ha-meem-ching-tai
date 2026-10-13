@@ -145,6 +145,9 @@ onBeforeUnmount(() => {
   --hero-ink: rgb(8 40 14);
   /* Height of the photo window above the pocket on phones. */
   --hero-window: clamp(300px, 52svh, 480px);
+  /* [spacing] Edge inset for copy on the photo: the same tight editorial
+     12px / 1.1vw, but never under the notch of a landscape iPhone. */
+  --hero-edge: max(12px, 1.1vw, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
 
   position: relative;
   height: 100svh;
@@ -272,7 +275,7 @@ onBeforeUnmount(() => {
 .catalog-hero__left {
   position: absolute;
   bottom: clamp(76px, 13vh, 145px);
-  left: max(12px, 1.1vw);
+  left: var(--hero-edge);
   z-index: 3;
   width: min(250px, 20vw);
 }
@@ -298,7 +301,8 @@ onBeforeUnmount(() => {
 
 .catalog-hero__statement > p {
   margin-bottom: 8px;
-  font-size: 10px;
+  /* [type] Labels never below 11px. */
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -330,7 +334,7 @@ onBeforeUnmount(() => {
 .hero-object > p,
 .hero-object > span {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.13em;
   line-height: 1.35;
@@ -353,13 +357,13 @@ onBeforeUnmount(() => {
 
 .catalog-hero__footer {
   position: absolute;
-  right: max(12px, 1.1vw);
+  right: var(--hero-edge);
   bottom: 13px;
-  left: max(12px, 1.1vw);
+  left: var(--hero-edge);
   z-index: 3;
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -381,7 +385,7 @@ onBeforeUnmount(() => {
 .catalog-hero__lines {
   position: absolute;
   top: calc(var(--header) + clamp(120px, 17vw, 300px));
-  left: max(12px, 1.1vw);
+  left: var(--hero-edge);
   z-index: 3;
   display: grid;
   height: 1.4em;
@@ -425,7 +429,7 @@ onBeforeUnmount(() => {
 
 .catalog-hero__scroll {
   position: absolute;
-  right: max(12px, 1.1vw);
+  right: var(--hero-edge);
   bottom: clamp(52px, 8vh, 96px);
   z-index: 3;
   display: flex;
@@ -460,7 +464,7 @@ onBeforeUnmount(() => {
 }
 
 .catalog-hero__scroll-text {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -502,12 +506,12 @@ onBeforeUnmount(() => {
 
   .catalog-hero__left {
     bottom: 108px;
-    left: 12px;
+    left: var(--hero-edge);
     width: 210px;
   }
 
   .catalog-hero__statement {
-    right: 12px;
+    right: var(--hero-edge);
     bottom: 55px;
     left: auto;
     text-align: right;
@@ -561,10 +565,11 @@ onBeforeUnmount(() => {
       linear-gradient(0deg, var(--hero-ink), transparent 34%);
   }
 
+  /* [spacing] Wordmark and pocket share the --gutter (20px + safe area). */
   .catalog-hero__word {
     top: calc(var(--header) + 24px);
-    left: 16px;
-    width: calc(100% - 32px);
+    left: var(--gutter);
+    width: calc(100% - 2 * var(--gutter));
     font-size: clamp(56px, 18vw, 78px);
     text-shadow: 0 2px 18px rgb(0 0 0 / 0.25);
     transform: none !important;
@@ -576,7 +581,7 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 28px;
-    padding: 0 16px 20px;
+    padding: 0 var(--gutter) 20px;
     background: var(--hero-ink);
     opacity: 0;
   }
@@ -685,11 +690,12 @@ onBeforeUnmount(() => {
 
   /*
     One line at every phone width: the size follows the pocket's inner width
-    (100vw minus 2 x 16px padding). The name is about 9.8em wide in the serif
-    face, so dividing by 10.4 leaves a small margin; capped at 42px.
+    (100% of the viewport minus 2 x --gutter). The name is about 9.8em wide in
+    the serif face, so dividing by 10.4 leaves a small margin; capped at 42px.
+    At 320px: (320 - 40) / 10.4 = 26.9px, 264px of name in 280px.
   */
   .catalog-hero__statement h2 {
-    font-size: min(calc((100vw - 32px) / 10.4), 42px);
+    font-size: min(calc((100vw - 2 * var(--gutter)) / 10.4), 42px);
     line-height: 0.95;
     white-space: nowrap;
   }

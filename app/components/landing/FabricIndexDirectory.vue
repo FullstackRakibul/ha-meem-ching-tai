@@ -183,6 +183,10 @@ const onTabKey = (e: KeyboardEvent) => {
   tabRefs.value[next]?.focus();
 };
 
+// [reveal] Header and panel arrive like every other section's blocks.
+const section = ref<HTMLElement | null>(null);
+useScrollScene(section, revealBlocks);
+
 const columns = [
   { label: "Art #" },
   { label: "Weaving" },
@@ -195,7 +199,12 @@ const columns = [
 </script>
 
 <template>
-  <section class="loom-day bg-(--paper) overflow-hidden py-[clamp(20px,1vw,150px)]" data-reveal>
+  <!--
+    [spacing] Was py-[clamp(20px,1vw,150px)] — 20px at every real width.
+    No top padding: the intro above is the same light ground and owns its
+    bottom. This section owns its own bottom.
+  -->
+  <section ref="section" class="loom-day bg-(--paper) overflow-hidden pb-(--section-y)" data-reveal>
     <!-- Faint dot grid, fading out downward: texture without competing with the table. -->
     <!-- <div
       aria-hidden="true"
@@ -206,20 +215,23 @@ const columns = [
 
     <div class="page-gutter relative mx-auto max-w-350">
       <!-- Section Header -->
-      <div class="mb-10 grid gap-6 md:mb-14 lg:grid-cols-12 lg:items-end">
-        <div class="lg:col-span-7">
-          <p class="mb-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-(--navy)">
-            <span class="h-px w-8 bg-(--navy)" aria-hidden="true" />
+      <!-- [spacing] eyebrow →16→ heading; lede beside it from lg; --section-gap to the panel -->
+      <div class="mb-(--section-gap) grid gap-(--grid-gap) lg:grid-cols-12 lg:items-end" data-reveal-block>
+        <!-- [type] The shared eyebrow (loom-label) and the --m display class, with
+             the serif counter-voice kept on "Directory". The rule stands in for
+             an index number: this band sits between numbered chapters. -->
+        <div class="loom-head lg:col-span-7">
+          <p class="loom-label loom-muted">
+            <span class="h-px w-8 self-center bg-(--navy)" aria-hidden="true" />
             Technical Specifications
           </p>
-          <h2
-            class="font-serif text-[clamp(32px,4.4vw,64px)] font-normal leading-[1.02] tracking-[-0.03em] text-(--navy)">
+          <h2 class="loom-display loom-display--m text-(--navy)">
             Fabric Index <span class="loom-serif text-(--gold)">Directory</span>
           </h2>
         </div>
 
         <div class="lg:col-span-5 lg:justify-self-end">
-          <p class="max-w-md text-sm leading-relaxed text-(--muted)">
+          <p class="loom-body loom-muted max-w-[52ch]">
             Engineered to precise tolerances. Explore our export-quality pocketing and
             lining configurations sorted by weight class.
           </p>
@@ -228,7 +240,8 @@ const columns = [
 
       <!-- One panel: toolbar (tabs + summary) over the spec table -->
       <div
-        class="overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-30px_rgb(20_83_45/0.25)] ring-1 ring-(--line)">
+        class="overflow-hidden rounded-3xl bg-white shadow-[0_30px_60px_-30px_rgb(20_83_45/0.25)] ring-1 ring-(--line)"
+        data-reveal-block>
         <div
           class="flex flex-col gap-4 border-b border-(--line) p-3 sm:p-4 md:flex-row md:items-center md:justify-between">
           <!-- Weight-class tabs: one sliding indicator under three equal columns -->
@@ -258,7 +271,7 @@ const columns = [
                   {{ cat.label }}
                 </span>
                 <span
-                  class="rounded-full px-2 py-0.5 font-mono text-[10px] font-semibold transition-colors duration-300"
+                  class="rounded-full px-2 py-0.5 font-mono text-[11px] font-semibold transition-colors duration-300"
                   :class="activeCategory === cat.id
                       ? 'bg-white/20 text-white'
                       : 'bg-white text-(--muted) ring-1 ring-(--line)'
@@ -287,7 +300,7 @@ const columns = [
                   <th v-for="col in columns" :key="col.label" scope="col"
                     class="px-6 py-5 text-[11px] font-bold uppercase tracking-widest text-(--muted)">
                     {{ col.label }}
-                    <span v-if="col.unit" class="text-[9px] normal-case tracking-normal">
+                    <span v-if="col.unit" class="text-[11px] normal-case tracking-normal">
                       ({{ col.unit }})
                     </span>
                   </th>
@@ -361,13 +374,13 @@ const columns = [
                     :style="{ width: weightPct(fabric.weight) }" />
                 </span>
                 <span class="font-mono text-[13px] tabular-nums text-(--brown)">
-                  {{ fabric.weight }} <span class="text-[10px] text-(--muted)">g/m²</span>
+                  {{ fabric.weight }} <span class="text-[11px] text-(--muted)">g/m²</span>
                 </span>
               </div>
 
               <dl class="grid grid-cols-3 gap-3 border-t border-(--line) pt-4">
                 <div>
-                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
+                  <dt class="text-[11px] font-bold uppercase tracking-widest text-(--muted)">
                     Yarn
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
@@ -375,7 +388,7 @@ const columns = [
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
+                  <dt class="text-[11px] font-bold uppercase tracking-widest text-(--muted)">
                     Density
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">
@@ -383,7 +396,7 @@ const columns = [
                   </dd>
                 </div>
                 <div>
-                  <dt class="text-[10px] font-bold uppercase tracking-widest text-(--muted)">
+                  <dt class="text-[11px] font-bold uppercase tracking-widest text-(--muted)">
                     Width
                   </dt>
                   <dd class="mt-1 font-mono text-[13px] tabular-nums text-(--brown)">

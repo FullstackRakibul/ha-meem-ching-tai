@@ -42,16 +42,19 @@ useScrollScene(section, (ctx) => {
     data-chapter="ply"
   >
     <div class="loom-layer loom-wrap">
-      <p class="loom-label loom-muted mb-8" data-reveal-block>
+      <!-- [rhythm] eyebrow →16→ heading (was 32px) -->
+      <p class="loom-label loom-muted mb-4" data-reveal-block>
         <span class="loom-gold">09</span>{{ t("originEyebrow") }}
       </p>
-      <h2 class="loom-display loom-display--xl" data-reveal-block>
+      <!-- [type] Chapter title: --xl → --l, the one class for full-row h2s. -->
+      <h2 class="loom-display loom-display--l" data-reveal-block>
         <span class="block">{{ t("originLineA") }}</span>
         <em class="loom-serif loom-gold block">{{ t("originLineB") }}</em>
       </h2>
 
       <figure ref="yarn" class="loom-ply__yarn m-0">
-        <div class="relative h-full" data-loom-anchor="ply"><PlyPoster /></div>
+        <!-- [spacing] Height lives on the anchor (loom.css), so the caption no longer overflows. -->
+        <div class="relative" data-loom-anchor="ply"><PlyPoster /></div>
         <figcaption class="loom-body loom-muted mt-4">
           {{ t("originPlyCaption") }}
         </figcaption>

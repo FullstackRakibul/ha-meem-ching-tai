@@ -128,7 +128,8 @@ useScrollScene(section, (ctx) => {
     data-chapter="stats"
   >
     <div class="loom-layer loom-wrap">
-      <header class="loom-stats__header flex flex-col gap-6" data-reveal-block>
+      <!-- [rhythm] eyebrow →16→ heading; .loom-stats__header adds --section-gap below. -->
+      <header class="loom-stats__header loom-head" data-reveal-block>
         <p class="loom-label loom-muted">
           <span class="loom-gold">04</span>{{ t("ventureEyebrow") }}
         </p>

@@ -61,7 +61,8 @@ useScrollScene(section, (ctx) => {
     data-chapter="why"
   >
     <div ref="stage" class="loom-layer loom-wrap loom-why__stage">
-      <header class="flex flex-col gap-6">
+      <!-- [rhythm] eyebrow →16→ heading. Not a reveal block: it is pinned. -->
+      <header class="loom-head">
         <p class="loom-label loom-muted">
           <span class="loom-gold">03</span>{{ t("whyEyebrow") }}
         </p>
@@ -92,7 +93,7 @@ useScrollScene(section, (ctx) => {
         aria-hidden="true"
       >
         <span class="h-px w-12 bg-(--navy-tint)" />
-        <span class="text-[10px] font-medium uppercase tracking-widest text-(--muted)">
+        <span class="text-[11px] font-medium uppercase tracking-widest text-(--muted)">
           Scroll to explore
         </span>
       </div>
@@ -111,7 +112,7 @@ useScrollScene(section, (ctx) => {
         <!-- Hover lift lives here: GSAP owns the article's own transform. -->
         <div class="why-card__body loom-seam__body">
           <p class="loom-label loom-gold">{{ card.number }}</p>
-          <h3 class="text-xl font-bold">{{ card.title }}</h3>
+          <h3 class="loom-card-title">{{ card.title }}</h3>
           <p class="loom-body loom-muted">{{ card.text }}</p>
         </div>
       </article>
@@ -138,9 +139,10 @@ useScrollScene(section, (ctx) => {
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 14px;
   background-color: var(--night);
-  /* Colour only. The reveal animates this element's transform and opacity. */
-  transition: background-color 0.4s var(--ease, ease),
-    border-color 0.4s var(--ease, ease);
+  /* Colour only. The reveal animates this element's transform and opacity.
+     [hover] 300ms ease-out, the one card timing. */
+  transition: background-color 0.3s var(--ease-out, ease-out),
+    border-color 0.3s var(--ease-out, ease-out);
 }
 
 .why-card__body {

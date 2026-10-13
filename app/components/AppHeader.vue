@@ -46,7 +46,7 @@ onMounted(() => {
 
 <template>
   <header :class="[
-    'loom-header fixed top-3 left-1/2 z-1500 flex w-[calc(100%-24px)] -translate-x-1/2 items-center gap-2 rounded-full bg-white text-(--navy) shadow-lg transition-[max-width,height,padding] duration-500 ease-in-out motion-reduce:transition-none sm:gap-3',
+    'loom-header fixed top-3 left-1/2 z-1500 flex w-[calc(100%_-_24px_-_env(safe-area-inset-left,0px)_-_env(safe-area-inset-right,0px))] -translate-x-1/2 items-center gap-2 rounded-full bg-white text-(--navy) shadow-lg transition-[max-width,height,padding] duration-500 ease-in-out motion-reduce:transition-none sm:gap-3',
     scrolled
       ? 'h-12 max-w-225 px-3 sm:h-13 sm:px-5'
       : 'h-14 max-w-325 px-3 sm:h-16 sm:px-6',

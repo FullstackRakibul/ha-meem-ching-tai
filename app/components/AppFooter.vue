@@ -35,10 +35,10 @@ const footerNav = computed(() => [
   { label: t("goTo Contact"), href: "#contact" },
 ]);
 
-// Shared by every link on the dark footer ground: a stitched underline on
-// hover/focus and a focus ring that stays visible on --ink.
+// Shared by every link on the dark footer ground: the site's stitch link
+// (.loom-link, assets/css/loom.css) and a focus ring that stays visible on --ink.
 const footerLinkClass =
-  "inline-flex min-h-11 items-center underline decoration-transparent decoration-dashed decoration-1 underline-offset-[7px] transition-colors duration-300 hover:decoration-current focus-visible:decoration-current focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--paper) motion-reduce:transition-none";
+  "loom-link inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--paper)";
 
 /**
  * World map: Natural Earth 110m land, Natural Earth projection, simplified
@@ -89,8 +89,10 @@ const fields = computed(() => [
 // Filled field + floating label, shared by every input and the textarea.
 const fieldClass =
   "peer block w-full min-h-13 rounded-[14px] border-b-2 border-transparent bg-(--panel) pt-5.5 pb-1.5 pl-4 pr-12 text-base text-(--ink) autofill:shadow-[inset_0_0_0_100px_var(--panel)] user-invalid:border-dashed user-invalid:border-(--rust)";
+// [motion] The label floats by transform (translate + scale from 16px to
+// 12px), not by animating top and font-size. Same resting and floated spots.
 const labelClass =
-  "pointer-events-none absolute left-4 top-1.5 text-xs text-(--muted) transition-all duration-200 motion-reduce:transition-none peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-focus:top-1.5 peer-focus:text-xs";
+  "pointer-events-none absolute left-4 top-1.5 origin-top-left scale-75 text-base text-(--muted) transition-transform duration-200 motion-reduce:transition-none peer-placeholder-shown:translate-y-2 peer-placeholder-shown:scale-100 peer-focus:translate-y-0 peer-focus:scale-75";
 const iconClass = "pointer-events-none absolute right-4 top-4 size-5 text-(--muted)";
 
 const form = reactive({ name: "", company: "", email: "", message: "", file: null });
@@ -235,8 +237,10 @@ async function submit(e) {
         </defs>
       </svg>
 
+      <!-- [spacing] No top padding: the partnership scene above is the same light
+           ground and owns its bottom. Side padding is the shared --gutter. -->
       <div
-        class="relative mx-auto max-w-300 px-[max(16px,4vw)] py-(--section-y)"
+        class="relative mx-auto max-w-300 px-(--gutter) pb-(--section-y)"
       >
         <div class="relative">
           <!-- Tilted sheet underneath, like a pattern page slipped behind the card -->
@@ -250,32 +254,26 @@ async function submit(e) {
             aria-labelledby="contact-title"
             class="relative grid overflow-hidden rounded-[clamp(20px,2.4vw,32px)] border border-(--line) bg-(--paper-soft) shadow-[0_1px_2px_var(--line)] lg:grid-cols-[1.1fr_0.9fr]"
           >
+            <!-- [spacing] Card padding is component geometry; blocks inside sit --grid-gap apart. -->
             <div
-              class="flex flex-col gap-[clamp(20px,2.4vw,28px)] px-[clamp(20px,5vw,64px)] py-[clamp(28px,5vw,64px)]"
+              class="flex flex-col gap-(--grid-gap) px-[clamp(20px,5vw,64px)] py-[clamp(28px,5vw,64px)]"
             >
-              <p
-                class="flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--muted)"
-              >
-                <span class="font-serif text-[13px] tracking-[0.02em] text-(--rust)"
-                  >02</span
-                >
-                {{ t("footerContactEyebrow") }}
-              </p>
-
-              <div class="flex flex-col gap-3">
+              <!-- [rhythm] The shared eyebrow (loom-label) →16→ the --m heading. -->
+              <div class="loom-head">
+                <p class="loom-label loom-muted">
+                  <span class="text-(--rust)">02</span>{{ t("footerContactEyebrow") }}
+                </p>
                 <h2
                   id="contact-title"
-                  class="font-serif text-[clamp(32px,4.2vw,64px)] font-normal leading-[1.02] tracking-[-0.035em] text-(--ink)"
+                  class="loom-display loom-display--m text-(--ink)"
                 >
                   {{ t("footerContactTitle")
                   }}<span class="text-(--rust)" aria-hidden="true">.</span>
                 </h2>
-                <p
-                  class="max-w-[46ch] text-[clamp(14px,1.1vw,16px)] leading-[1.65] text-(--brown)"
-                >
-                  {{ t("footerContactBody") }}
-                </p>
               </div>
+              <p class="loom-body max-w-[52ch] text-(--brown)">
+                {{ t("footerContactBody") }}
+              </p>
 
               <p class="flex flex-wrap items-center gap-x-5 text-sm text-(--brown)">
                 <span
@@ -289,7 +287,7 @@ async function submit(e) {
                   :href="link.href"
                   :target="link.external ? '_blank' : undefined"
                   :rel="link.external ? 'noopener' : undefined"
-                  class="inline-flex min-h-11 items-center underline decoration-(--muted) underline-offset-4 transition-colors hover:decoration-(--rust) motion-reduce:transition-none"
+                  class="loom-link inline-flex min-h-11 items-center"
                   >{{ link.label }}</a
                 >
               </p>
@@ -428,7 +426,7 @@ async function submit(e) {
               <section
                 id="visit"
                 aria-labelledby="visit-title"
-                class="flex flex-col gap-3 border-t border-(--line) pt-[clamp(20px,2.4vw,28px)]"
+                class="flex flex-col gap-3 border-t border-(--line) pt-(--grid-gap)"
               >
                 <h3
                   id="visit-title"
@@ -443,7 +441,7 @@ async function submit(e) {
                     class="flex justify-between gap-5 border-b border-(--line) py-2.75"
                   >
                     <dt
-                      class="text-[10px] font-semibold uppercase tracking-[0.09em] text-(--muted)"
+                      class="text-[11px] font-semibold uppercase tracking-[0.09em] text-(--muted)"
                     >
                       {{ spec.label }}
                     </dt>
@@ -517,11 +515,11 @@ async function submit(e) {
       class="relative z-0 overflow-hidden bg-(--ink) text-(--paper) lg:[@media(min-height:720px)]:sticky lg:[@media(min-height:720px)]:bottom-0"
     >
       <div
-        class="mx-auto flex max-w-360 flex-col px-[max(16px,4vw)] pb-4 pt-(--section-y)"
+        class="mx-auto flex max-w-360 flex-col px-(--gutter) pb-4 pt-(--section-y)"
       >
         <!-- Brand block and the stitched world map -->
         <div
-          class="relative isolate flex flex-col items-center gap-[clamp(16px,1.8vw,24px)] pb-[clamp(44px,5.5vw,80px)] text-center"
+          class="relative isolate flex flex-col items-center gap-(--grid-gap) pb-(--section-gap) text-center"
         >
           <p
             class="text-[11px] font-semibold uppercase tracking-[0.24em] text-(--paper)/65"
@@ -534,7 +532,7 @@ async function submit(e) {
             Ha-Meem Ching Tai
           </p>
           <p
-            class="max-w-[38ch] text-pretty text-[13px] italic leading-[1.6] text-(--paper)/75 sm:text-sm lg:max-w-[44ch]"
+            class="max-w-[38ch] text-pretty text-[15px] italic leading-[1.6] text-(--paper)/75 lg:max-w-[44ch]"
           >
             {{ t("footerMission") }}
           </p>
@@ -639,12 +637,12 @@ async function submit(e) {
 
         <!-- Addresses, contact, clients -->
         <div
-          class="grid grid-cols-1 gap-x-8 gap-y-7 border-t border-dashed border-(--paper)/30 pt-7 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1.1fr]"
+          class="grid grid-cols-1 gap-(--grid-gap) border-t border-dashed border-(--paper)/30 pt-(--grid-gap) sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_1.1fr]"
         >
           <div
             v-for="block in footerBlocks"
             :key="block.label"
-            class="flex flex-col items-start text-[13px] leading-[1.6] text-(--paper)/85"
+            class="flex flex-col items-start text-sm leading-[1.6] text-(--paper)/85"
           >
             <h3
               class="mb-2 text-[11px] font-semibold uppercase tracking-[0.11em] text-(--paper)/65"
@@ -684,7 +682,7 @@ async function submit(e) {
 
         <!-- Bottom bar -->
         <div
-          class="mt-7 grid grid-cols-1 items-center gap-1 border-t border-(--paper)/15 pt-3 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-(--paper)/65 md:grid-cols-[1fr_auto_1fr] md:gap-6 md:text-left"
+          class="mt-(--grid-gap) grid grid-cols-1 items-center gap-1 border-t border-(--paper)/15 pt-3 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-(--paper)/65 md:grid-cols-[1fr_auto_1fr] md:gap-6 md:text-left"
         >
           <span
             >© {{ new Date().getFullYear() }} Ha-Meem Ching Tai Pocketing &amp;

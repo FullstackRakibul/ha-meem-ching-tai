@@ -55,15 +55,50 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   /* Space the floating pill occupies: 12px offset + 64px pill at rest. */
   --header: 76px;
-  /* Vertical rhythm: section padding, and heading-to-content gaps. */
-  --section-y: clamp(48px, 6vw, 96px);
-  --section-gap: clamp(24px, 3vw, 48px);
+
+  /* [spacing] Layout tokens — the only spacing between and inside sections.
+     Stepped, not fluid, at 640 / 768 / 1024 (blocks below).
+       --section-y    a section's own top and bottom padding
+       --section-gap  heading block → content
+       --grid-gap     between cards, and between stacked content blocks
+       --gutter       side padding on content wrappers (.loom-wrap), never on
+                      a section, so full-bleed photos and tracks reach the edge.
+     The gutter clears the iPhone notch and rounded corners (viewport-fit=cover
+     is set in app.vue). The max() stays at every tier: iPhones in landscape
+     are wider than 640px. */
+  --section-y: 48px;
+  --section-gap: 32px;
+  --grid-gap: 20px;
+  --gutter: max(20px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
 }
 
 @media (max-width: 639.98px) {
   :root {
     /* 12px offset + 56px pill. */
     --header: 68px;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --gutter: max(32px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --section-y: 72px;
+    --section-gap: 40px;
+    --grid-gap: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --section-y: 96px;
+    --section-gap: 48px;
+    --grid-gap: 32px;
+    --gutter: max(48px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   }
 }
 
@@ -166,8 +201,9 @@ p {
   margin: 0;
 }
 
+/* [spacing] Legacy name, now the shared gutter. */
 .page-gutter {
-  padding-inline: max(12px, 1.1vw);
+  padding-inline: var(--gutter);
 }
 
 /* Custom brand cursor */
@@ -217,21 +253,9 @@ p {
   outline: none;
 }
 
-/* Reveal Animations */
-.js [data-reveal] {
-  opacity: 0;
-  transform: translate3d(0, 42px, 0);
-}
-
-[data-reveal] {
-  transition: opacity 1s var(--ease), transform 1s var(--ease);
-}
-
-.js [data-reveal].is-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
-
+/* [reveal] The old `[data-reveal]` CSS reveal is gone: nothing ever set
+   `.js`, so it only left a 1s transform transition on its hosts. Scroll
+   reveals are revealBlocks() (composables/useScrollScene.ts) and nothing else. */
 
 .menu-button {
   position: relative;
@@ -245,7 +269,8 @@ p {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  transition: opacity 0.3s;
+  /* [hover] Button language: 2px lift, 300ms ease-out. */
+  transition: transform 0.3s var(--ease-out);
 }
 
 /* 40px visual, 44px hit area. */
@@ -279,10 +304,21 @@ p {
   }
 }
 
-@media (hover: hover) {
+/* [hover] Was an opacity fade; now the shared button lift (loom.css). */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .menu-button:hover {
-    opacity: 0.6;
+    transform: translateY(-2px);
   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-button:focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
+.menu-button:active {
+  transform: translateY(0);
 }
 
 .menu-button>i {
@@ -403,7 +439,8 @@ p {
   font-weight: 600;
   letter-spacing: 0.035em;
   text-transform: uppercase;
-  transition: box-shadow 0.3s var(--ease), transform 0.3s var(--ease);
+  /* [hover] Button language: 2px lift, 300ms ease-out. */
+  transition: transform 0.3s var(--ease-out);
 }
 
 .tiny-link>span {
@@ -433,102 +470,36 @@ p {
   transition: transform 0.3s var(--ease);
 }
 
-.tiny-link:hover {
-  box-shadow: 3px 3px 0 var(--rust);
-  transform: translate(-1px, -1px);
+/* [hover] The offset shadow and diagonal nudge are replaced by the shared
+   lift; the arrow chip keeps its small turn. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tiny-link:hover {
+    transform: translateY(-2px);
+  }
+
+  .tiny-link:hover i {
+    scale: 1.08;
+    transform: rotate(-8deg);
+  }
+
+  .tiny-link:hover i svg {
+    transform: translateX(1px);
+  }
 }
 
-.tiny-link:hover i {
-  scale: 1.08;
-  transform: rotate(-8deg);
+@media (prefers-reduced-motion: no-preference) {
+  .tiny-link:focus-visible {
+    transform: translateY(-2px);
+  }
 }
 
-.tiny-link:hover i svg {
-  transform: translateX(1px);
+.tiny-link:active {
+  transform: translateY(0);
 }
 
-
-/* ─── Why It Matters — Horizontal Cards ─── */
-.why-matters {
-  padding: clamp(80px, 10vw, 160px) 0;
-  background: var(--warm-ivory);
-  /* color: var(--paper); */
-  overflow: hidden;
-}
-
-.why-matters__header {
-  padding-inline: max(12px, 1.1vw);
-  margin-bottom: clamp(40px, 6vw, 80px);
-}
-
-.why-matters__eyebrow {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--rust);
-  margin-bottom: 16px;
-}
-
-.why-matters__headline {
-  font-family: var(--font-serif);
-  font-size: clamp(28px, 4vw, 64px);
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  max-width: 900px;
-}
-
-.why-matters__track {
-  display: flex;
-  gap: 3px;
-  padding-inline: max(12px, 1.1vw);
-  overflow-x: auto;
-  scrollbar-width: none;
-  scroll-snap-type: x mandatory;
-  -ms-overflow-style: none;
-}
-
-.why-matters__track::-webkit-scrollbar {
-  display: none;
-}
-
-.why-card {
-  flex: 0 0 clamp(280px, 28vw, 420px);
-  scroll-snap-align: start;
-  padding: clamp(28px, 3vw, 48px);
-  border: 1px solid var(--light-line);
-  background: rgba(245, 242, 235, 0.04);
-  transition: background 0.4s var(--ease), transform 0.4s var(--ease);
-}
-
-.why-card:hover {
-  background: rgba(245, 242, 235, 0.08);
-  transform: translateY(-4px);
-}
-
-.why-card__number {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--rust);
-  margin-bottom: clamp(20px, 3vw, 40px);
-}
-
-.why-card__title {
-  font-family: var(--font-serif);
-  font-size: clamp(22px, 2.4vw, 36px);
-  font-weight: 400;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin-bottom: 16px;
-}
-
-.why-card__text {
-  font-size: 13px;
-  line-height: 1.55;
-  color: rgba(245, 242, 235, 0.7);
-}
+/* [hover] The legacy horizontal "Why it matters" rules (.why-matters*,
+   .why-card*) are removed. WhyMatters.vue styles its own cards; the old
+   `.why-card:hover { transform }` here moved an element GSAP reveals. */
 
 
 @media (prefers-reduced-motion: reduce) {
@@ -543,11 +514,6 @@ p {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-
-  .js [data-reveal] {
-    opacity: 1;
-    transform: none;
   }
 
   /* Ambient hero motion is removed outright rather than run at 0.01ms, which

@@ -74,18 +74,20 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
       data-lenis-prevent
     >
       <div
-        class="mx-auto my-auto grid w-full max-w-350 grid-cols-1 items-center gap-8 px-5 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-12"
+        class="mx-auto my-auto grid w-full max-w-350 grid-cols-1 items-center gap-8 px-(--gutter) lg:grid-cols-12 lg:gap-16"
       >
         <nav
           ref="navRef"
           class="site-menu__list flex min-w-0 flex-col py-4 lg:col-span-7 lg:py-6"
           :aria-label="t('menu')"
         >
+          <!-- [hover] Kept: the label's slide and the number turning navy. Added: the
+               stitch under the label. All three mirror on keyboard focus; 300ms. -->
           <a
             v-for="(item, index) in navItems"
             :key="item.href"
             :href="item.href"
-            class="group flex min-h-11 items-start gap-3 rounded-lg md:gap-6"
+            class="loom-link loom-link--wrap group flex min-h-11 items-start gap-3 rounded-lg md:gap-6"
             @mouseenter="hoveredItem = item.image"
             @mouseleave="hoveredItem = null"
             @focus="hoveredItem = item.image"
@@ -93,12 +95,12 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
             @click="emit('closeMenu')"
           >
             <span
-              class="loom-label mt-[0.6em] shrink-0 text-gray-600 transition-colors group-hover:text-(--navy)"
+              class="loom-label mt-[0.6em] shrink-0 text-gray-600 transition-colors duration-300 ease-out group-hover:text-(--navy) group-focus-visible:text-(--navy)"
             >
               {{ String(index + 1).padStart(2, "0") }}
             </span>
             <span
-              class="site-menu__label loom-display min-w-0 transition-transform duration-500 ease-out group-hover:translate-x-4 motion-reduce:transition-none"
+              class="site-menu__label loom-link__text loom-display min-w-0 transition-transform duration-300 ease-out group-hover:translate-x-4 group-focus-visible:translate-x-4 motion-reduce:transition-none"
             >
               {{ item.label }}
             </span>
@@ -126,12 +128,12 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKey));
     </div>
 
     <div
-      class="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-(--line) px-5 py-3 text-sm text-gray-600 sm:px-6 lg:px-12 lg:py-5"
+      class="flex shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-1 border-t border-(--line) px-(--gutter) pt-3 pb-[max(12px,env(safe-area-inset-bottom))] text-sm text-gray-600 lg:py-5"
     >
       <span>{{ t("companyName") }}</span>
       <a
         href="#contact"
-        class="inline-flex min-h-11 items-center font-semibold text-(--navy) hover:underline"
+        class="loom-link inline-flex min-h-11 items-center font-semibold text-(--navy)"
         @click="emit('closeMenu')"
       >
         {{ t("contactSupport") }}
