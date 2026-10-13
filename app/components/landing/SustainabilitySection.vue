@@ -19,8 +19,16 @@ const section = ref<HTMLElement | null>(null);
 const scene = ref<HTMLElement | null>(null);
 
 const stats = computed(() => [
-  { value: t("sustainStat1Value"), label: t("sustainStat1Label"), desc: t("sustainStat1Desc") },
-  { value: t("sustainStat2Value"), label: t("sustainStat2Label"), desc: t("sustainStat2Desc") },
+  {
+    value: t("sustainStat1Value"),
+    label: t("sustainStat1Label"),
+    desc: t("sustainStat1Desc"),
+  },
+  {
+    value: t("sustainStat2Value"),
+    label: t("sustainStat2Label"),
+    desc: t("sustainStat2Desc"),
+  },
 ]);
 
 useScrollScene(section, (ctx) => {
@@ -34,13 +42,23 @@ useScrollScene(section, (ctx) => {
     sun: 1,
     ease: EASE.scrub,
     onUpdate: () => setUniform("sun", sky.sun),
-    scrollTrigger: { trigger: scene.value, start: "top 80%", end: "center center", scrub: SCRUB },
+    scrollTrigger: {
+      trigger: scene.value,
+      start: "top 80%",
+      end: "center center",
+      scrub: SCRUB,
+    },
   });
 });
 </script>
 
 <template>
-  <section id="sustainability" ref="section" class="loom-night loom-night--dusk" data-chapter="dusk">
+  <section
+    id="sustainability"
+    ref="section"
+    class="loom-night loom-night--dusk"
+    data-chapter="dusk"
+  >
     <div class="loom-dusk-in" aria-hidden="true" />
 
     <div ref="scene" class="group/dusk loom-grain loom-dusk relative">
@@ -48,19 +66,28 @@ useScrollScene(section, (ctx) => {
         <!-- [spacing] heading →section-gap→ stats →section-gap→ CTA; eyebrow →16→ heading -->
         <div class="flex flex-col gap-(--section-gap)">
           <header class="loom-head" data-reveal-block>
-            <p class="loom-label loom-muted"><span class="loom-gold">08</span>{{ t("sustainEyebrow") }}</p>
-            <h2 class="loom-display loom-display--l loom-measure text-balance">{{ t("sustainHeadline") }}</h2>
+            <p class="loom-label loom-muted">
+              <span class="loom-gold">08</span>{{ t("sustainEyebrow") }}
+            </p>
+            <h2 class="loom-display loom-display--l loom-measure text-balance">
+              {{ t("sustainHeadline") }}
+            </h2>
           </header>
 
           <div class="loom-dusk__stats">
             <!-- GSAP reveals the article; hover motion lives on its children only. -->
-            <article v-for="stat in stats" :key="stat.label" class="group/stat relative" data-reveal-block>
+            <article
+              v-for="stat in stats"
+              :key="stat.label"
+              class="group/stat relative"
+              data-reveal-block
+            >
               <span
                 class="pointer-events-none absolute inset-x-0 -top-px h-0.5 origin-left bg-(--sun-core) opacity-0 group-hover/stat:opacity-100 group-focus-within/stat:opacity-100 motion-safe:scale-x-0 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-(--ease-out) motion-safe:group-hover/stat:scale-x-100 motion-safe:group-focus-within/stat:scale-x-100"
                 aria-hidden="true"
               />
               <p
-                class="loom-stats__value loom-gold tabular-nums leading-none! motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-(--ease-out) motion-safe:group-hover/stat:-translate-y-0.5 motion-safe:group-focus-within/stat:-translate-y-0.5"
+                class="loom-stats__value loom-gold tabular-nums leading-none! motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover/stat:-translate-y-0.5 motion-safe:group-focus-within/stat:-translate-y-0.5"
               >
                 {{ stat.value }}
               </p>

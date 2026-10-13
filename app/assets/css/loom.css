@@ -277,13 +277,18 @@ html.lenis {
   text-shadow: 0 0 1.2em rgb(244 247 242 / 0.9);
 }
 
+/* [spacing] One --section-y step (48 / 72 / 96px), not 38vh: --night and
+   --beige are near-identical, so the tall band read as dead space under
+   the milestones. */
 .loom-dawn {
-  height: clamp(160px, 38vh, 420px);
+  height: var(--section-y);
   background: linear-gradient(var(--night), var(--beige));
 }
 
+/* [spacing] Same one-step band as .loom-dawn, so both chapter breaks into
+   a new ground read the same (48 / 72 / 96px). */
 .loom-dusk-in {
-  height: clamp(140px, 32vh, 360px);
+  height: var(--section-y);
   background: linear-gradient(var(--beige), var(--dusk));
 }
 

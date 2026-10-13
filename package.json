@@ -31,5 +31,11 @@
     "esbuild@0.28.1": true,
     "esbuild@0.27.7": true,
     "vue-demi@0.14.10": true
-  }
+  },
+    "overrides": {
+      "@tiptap/core": "3.31.2",
+      "@tiptap/pm": "3.31.2",
+      "@tiptap/extension-bubble-menu": "3.31.2",
+      "@tiptap/extension-floating-menu": "3.31.2"
+    }
 }
