@@ -31,6 +31,22 @@ const WRITE_EPS = 0.05;
 const NUDGE_GAIN = 0.35;
 const MAX_FLING = 2400;
 
+// ── Dwell ─────────────────────────────────────────────────────────────────
+// The drift eases down to DWELL_MIN of its speed as a card centres in the
+// focus frame, so each card rests there about DWELL_REST extra seconds.
+// Drag, fling, keys, wheel and the page-scroll nudge are untouched.
+/** Switch the dwell off with false. */
+const DWELL = true;
+/** Drift speed share with a card exactly centred. */
+const DWELL_MIN = 0.15;
+/** Extra seconds each card rests in the frame. */
+const DWELL_REST = 1;
+/** Speed share at u ∈ [0, 1] of the dwell reach: smoothstep from DWELL_MIN up to 1. */
+const dwellSpeed = (u: number) => DWELL_MIN + (1 - DWELL_MIN) * u * u * (3 - 2 * u);
+/** ∫₀¹ (1/speed − 1) du: extra time per px of reach. Sizes the reach so the rest is DWELL_REST. */
+const DWELL_COST =
+  Array.from({ length: 64 }, (_, i) => 1 / dwellSpeed((i + 0.5) / 64) - 1).reduce((a, b) => a + b) / 64;
+
 type RailMode = "static" | "reduced" | "live";
 
 const section = ref<HTMLElement | null>(null);
@@ -242,6 +258,8 @@ function runLive(gsap: Gsap) {
   let positioned = false;
   let inView = true;
   let shownItem = -1;
+  /** Distance (px) of the nearest card from the rail centre, from the last render(). */
+  let centreOff = Infinity;
 
   let hovered = false;
   let dragging = false;
@@ -316,6 +334,7 @@ function runLive(gsap: Gsap) {
       writeCard(slot, arc, a, side);
     }
 
+    centreOff = nearestD;
     const item = nearest >= 0 ? nearest % n : -1;
     if (item >= 0 && item !== shownItem) {
       shownItem = item;
@@ -328,7 +347,10 @@ function runLive(gsap: Gsap) {
     const dt = Math.min(deltaMs, 50) / 1000;
     const frames = dt * 60;
 
-    x += (-props.speed * s.factor + s.vel) * dt;
+    // Dwell: slows the drift only (never fling velocity) while a card is in the frame.
+    const reach = (props.speed * DWELL_REST) / (2 * DWELL_COST);
+    const dwell = DWELL && reach > 0 ? dwellSpeed(Math.min(centreOff / reach, 1)) : 1;
+    x += (-props.speed * s.factor * dwell + s.vel) * dt;
 
     const eased = nudge * (1 - Math.pow(1 - 0.12, frames));
     nudge -= eased;
@@ -371,6 +393,7 @@ function runLive(gsap: Gsap) {
     if (e.button !== 0 || dragging) return;
     dragging = true;
     coasting = false;
+    railEl.classList.remove("is-coasting");
     pointerId = e.pointerId;
     lastX = e.clientX;
     lastT = e.timeStamp;
@@ -413,12 +436,15 @@ function runLive(gsap: Gsap) {
     if (e.timeStamp - lastT > 80) dragVel = 0;
     s.vel = gsap.utils.clamp(-MAX_FLING, MAX_FLING, dragVel);
     coasting = true;
+    // Holds the focus frame still (no settle pulse) while the fling coasts.
+    railEl.classList.add("is-coasting");
     gsap.to(s, {
       vel: 0,
       duration: DUR.md,
       ease: "power2.out",
       onComplete: () => {
         coasting = false;
+        railEl.classList.remove("is-coasting");
         resume();
       },
     });
@@ -632,6 +658,20 @@ function runLive(gsap: Gsap) {
           </article>
         </template>
       </div>
+
+      <!--
+        Inspection frame: fixed at the rail's centre; the cards slide through
+        it. Four stitched corner brackets just outside the centred card; the
+        key restarts their one settle pulse when a new card is centred. The
+        thread hangs the swatch ticket from it. Live rail only.
+      -->
+      <span v-if="live" :key="activeItem" class="product-rail__frame" aria-hidden="true">
+        <span class="product-rail__corner is-tl" />
+        <span class="product-rail__corner is-tr" />
+        <span class="product-rail__corner is-bl" />
+        <span class="product-rail__corner is-br" />
+      </span>
+      <span v-if="live" class="product-rail__thread" aria-hidden="true" />
     </div>
 
     <ImageViewer
@@ -665,6 +705,8 @@ function runLive(gsap: Gsap) {
 .product-rail-section {
   --rail-ground: color-mix(in srgb, var(--beige) 70%, var(--white));
   --rail-hairline: color-mix(in srgb, var(--navy) 22%, transparent);
+  /* Ticket readout height; the frame's thread ends on its centre line. */
+  --readout-h: 3rem;
   background-color: var(--rail-ground);
   color: var(--navy);
   overflow-x: clip;
@@ -817,6 +859,131 @@ function runLive(gsap: Gsap) {
   will-change: transform;
 }
 
+/* ── Focus: inspection frame, thread, edge fade (live only) ─ */
+/*
+ * The centred card has zero depth and turn, so it is exactly --card-w by
+ * 1.5 × --card-w at the rail's centre (the rail's padding is symmetric).
+ * The frame sits --frame-pad outside it on every side — under half the
+ * gap, so it never touches a neighbour. All static: no per-frame writes.
+ */
+.product-rail.is-live {
+  --frame-pad: min(10px, calc(var(--rail-gap) * 0.45));
+  --frame-r: calc(var(--card-w) * 0.12 + var(--frame-pad));
+  --frame-arm: calc(var(--frame-r) + var(--card-w) * 0.1);
+  --frame-stroke: 1.5px;
+  /* Edge fade: share of --rail-ground laid over the outer edges. */
+  --edge-fade: 50%;
+}
+
+.product-rail__frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--card-w) + 2 * var(--frame-pad));
+  height: calc(var(--card-w) * 1.5 + 2 * var(--frame-pad));
+  translate: -50% -50%;
+  pointer-events: none;
+}
+
+/* Stitched corner brackets: dashed navy, the card's radius plus the margin. */
+.product-rail__corner {
+  position: absolute;
+  width: var(--frame-arm);
+  height: var(--frame-arm);
+  border: 0 dashed var(--navy);
+}
+
+.product-rail__corner.is-tl {
+  --sx: -1;
+  --sy: -1;
+  top: 0;
+  left: 0;
+  border-top-width: var(--frame-stroke);
+  border-left-width: var(--frame-stroke);
+  border-top-left-radius: var(--frame-r);
+}
+
+.product-rail__corner.is-tr {
+  --sx: 1;
+  --sy: -1;
+  top: 0;
+  right: 0;
+  border-top-width: var(--frame-stroke);
+  border-right-width: var(--frame-stroke);
+  border-top-right-radius: var(--frame-r);
+}
+
+.product-rail__corner.is-bl {
+  --sx: -1;
+  --sy: 1;
+  bottom: 0;
+  left: 0;
+  border-bottom-width: var(--frame-stroke);
+  border-left-width: var(--frame-stroke);
+  border-bottom-left-radius: var(--frame-r);
+}
+
+.product-rail__corner.is-br {
+  --sx: 1;
+  --sy: 1;
+  right: 0;
+  bottom: 0;
+  border-right-width: var(--frame-stroke);
+  border-bottom-width: var(--frame-stroke);
+  border-bottom-right-radius: var(--frame-r);
+}
+
+/* Settle: once per newly centred card (the :key remounts the frame). Held
+   still while dragging or coasting a fling, so a fast drag never strobes. */
+@media (prefers-reduced-motion: no-preference) {
+  .product-rail__corner {
+    animation: rail-settle var(--dur-sm) var(--ease-out) both;
+  }
+}
+
+.is-dragging .product-rail__corner,
+.is-coasting .product-rail__corner {
+  animation: none;
+}
+
+@keyframes rail-settle {
+  from {
+    opacity: 0.4;
+    translate: calc(var(--sx) * 6px) calc(var(--sy) * 6px);
+  }
+}
+
+/* The ticket hangs from the frame: a stitch from the frame's foot down to
+   the running stitch, where the ticket (painted later) covers its end. */
+.product-rail__thread {
+  position: absolute;
+  top: calc(50% + var(--card-w) * 0.75 + var(--frame-pad));
+  bottom: calc(var(--readout-h) / -2);
+  left: 50%;
+  border-left: var(--frame-stroke) dashed var(--navy);
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+/* Calm edges: a static wash of the ground over both ends, clear across the
+   centre card and half a gap either side. A pseudo-element over the rail —
+   never opacity, filter or mask on the track, which would flatten the 3D. */
+.product-rail.is-live::after {
+  --fade: color-mix(in srgb, var(--rail-ground) var(--edge-fade), transparent);
+  --clear: calc(var(--card-w) / 2 + var(--rail-gap) / 2);
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--fade),
+    transparent calc(50% - var(--clear)),
+    transparent calc(50% + var(--clear)),
+    var(--fade)
+  );
+}
+
 .product-rail__figure {
   margin: 0;
 }
@@ -892,7 +1059,7 @@ button.product-rail__swatch:focus-visible {
   display: grid;
   place-items: center;
   /* Reserved height: the cross-fade never shifts layout. */
-  height: 3rem;
+  height: var(--readout-h);
 }
 
 /* Running stitch spanning the rail. */

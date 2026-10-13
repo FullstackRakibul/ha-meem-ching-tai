@@ -587,16 +587,6 @@ html.lenis {
   aspect-ratio: 2 / 1;
 }
 
-/* Pattern cells are green; the ghost rect (future capacity) shows them at 14%. */
-#loomPlainWeave rect {
-  fill: var(--loom-thread);
-  stroke: none;
-}
-
-.loom-poster__weave-ghost {
-  opacity: 0.14;
-}
-
 .loom-poster--dusk,
 .loom-poster--ply {
   position: relative;
@@ -644,8 +634,10 @@ html.lenis {
 
 /* While posters stand in for WebGL, they breathe. Never under reduced motion,
    and never once the stage is live — anchored 3D reads their position. */
+/* The denim cloth (stats) is excluded: it is cloth on a loom, not floating
+   yarn, and it plays its own one-off weave. */
 @media (prefers-reduced-motion: no-preference) {
-  html:not(.loom-live) .loom-poster {
+  html:not(.loom-live) .loom-poster:not([data-poster="stats"]) {
     animation: loom-poster-float 7s ease-in-out infinite alternate;
   }
 }
@@ -660,8 +652,10 @@ html.lenis {
   }
 }
 
-/* Once WebGL is drawing, it replaces the posters (boot only on full tier). */
-html.loom-live .loom-poster:not([data-poster="boot"]),
+/* Once WebGL is drawing, it replaces the posters (boot only on full tier).
+   The denim cloth (stats) is SVG-only on every tier — the stage no longer
+   draws a weave — so it always stays visible. */
+html.loom-live .loom-poster:not([data-poster="boot"], [data-poster="stats"]),
 html.loom-boot .loom-poster[data-poster="boot"],
 html.loom-live [data-menu-preview] img {
   visibility: hidden;

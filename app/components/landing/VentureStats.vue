@@ -3,11 +3,13 @@
 /**
  * Scene 04 — Telemetry (night). The yarn becomes cloth.
  *
- * A 64 × 32 plain-weave grid fills pick by pick, row by row, to exactly 25%:
- * 500,000 yd of monthly output against 2M yd of future capacity. The rest
- * stays ghosted — capacity still to come. A caption states the scale, so
- * the picture is never read as more than it is. Numbers are plain text and
- * never count up.
+ * The cloth is WeavePoster: denim woven pick by pick to exactly 25% of the
+ * panel — 500,000 yd of monthly output against 2M yd of future capacity.
+ * The rest stays bare warp, capacity still to come. It is an SVG on every
+ * tier: this scene no longer reports presence or `woven` to the WebGL
+ * stage, so the stage never draws its own cloth over it. A caption states
+ * the scale, so the picture is never read as more than it is. Numbers are
+ * plain text and never count up.
  *
  * `#milestones` lives here: the development path built only from dated facts,
  * drawn as a thread timeline. Scroll draws the gold thread over a dashed
@@ -15,12 +17,10 @@
  */
 import WeavePoster from "~/components/landing/posters/WeavePoster.vue";
 import LoomSeam from "~/components/ui/LoomSeam.vue";
-import { setUniform, trackPresence, WOVEN_SHARE } from "~/composables/useLoomStage";
-import { DUR, EASE, SCRUB } from "~/utils/motion";
+import { EASE, SCRUB } from "~/utils/motion";
 
 const { t } = useLocale();
 const section = ref<HTMLElement | null>(null);
-const cloth = ref<HTMLElement | null>(null);
 const timeline = ref<HTMLElement | null>(null);
 
 const stats = computed(() => [
@@ -43,20 +43,10 @@ const milestones = computed(() => [
 const isRow = () => window.matchMedia("(min-width: 1024px)").matches;
 
 useScrollScene(section, (ctx) => {
-  const { gsap, ScrollTrigger, mode, root } = ctx;
+  const { gsap, mode } = ctx;
   revealBlocks(ctx);
-  if (mode === "reduced" || !cloth.value) return;
-  trackPresence(ScrollTrigger, root, "stats");
-
-  // The one move: the woven share fills, once, when the cloth comes into view.
-  const loom = { woven: 0 };
-  gsap.to(loom, {
-    woven: WOVEN_SHARE,
-    duration: DUR.lg,
-    ease: EASE.out,
-    onUpdate: () => setUniform("woven", loom.woven),
-    scrollTrigger: { trigger: cloth.value, start: "top 75%", once: true },
-  });
+  if (mode === "reduced") return;
+  // The cloth weaves itself (WeavePoster, on view). Nothing for the stage here.
 
   // Milestones: scroll draws the thread; knots turn gold as it reaches them.
   const line = timeline.value;
@@ -157,7 +147,7 @@ useScrollScene(section, (ctx) => {
           </div>
         </div>
 
-        <figure ref="cloth" class="m-0 flex flex-col gap-4">
+        <figure class="m-0 flex flex-col gap-4">
           <WeavePoster data-loom-anchor="weave" />
           <figcaption class="loom-body loom-muted max-w-[52ch]">
             {{ t("weaveCaption") }}
